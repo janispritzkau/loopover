@@ -191,7 +191,7 @@
       dark: false,
       useLetters: true,
       useSpacing: false,
-      isSolved: storedState.game && checkIfSolved(storedState.game) || true,
+      isSolved: storedState.game ? checkIfSolved(storedState.game) : true,
       isScrambled: false,
       gameStarted: false,
       time: 0, moves: 0,
@@ -207,7 +207,7 @@
       },
       saveState() {
         const { useLetters, useSpacing, gameSize, dark, game } = this
-        saveState({ ...this.$data })
+        saveState({ useLetters, useSpacing, gameSize, dark, game })
       },
       updateTiles() {
         drawTilesCanvas()
@@ -215,12 +215,14 @@
       },
       reset() {
         resetState()
+        this.game = state
         this.isScrambled = false
         this.isSolved = true
         this.gameStarted = false
         this.solves = 0
         this.time = 0
         this.moves = 0
+        this.saveState()
         draw()
       },
       async scramble() {
@@ -331,8 +333,8 @@
     for (let i = 0; i < moves; i++) {
       if (Math.random() > 0.5) moveRow(Math.floor(Math.random() * rows), Math.floor(Math.random() * cols))
       else moveColumn(Math.floor(Math.random() * cols), Math.floor(Math.random() * rows))
-      if (i % 5 == 0) await new Promise(res => setTimeout(res, 0))
-      // draw()
+      if (i % 10 == 0) await new Promise(res => setTimeout(res, 0))
+      draw()
     }
     if (checkIfSolved(state)) await scramble(moves)
   }
@@ -346,11 +348,11 @@
     const tilesCanvasH = Math.ceil(size)
     if (tilesCanvas.width != tilesCanvasW || tilesCanvas.height != tilesCanvasH) {
       tilesCanvas.width = tilesCanvasW, tilesCanvas.height = tilesCanvasH
-      drawTilesCanvas()
     }
     if (canvas.width != width || canvas.height != height) {
       canvas.width = width, canvas.height = height
     }
+    drawTilesCanvas()
     draw()
   }
 
