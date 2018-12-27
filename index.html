@@ -33,8 +33,13 @@
   main {
     max-width: 480px;
     margin: 32px auto 64px;
+    padding: 0 24px;
+    transition: max-width 200ms, padding 200ms;
+  }
+
+  main.big {
+    max-width: 560px;
     padding: 0 16px;
-    transition: max-width 200ms;
   }
 
   @media (min-width: 560px) {
@@ -43,9 +48,6 @@
     }
   }
 
-  main.big {
-    max-width: 560px;
-  }
 
   h1 {
     font-size: 32px;
@@ -189,7 +191,7 @@
       dark: false,
       useLetters: true,
       useSpacing: false,
-      isSolved: checkIfSolved(storedState.game),
+      isSolved: storedState.game && checkIfSolved(storedState.game) || true,
       isScrambled: false,
       gameStarted: false,
       time: 0, moves: 0,
@@ -205,7 +207,7 @@
       },
       saveState() {
         const { useLetters, useSpacing, gameSize, dark, game } = this
-        saveState({ useLetters, useSpacing, gameSize, dark, game })
+        saveState({ ...this.$data })
       },
       updateTiles() {
         drawTilesCanvas()
@@ -217,32 +219,44 @@
         this.isSolved = true
         this.gameStarted = false
         this.solves = 0
+        this.time = 0
+        this.moves = 0
         draw()
       },
       async scramble() {
         this.gameStarted = false
         await scramble(cols * rows * 2 + 2)
         this.moves = 0
+        this.time = 0
         this.isScrambled = true
         this.isSolved = false
         draw()
       },
       onMove(n) {
+        this.isSolved = checkIfSolved(state)
         if (!this.gameStarted && this.isScrambled) {
           this.gameStarted = true
           this.isScrambled = false
+          this._timerInterval = setInterval(() => {
+            this.time = Date.now() - this._startTime
+          }, 67)
           this._startTime = Date.now()
-        } else if (this.gameStarted && checkIfSolved(state)) {
+        }
+        if (this.gameStarted) this.moves += n
+        if (this.gameStarted && this.isSolved) {
           this.gameStarted = false
           this.isSolved = true
+          clearInterval(this._timerInterval)
           this.time = Date.now() - this._startTime
         }
-        this.moves += n
         this.game = state
         this.saveState()
       }
     },
     watch: {
+      gameStarted() {
+        if (this.gameStarted == false) clearInterval(this._timerInterval)
+      },
       dark: {
         immediate: true, handler(value) {
           document.documentElement.classList.toggle("dark", value)
@@ -447,6 +461,7 @@
   }
 
   updateGameSize()
+  if (!state) resetState()
 
   const _updateSize = debounce(updateCanvasSize, 25)
   let lastRect
