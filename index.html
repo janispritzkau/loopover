@@ -169,11 +169,19 @@
   }
 
   const saveState = state => {
-    return localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      ...state,
-      game: state
-    }))
+    return localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
   }
+
+  const checkIfSolved = state => {
+    for (let [rowIndex, row] of state.entries()) {
+      for (let [col, tile] of row.entries()) {
+        if (tile != rowIndex * row.length + col) return false
+      }
+    }
+    return true
+  }
+
+  const storedState = loadState()
 
   const app = new Vue({
     el: "#app",
@@ -181,13 +189,14 @@
       dark: false,
       useLetters: true,
       useSpacing: false,
-      isSolved: true,
+      isSolved: checkIfSolved(storedState.game),
       isScrambled: false,
       gameStarted: false,
       time: 0, moves: 0,
       gameSizes: [2, 3, 4, 5, 6, 7, 8, 9, 10],
       gameSize: 5,
-      ...loadState()
+      game: null,
+      ...storedState
     },
     methods: {
       formatTime(ms) {
@@ -195,8 +204,8 @@
         return `${s / 60 | 0}:${(s % 60 | 0).toString().padStart(2, 0)}:${(ms % 1000).toString().padStart(3, 0)}`
       },
       saveState() {
-        const { useLetters, useSpacing, gameSize, dark } = this
-        saveState({ useLetters, useSpacing, gameSize, dark })
+        const { useLetters, useSpacing, gameSize, dark, game } = this
+        saveState({ useLetters, useSpacing, gameSize, dark, game })
       },
       updateTiles() {
         drawTilesCanvas()
@@ -223,12 +232,14 @@
           this.gameStarted = true
           this.isScrambled = false
           this._startTime = Date.now()
-        } else if (this.gameStarted && checkIfSolved()) {
+        } else if (this.gameStarted && checkIfSolved(state)) {
           this.gameStarted = false
           this.isSolved = true
           this.time = Date.now() - this._startTime
         }
         this.moves += n
+        this.game = state
+        this.saveState()
       }
     },
     watch: {
@@ -240,6 +251,7 @@
       },
       gameSize() {
         updateGameSize()
+        this.reset()
         updateCanvasSize(canvas.getBoundingClientRect())
         this.saveState()
       },
@@ -274,24 +286,15 @@
   let moveAmounts = new Map
 
   /** @type {number[][]} */
-  let state = null
+  let state = app.game
 
   const updateGameSize = () => {
-    cols = app.gameSize, rows = cols, aspectRatio = cols / rows
-    resetState()
+    cols = app.gameSize, rows = cols
+    aspectRatio = cols / rows
   }
 
   const updateGapSize = () => {
     gap = app.useSpacing ? Math.round((1 + 16 / app.gameSize) * dpr) : 0
-  }
-
-  const checkIfSolved = () => {
-    for (let [r, row] of state.entries()) {
-      for (let [c, col] of row.entries()) {
-        if (col != r * cols + c) return false
-      }
-    }
-    return true
   }
 
   const resetState = () => {
@@ -317,7 +320,7 @@
       if (i % 5 == 0) await new Promise(res => setTimeout(res, 0))
       // draw()
     }
-    if (checkIfSolved()) await scramble(moves)
+    if (checkIfSolved(state)) await scramble(moves)
   }
 
   const updateCanvasSize = rect => {
