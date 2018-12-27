@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<meta name="theme-color" content="#222325">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="icon.png" type="image/png">
+
+<link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700,900" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+<title>Loopover</title>
+
+<style>
+:root {
+    --background: #f1f0ed;
+    --color: rgba(10, 5, 0, 0.75);
+    --shade: rgba(0, 0, 0, 0.12);
+    --shade-light: rgba(0, 0, 0, 0.05);
+}
+:root.dark {
+    --background: #222229;
+    --color: rgba(255, 255, 255, 0.8);
+    --shade: rgba(255, 255, 255, 0.1);
+    --shade-light: rgba(255, 255, 255, 0.05);
+}
+
+body {
+    margin: 0; font-family: "Roboto";
+    color: var(--color); background: var(--background);
+}
+
+main {
+    max-width: 480px;
+    margin: 32px auto 64px; padding: 0 16px;
+    transition: max-width 200ms;
+}
+@media (min-width: 560px) {
+    main { padding: 0 32px; }
+}
+main.big { max-width: 560px; }
+
+h1 {
+    font-size: 32px; font-weight: 900;
+    height: 32px; margin: 0 0 24px;
+}
+hr {
+    all: unset; display: block; height: 1px;
+    margin: 24px 0; background: var(--shade);
+}
+a { color: inherit; font-weight: bold; }
+p { line-height: 1.5; }
+
+#canvas {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    background: var(--shade);
+    filter: brightness(1.06);
+}
+:root.dark #canvas { filter: none; }
+
+button {
+    all: unset;
+    display: block;
+    height: 36px; padding: 0 8px; min-width: 32px;
+    font-size: 14px; text-align: center; font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer; user-select: none;
+    transition: background 150ms;
+}
+button:hover { background: var(--shade-light); }
+button:active, button.active { background: var(--shade); }
+
+#timer { font-size: 20px; font-weight: bold; }
+#info { font-size: 14px; margin-top: 6px; opacity: 0.7; }
+</style>
+
+<main id="app" :class="{big: gameSize > 7}">
+    <h1>Loopover</h1>
+    <div style="display: flex; align-items: flex-end; height: 72px;">
+        <div style="flex-grow: 1; margin-bottom: 16px;">
+            <div id="timer">{{ formatTime(time) }}</div>
+            <div id="info">
+                <template v-if="isScrambled">
+                    The timer starts with the next move
+                </template>
+                <template v-else-if="gameStarted || moves > 0">
+                    {{ moves }} moves
+                </template>
+                <template v-else>
+                    Tap scramble to start a new game
+                </template>
+            </div>    
+        </div>
+        <div style="margin: 0 12px 12px;">
+            <button v-if="isScrambled">RESET</button>
+            <button v-else>SCRAMBLE</button>
+        </div>
+    </div>
+    <canvas id="canvas"></canvas>
+    <div style="margin-top: 24px; display: flex; flex-wrap: wrap; justify-content: center">
+        <button v-for="item in gameSizes" :class="{active: item == gameSize}"
+        @click="gameSize = item">{{ `${item}×${item}` }}</button>
+    </div>
+    <hr>
+    <button @click="useSpacing = !useSpacing">{{ useSpacing ? "REMOVE SPACE BETWEEN TILES" : "ADD SPACE BETWEEN TILES" }}</button>
+    <button @click="useLetters = !useLetters">{{ useLetters ? "USE NUMBERS" : "USE LETTERS" }}</button>
+    <button @click="dark = !dark">{{ dark ? "LIGHT THEME" : "DARK THEME" }}</button>
+    <hr>
+    <p class="">Created by <a href="https://gitlab.com/janispritzkau">Janis Pritzkau</a>. Remake of carykh's <a href="https://openprocessing.org/sketch/580366">loopover</a>.</p>
+</main>
+
+<script>(() => {
+const app = new Vue({
+    el: "#app",
+    data: {
+        isScrambled: false,
+        gameStarted: true,
+        time: 68792,
+        moves: 92,
+        useLetters: true,
+        useSpacing: true,
+        gameSize: 5,
+        gameSizes: [2, 3, 4, 5, 6, 7, 8, 9, 10],
+        dark: false
+    },
+    methods: {
+        formatTime(ms) {
+            return `${ms/1000/60|0}:${((ms/1000)%60|0).toString().padStart(2, 0)}:${(ms%1000).toString().padStart(3, 0)}`
+        }
+    },
+    watch: {
+        dark(value) {
+            document.documentElement.classList.toggle("dark", value)
+        },
+        gameSize(value) {
+            cols = value, rows = value
+            aspectRatio = cols / rows
+            resetState()
+            updateCanvasSize(canvas.getBoundingClientRect())
+            setTimeout(() => {
+                updateCanvasSize(canvas.getBoundingClientRect())
+            }, 200)
+        },
+        useLetters() {
+            useLetters = this.useLetters
+            drawTilesCanvas()
+            draw()
+        },
+        useSpacing() {
+            updateCanvasSize(canvas.getBoundingClientRect())
+        }
+    }
+})
+
+/** @type {HTMLCanvasElement} */
+const canvas = document.getElementById("canvas")
+const ctx = canvas.getContext("2d")
+
+const tilesCanvas = document.createElement("canvas")
+const tilesCtx = tilesCanvas.getContext("2d")
+
+let dpr = devicePixelRatio
+let cols = app.gameSize, rows = cols, aspectRatio = 1
+let width = 0, height = 0
+let gap = 0
+let size = 0
+let useLetters = app.useLetters
+
+/** @type {number[][]} */
+let state = null
+
+const resetState = () => {
+    state = new Array(rows).fill(null)
+    .map((_, row) => new Array(cols).fill(null)
+    .map((_, col) => row * cols + col))
+}
+
+const updateCanvasSize = rect => {
+    const newWidth = Math.round(rect.width * dpr)
+    // const newWidth = Math.round(rect.right * dpr) - Math.round(rect.left * dpr)
+    const newHeight = Math.round(newWidth / aspectRatio)
+    // if (width == newWidth && height == newHeight) return
+    gap = app.useSpacing ? Math.round(4 + 12 / app.gameSize * dpr * 2) / 2 : 0
+    // gap = app.useSpacing ? Math.round(4 + 8 / app.gameSize * dpr * 2) / 2 : 0
+    width = newWidth, height = newHeight
+    size = Math.ceil((width - gap*2) / cols)
+    // if (width != newWidth || height != newHeight) {
+    // }
+    tilesCanvas.width = Math.ceil(size) * rows * cols, tilesCanvas.height = Math.ceil(size)
+    canvas.width = width, canvas.height = height
+    drawTilesCanvas()
+    draw()
+}
+
+const drawTile = (x, y, i) => ctx.drawImage(tilesCanvas,
+    i*size, 0, size, size, gap > 0 ? x|0 : x, gap > 0 ? y|0 : y, size, size
+)
+
+const draw = () => {
+    ctx.clearRect(0, 0, width, height)
+    const moveDir = "row"
+    // const moveDir = lockedDirection == "col" ? "row" : "col"
+    for (let j = 0; j < (moveDir == "col" ? cols : rows); j++) {
+        let moveAmount = false ? moveAmounts.get(j) || 0 : 0
+        for (let k = Math.floor(-moveAmount); k < (moveDir == "col" ? rows : cols) - Math.floor(moveAmount); k++) {
+            let [x, y] = [k, j]
+            let px = k + moveAmount, py = j
+            if (moveDir == "col") {
+                [px, py] = [py, px]; [x, y] = [y, x];
+            }
+
+            drawTile(px * (width-gap*2)/cols + gap, py * (height-gap*2)/rows + gap, state[(y + rows*2) % rows][(x + cols*2) % cols])
+        }
+    }
+}
+
+const drawTilesCanvas = () => {
+    tilesCtx.clearRect(0, 0, size*cols*rows, size)
+    const radius = Math.min(Math.max(6 * dpr, gap*2)|0, 12 * dpr)
+    const padd = gap == 0 ? 0 : radius/2 + gap;
+    tilesCtx.font = `${size*0.4}px monospace`
+    tilesCtx.textBaseline = "middle", tilesCtx.textAlign = "center"
+    tilesCtx.lineJoin = "round", tilesCtx.lineWidth = radius
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+            const i = row * cols + col, xOffset = Math.ceil(size)*i
+            const text = useLetters && cols * rows <= 26 ? String.fromCharCode(i+65) : (i + 1).toString()
+            const cx = (col + .4) / (cols - .6), cy = (row + .4) / (rows - .6)
+            tilesCtx.fillStyle = `rgb(${[cx*200+40, cy*100+(1-cx)*24+70, (1-cx)*196].join()})`
+            tilesCtx.strokeStyle = tilesCtx.fillStyle
+            tilesCtx.fillRect(xOffset+padd, padd, size-padd*2, size-padd*2)
+            if (padd != 0) tilesCtx.strokeRect(xOffset+padd, padd, size-padd*2, size-padd*2)
+            tilesCtx.fillStyle = "#fff"
+            tilesCtx.fillText(text, xOffset+size/2, size/2+2)
+        }
+    }
+}
+
+resetState()
+updateCanvasSize(canvas.getBoundingClientRect())
+
+})()</script>

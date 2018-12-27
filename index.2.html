@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700" rel="stylesheet">
+<title>Loopover</title>
+
+<style>
+
+body {
+    font-family: "Roboto";
+    background: rgb(25, 26, 29);
+    margin: 0;
+    color: rgba(255, 255, 255, 0.8);
+}
+main {
+    max-width: 480px;
+    margin: 32px auto;
+    padding: 0 24px;
+}
+h1 {
+    font-size: 32px;
+    margin: 48px 0 20px;
+}
+
+.canvas-container {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    padding: 4px;
+    margin-bottom: 16px;
+}
+#canvas {
+    display: block;
+    width: 100%;
+}
+
+.restart-button {
+    all: unset;
+    height: 32px;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 120ms;
+}
+.restart-button:hover { background: rgba(255, 255, 255, 0.05); }
+.restart-button:active { background: rgba(255, 255, 255, 0.1); }
+
+
+</style>
+
+<main>
+    <div style="display: flex; align-items: flex-end;">
+        <h1 style="flex-grow: 1;">Loopover</h1>
+        <button id="scrambleButton" style="margin: 0 0 12px;" class="restart-button">SCRAMBLE</button>
+    </div>
+    <div class="canvas-container">
+        <canvas id="canvas"></canvas>
+    </div>
+</main>
+
+<script>(() => {
+
+const cols = 7, rows = 7
+const aspectRatio = cols / rows
+const dpr = 2
+// const dpr = devicePixelRatio || 1
+
+/** @type {HTMLCanvasElement} */
+const canvas = document.getElementById("canvas")
+const ctx = canvas.getContext("2d")
+
+const tilesCanvas = document.createElement("canvas")
+const tilesCtx = tilesCanvas.getContext("2d")
+
+let width = 0, height = 0, size = 0
+/** @type {number[][]} */
+let state = null
+
+const resetState = () => {
+    state = new Array(rows).fill(null).map((_, row) => new Array(cols).fill(null).map(
+        (_, col) => row * cols + col
+    ))
+}
+
+const moveRow = (i, n) => {
+    const row = state[i]
+    state[i] = row.map((cell, i) => row[(i + cols * 2 - n) % cols])
+}
+const moveCol = (i, n) => {
+    const col = new Array(rows).fill(null).map((_, j) => state[j][i])
+    for (let j = 0; j < rows; j++) state[j][i] = col[(j + rows * 2 - n) % rows]
+}
+
+async function scramble(moves) {
+    for (let i = 0; i < moves; i++) {
+        if (Math.random() > 0.5) moveRow(Math.floor(Math.random() * rows), Math.floor(Math.random() * cols))
+        else moveCol(Math.floor(Math.random() * cols), Math.floor(Math.random() * rows))
+        draw()
+        await new Promise(res => setTimeout(res, 5))
+    }
+}
+
+const updateCanvasSize = rect => {
+    width = Math.round(rect.width)
+    height = Math.round(width / aspectRatio)
+    size = width / cols
+
+    canvas.width = width * dpr, canvas.height = height * dpr
+    tilesCanvas.width = size * rows * cols * dpr, tilesCanvas.height = size * dpr
+    tilesCanvas.style.height = size + "px"
+    tilesCtx.scale(dpr, dpr)
+    ctx.scale(dpr, dpr)
+    drawTilesCanvas()
+    draw()
+}
+
+
+const drawTilesCanvas = () => {
+    tilesCtx.textBaseline = "middle"
+    tilesCtx.textAlign = "center"
+    tilesCtx.font = `${width / cols * 0.4}px monospace`
+
+    const radius = 4;
+    tilesCtx.lineJoin = "round"
+    tilesCtx.lineWidth = radius
+
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+            const i = row * cols + col
+            const cx = (col + .2) / (cols - .8), cy = (row + .2) / (rows - .8)
+            tilesCtx.fillStyle = `rgb(${[cx * 240, cy * 130 + (1 - cx) * 20 + 25, (1 - cx) * 180].join()})`
+            tilesCtx.strokeStyle = tilesCtx.fillStyle
+            const marg = radius / 2 + 4
+            tilesCtx.fillRect(i*size + marg, marg, size-marg*2, size-marg*2)
+            tilesCtx.strokeRect(i*size+marg, marg, size-marg*2, size-marg*2)
+            tilesCtx.fillStyle = "#fff"
+            tilesCtx.fillText(i+1, size*i+size/2, size/2+2)
+        }
+    }
+}
+
+const drawTile = (x, y, i) => ctx.drawImage(tilesCanvas,
+    Math.ceil(i*size*dpr), 0, size*dpr|0, size*dpr|0, x, y, Math.ceil(size), Math.ceil(size)
+)
+
+const draw = () => {
+    ctx.clearRect(0, 0, width, height)
+
+    const moveDir = "row"
+    for (let j = 0; j < (moveDir == "col" ? cols : rows); j++) {
+        // let moveAmount = moveState.direction != null ? moveState.moving.get(j) || 0 : 0
+        // let isMoving = moveAmount != null
+        let moveAmount = 0
+
+        for (let k = Math.floor(-moveAmount); k < (moveDir == "col" ? rows : cols) - Math.floor(moveAmount); k++) {
+            let [x, y] = [k, j]
+            let px = k * size + moveAmount * size
+            let py = j * size
+            if (moveDir == "col") {
+                [px, py] = [py, px];
+                [x, y] = [y, x];
+            }
+            drawTile(px, py, state[(y + rows*2) % rows][(x + cols*2) % cols])
+        }
+    }
+}
+
+new ResizeObserver(l => l.forEach(x => updateCanvasSize(x.contentRect)))
+.observe(canvas)
+
+resetState()
+
+document.getElementById("scrambleButton").onclick = e => {
+    scramble(10)
+}
+
+})()</script>
