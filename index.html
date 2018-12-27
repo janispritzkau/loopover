@@ -9,116 +9,116 @@
 <title>Loopover</title>
 
 <style>
-:root {
-  --background: #f2f0ed;
-  --color: rgba(10, 5, 0, 0.75);
-  --shade: rgba(0, 0, 0, 0.12);
-  --shade-light: rgba(0, 0, 0, 0.05);
-}
-
-:root.dark {
-  --background: #212129;
-  --color: rgba(255, 255, 255, 0.8);
-  --shade: rgba(255, 255, 255, 0.1);
-  --shade-light: rgba(255, 255, 255, 0.05);
-}
-
-body {
-  margin: 0;
-  font-family: "Roboto";
-  color: var(--color);
-  background: var(--background);
-}
-
-main {
-  max-width: 480px;
-  margin: 32px auto 64px;
-  padding: 0 16px;
-  transition: max-width 200ms;
-}
-
-@media (min-width: 560px) {
-  main {
-    padding: 0 32px;
+  :root {
+    --background: #f2f0ed;
+    --color: rgba(10, 5, 0, 0.75);
+    --shade: rgba(0, 0, 0, 0.12);
+    --shade-light: rgba(0, 0, 0, 0.05);
   }
-}
 
-main.big {
-  max-width: 560px;
-}
+  :root.dark {
+    --background: #212129;
+    --color: rgba(255, 255, 255, 0.8);
+    --shade: rgba(255, 255, 255, 0.1);
+    --shade-light: rgba(255, 255, 255, 0.05);
+  }
 
-h1 {
-  font-size: 32px;
-  font-weight: 900;
-  height: 32px;
-  margin: 0 0 24px;
-}
+  body {
+    margin: 0;
+    font-family: "Roboto";
+    color: var(--color);
+    background: var(--background);
+  }
 
-hr {
-  all: unset;
-  display: block;
-  height: 1px;
-  margin: 24px 0;
-  background: var(--shade);
-}
+  main {
+    max-width: 480px;
+    margin: 32px auto 64px;
+    padding: 0 16px;
+    transition: max-width 200ms;
+  }
 
-a {
-  color: inherit;
-  font-weight: bold;
-}
+  @media (min-width: 560px) {
+    main {
+      padding: 0 32px;
+    }
+  }
 
-p {
-  line-height: 1.5;
-}
+  main.big {
+    max-width: 560px;
+  }
 
-#canvas {
-  display: block;
-  width: 100%;
-  border-radius: 6px;
-  background: var(--shade);
-  filter: brightness(1.06);
-}
+  h1 {
+    font-size: 32px;
+    font-weight: 900;
+    height: 32px;
+    margin: 0 0 24px;
+  }
 
-:root.dark #canvas {
-  filter: none;
-}
+  hr {
+    all: unset;
+    display: block;
+    height: 1px;
+    margin: 24px 0;
+    background: var(--shade);
+  }
 
-button {
-  all: unset;
-  display: block;
-  height: 36px;
-  padding: 0 8px;
-  min-width: 32px;
-  font-size: 14px;
-  text-align: center;
-  font-weight: 500;
-  border-radius: 4px;
-  cursor: pointer;
-  user-select: none;
-  transition: background 150ms;
-}
+  a {
+    color: inherit;
+    font-weight: bold;
+  }
 
-button:hover {
-  background: var(--shade-light);
-}
+  p {
+    line-height: 1.5;
+  }
 
-button:active,
-button.active {
-  background: var(--shade);
-}
+  #canvas {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    background: var(--shade);
+    filter: brightness(1.06);
+  }
 
-#timer {
-  font-size: 20px;
-  font-weight: bold;
-}
+  :root.dark #canvas {
+    filter: none;
+  }
 
-#info {
-  font-size: 14px;
-  margin-top: 6px;
-  opacity: 0.7;
-}
+  button {
+    all: unset;
+    display: block;
+    height: 36px;
+    padding: 0 8px;
+    min-width: 32px;
+    font-size: 14px;
+    text-align: center;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 150ms;
+  }
 
-[v-cloak] { display: none; }
+  button:hover {
+    background: var(--shade-light);
+  }
+
+  button:active,
+  button.active {
+    background: var(--shade);
+  }
+
+  #timer {
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  #info {
+    font-size: 14px;
+    margin-top: 6px;
+    opacity: 0.7;
+  }
+
+  [v-cloak] { display: none; }
 </style>
 
 <main id="app" :class="{big: gameSize > 7}" v-cloak>
@@ -282,7 +282,7 @@ button.active {
   }
 
   const updateGapSize = () => {
-    gap = app.useSpacing ? Math.round((16 / app.gameSize) * dpr) : 0
+    gap = app.useSpacing ? Math.round((1 + 16 / app.gameSize) * dpr) : 0
   }
 
   const checkIfSolved = () => {
