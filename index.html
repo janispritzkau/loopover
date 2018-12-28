@@ -205,8 +205,9 @@
     </button>
   </div>
   <hr>
-  <button @click="useSpacing = !useSpacing">{{ useSpacing ? "Remove space between tiles" : "Add space between tiles" }}</button>
   <button @click="dark = !dark">{{ dark ? "Light theme" : "Dark theme" }}</button>
+  <button @click="useSpacing = !useSpacing">{{ useSpacing ? "Remove space between tiles" : "Add space between tiles" }}</button>
+  <button @click="fastMode = !fastMode">{{ fastMode ? "Disable fast mode" : "Enable fast mode" }}</button>
   <button @click="tileMode = tileModes[tileMode%3][0]">Tile mode: {{ tileModes[tileMode-1][1] }}</button>
   <hr>
   <h3>Stats for {{ eventName(gameSize) }}</h3>
@@ -275,6 +276,7 @@
         gameStarted: false,
         time: 0,
         moves: 0,
+        fastMode: false,
         gameSizes: [2, 3, 4, 5, 6, 7, 8, 9, 10],
         gameSize: 5,
         stats: new Map(),
@@ -509,11 +511,6 @@
       }
     }
 
-    const onMoveStart = touch => {
-      touch.startCol = Math.floor(((touch.startX - rect.left) * dpr - gap) / size)
-      touch.startRow = Math.floor(((touch.startY - rect.top) * dpr - gap) / size)
-    }
-
     const easeInOutQuad = t => t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t
 
     const animateMove = (dir, i, n) => {
@@ -523,31 +520,62 @@
       moveAmounts.set(i, -n)
       const start = Date.now()
       const frame = () => {
-        if (!moveAmounts.has(i)) return
+        // if (!moveAmounts.has(i)) return
         const v = (Date.now() - start) / 100
         moveAmounts.set(i, -n + n * easeInOutQuad(v))
-        if (v < 1) requestAnimationFrame(frame)
-        else moveAmounts.delete(i)
+        if (v < 1) {
+          requestAnimationFrame(frame)
+        } else {
+          moveAmounts.delete(i)
+          moveAxis = null
+        }
         draw()
       }
       frame()
     }
 
+    const onMoveStart = touch => {
+      touch.startCol = Math.floor(((touch.startX - rect.left) * dpr - gap) / size)
+      touch.startRow = Math.floor(((touch.startY - rect.top) * dpr - gap) / size)
+    }
+
     const onMove = touch => {
-      touch.col = Math.floor(((touch.x - rect.left) * dpr - gap) / size)
-      touch.row = Math.floor(((touch.y - rect.top) * dpr - gap) / size)
-      const moveX = touch.row - touch.startRow
-      const moveY = touch.col - touch.startCol
-      const colI = (touch.startCol + cols * 512) % cols
-      moveColumn(colI, moveX)
-      animateMove(MoveAxis.column, colI, moveX)
-      touch.startRow = touch.row
-      const rowI = (touch.startRow + rows * 512) % rows
-      moveRow(rowI, moveY)
-      animateMove(MoveAxis.row, rowI, moveY)
-      touch.startCol = touch.col
-      const moves = Math.abs(moveX) + Math.abs(moveY)
-      if (moves) app.onMove(moves)
+      if (app.fastMode) {
+        touch.col = Math.floor(((touch.x - rect.left) * dpr - gap) / size)
+        touch.row = Math.floor(((touch.y - rect.top) * dpr - gap) / size)
+        const moveX = touch.row - touch.startRow
+        const moveY = touch.col - touch.startCol
+        const colI = (touch.startCol + cols * 512) % cols
+        moveColumn(colI, moveX)
+        animateMove(MoveAxis.column, colI, moveX)
+        touch.startRow = touch.row
+        const rowI = (touch.startRow + rows * 512) % rows
+        moveRow(rowI, moveY)
+        animateMove(MoveAxis.row, rowI, moveY)
+        touch.startCol = touch.col
+        const moves = Math.abs(moveX) + Math.abs(moveY)
+        if (moves) app.onMove(moves)
+      } else {
+        const dx = touch.x - touch.startX, dy = touch.y - touch.startY
+        if (moveAxis != null || Math.hypot(dx, dy) > 8) {
+          if (moveAxis == null) {
+            moveAxis = Math.abs(dx) > Math.abs(dy) ? MoveAxis.row : MoveAxis.column
+          }
+          touch.moveIndex = moveAxis == MoveAxis.row ? touch.startRow : touch.startCol
+          const moveAmount = moveAxis == MoveAxis.row ? dx / rect.width * cols : dy / rect.height * rows
+          moveAmounts.set(touch.moveIndex, moveAmount)
+          draw()
+        }
+      }
+    }
+    const onEnd = touch => {
+      if (app.fastMode) return
+      const moveN = Math.round(moveAmounts.get(touch.moveIndex))
+      if (moveAxis == MoveAxis.row) moveRow(touch.moveIndex, moveN)
+      else moveColumn(touch.moveIndex, moveN)
+      draw()
+      animateMove(moveAxis, touch.moveIndex, -moveAmounts.get(touch.moveIndex) + moveN)
+      app.onMove(Math.abs(moveN))
     }
 
     canvas.addEventListener("mousedown", e => {
@@ -562,7 +590,7 @@
       touch.x = e.clientX, touch.y = e.clientY
       onMove(touch)
     })
-    addEventListener("mouseup", e => touches.delete(-1))
+    addEventListener("mouseup", e => (touches.has(-1) && onEnd(touches.get(-1)), touches.delete(-1)))
 
     canvas.addEventListener("touchstart", e => {
       e.preventDefault()
@@ -583,7 +611,7 @@
       }
     })
     addEventListener("touchend", e => {
-      for (let item of e.changedTouches) touches.delete(item.identifier)
+      for (let item of e.changedTouches) touches.has(item.identifier) && onEnd(touches.get(item.identifier)), touches.delete(item.identifier)
     })
 
     const debounce = (fn, time) => {
