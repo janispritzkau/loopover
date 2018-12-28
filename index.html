@@ -148,8 +148,15 @@
   <canvas id="canvas"></canvas>
   <div style="margin-top: 24px; display: flex; flex-wrap: wrap; justify-content: center">
     <button v-for="item in gameSizes" :class="{active: item == gameSize}"
-    @click="gameSize = item">{{ `${item}×${item}` }}</button>
+    @click="gameSize = item">{{ eventName(item) }}</button>
   </div>
+  <hr>
+    <h4>Highscores</h4>
+    <ul>
+      <li v-for="highScore in [...highScores]">
+        {{ eventName(highScore[0]) }} : {{ highScore[1] == 0 ? "-" : formatTime(highScore[1], true) }}
+      </li>
+    </ul>
   <hr>
   <button @click="useSpacing = !useSpacing">{{ useSpacing ? "REMOVE SPACE BETWEEN TILES" : "ADD SPACE BETWEEN TILES" }}</button>
   <button @click="useLetters = !useLetters">{{ useLetters ? "USE NUMBERS" : "USE LETTERS" }}</button>
@@ -183,7 +190,8 @@
     return true
   }
 
-  const storedState = loadState()
+  const { highScores, ...storedState } = loadState()
+  const gameSizes = [2, 3, 4, 5, 6, 7, 8, 9, 10]
 
   const app = new Vue({
     el: "#app",
@@ -195,19 +203,25 @@
       isScrambled: false,
       gameStarted: false,
       time: 0, moves: 0,
-      gameSizes: [2, 3, 4, 5, 6, 7, 8, 9, 10],
+      gameSizes,
       gameSize: 5,
       game: null,
+      highScores: new Map(highScores || gameSizes.map(gameSize => [gameSize, 0])),
       ...storedState
     },
     methods: {
-      formatTime(ms) {
+      eventName: gameSize => `${gameSize}×${gameSize}`,
+      formatTime(ms, noPad = true) {
         const s = ms / 1000
-        return `${s / 60 | 0}:${(s % 60 | 0).toString().padStart(2, 0)}:${(ms % 1000).toString().padStart(3, 0)}`
+        const min = s / 60 | 0, sec = s % 60 | 0, mil = ms % 1000
+        return `${min}:${sec.toString().padStart(2, 0)}:${mil.toString().padStart(3, 0)}`
       },
       saveState() {
-        const { useLetters, useSpacing, gameSize, dark, game } = this
-        saveState({ useLetters, useSpacing, gameSize, dark, game })
+        const { useLetters, useSpacing, gameSize, dark, highScores, game } = this
+        saveState({
+          dark, useLetters, useSpacing, gameSize, game,
+          highScores: [...highScores]
+        })
       },
       updateTiles() {
         drawTilesCanvas()
@@ -234,6 +248,16 @@
         this.isSolved = false
         draw()
       },
+      onSolved() {
+        this.gameStarted = false
+        this.isSolved = true
+        clearInterval(this._timerInterval)
+        this.time = Date.now() - this._startTime
+        const highScore = this.highScores.get(this.gameSize)
+        if (highScore == 0 || this.time < highScore) {
+          this.highScores.set(this.gameSize, this.time)
+        }
+      },
       onMove(n) {
         this.isSolved = checkIfSolved(state)
         if (!this.gameStarted && this.isScrambled) {
@@ -245,12 +269,7 @@
           this._startTime = Date.now()
         }
         if (this.gameStarted) this.moves += n
-        if (this.gameStarted && this.isSolved) {
-          this.gameStarted = false
-          this.isSolved = true
-          clearInterval(this._timerInterval)
-          this.time = Date.now() - this._startTime
-        }
+        if (this.gameStarted && this.isSolved) this.onSolved()
         this.game = state
         this.saveState()
       }
