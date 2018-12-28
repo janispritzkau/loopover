@@ -55,6 +55,9 @@
     height: 32px;
     margin: 0 0 24px;
   }
+  h3 {
+    margin: 24px 0 16px;
+  }
 
   hr {
     all: unset;
@@ -120,6 +123,28 @@
     opacity: 0.7;
   }
 
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  td, th { border-right: 1px solid var(--shade); padding: 8px; }
+  td:last-child, th:last-child { border-right: none; }
+  th { border-bottom: 1px solid var(--shade); }
+  td { text-align: right; }
+
+  ul { margin: 0 0 24px; padding-left: 16px; }
+
+  .card {
+    background: var(--shade-light);
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 14px;
+    margin: 0 0 8px;
+    min-width: 96px;
+  }
+  .card h4 {
+    margin: 0 0 4px;
+    line-height: 1;
+    font-size: 16px;
+  }
+
   [v-cloak] { display: none; }
 </style>
 
@@ -145,22 +170,29 @@
       <button @click="scramble">SCRAMBLE</button>
     </div>
   </div>
-  <canvas id="canvas"></canvas>
+  <canvas id="canvas" width="480" height="480"></canvas>
   <div style="margin-top: 24px; display: flex; flex-wrap: wrap; justify-content: center">
     <button v-for="item in gameSizes" :class="{active: item == gameSize}"
     @click="gameSize = item">{{ eventName(item) }}</button>
   </div>
   <hr>
-    <h4>Highscores</h4>
-    <ul>
-      <li v-for="highScore in [...highScores]">
-        {{ eventName(highScore[0]) }} : {{ highScore[1] == 0 ? "-" : formatTime(highScore[1], true) }}
-      </li>
-    </ul>
-  <hr>
   <button @click="useSpacing = !useSpacing">{{ useSpacing ? "REMOVE SPACE BETWEEN TILES" : "ADD SPACE BETWEEN TILES" }}</button>
   <button @click="useLetters = !useLetters">{{ useLetters ? "USE NUMBERS" : "USE LETTERS" }}</button>
   <button @click="dark = !dark">{{ dark ? "LIGHT THEME" : "DARK THEME" }}</button>
+  <hr>
+    <h3>Stats for {{ eventName(gameSize) }}</h3>
+    <div style="display: flex; flex-wrap: wrap; margin: 0 -8px 8px;">
+      <div style="flex-grow: 1; margin: 0 4px 8px;" class="card"><h4>Best time</h4>{{ formatTime(41294) }}</div>
+      <div style="flex-grow: 1; margin: 0 4px 8px;" class="card"><h4>Worst time</h4>{{ formatTime(10242) }}</div>
+      <div style="flex-grow: 1; margin: 0 4px 8px;" class="card"><h4>Total solves</h4>31</div>
+    </div>
+    <table>
+      <tr><th></th><th>Best</th><th>Current</th></tr>
+      <tr><td>Ao3</td><td>{{ formatTime(2412) }}</td><td>{{ formatTime(3292) }}</td></tr>
+      <tr><td>Ao5</td><td>{{ formatTime(3124) }}</td><td>{{ formatTime(4290) }}</td></tr>
+      <tr><td>Ao12</td><td>{{ formatTime(3412) }}</td><td>{{ formatTime(4839) }}</td></tr>
+    </table>
+    <button style="margin-top: 16px;">Reset stats for {{ eventName(gameSize) }} event</button>
   <hr>
   <p>
     Created by <a href="https://gitlab.com/janispritzkau"> Janis Pritzkau</a>.
