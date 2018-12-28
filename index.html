@@ -158,8 +158,9 @@
     border-radius: 4px;
     padding: 8px;
     font-size: 14px;
-    margin: 0 0 8px;
+    margin: 0 4px 8px;
     min-width: 96px;
+    flex-grow: 1;
   }
 
   .card h4 {
@@ -197,7 +198,9 @@
   </div>
   <canvas id="canvas" width="480" height="480"></canvas>
   <div style="margin-top: 24px; display: flex; flex-wrap: wrap; justify-content: center">
-    <button v-for="item in gameSizes" :class="{active: item == gameSize}" @click="gameSize = item">{{ eventName(item) }}</button>
+    <button v-for="item in gameSizes" :class="{active: item == gameSize}" @click="gameSize = item">
+      {{ eventName(item) }}
+    </button>
   </div>
   <hr>
   <button @click="useSpacing = !useSpacing">{{ useSpacing ? "REMOVE SPACE BETWEEN TILES" : "ADD SPACE BETWEEN TILES" }}</button>
@@ -205,40 +208,35 @@
   <button @click="dark = !dark">{{ dark ? "LIGHT THEME" : "DARK THEME" }}</button>
   <hr>
   <h3>Stats for {{ eventName(gameSize) }}</h3>
-  <div style="display: flex; flex-wrap: wrap; margin: 0 -8px 8px;">
-    <div style="flex-grow: 1; margin: 0 4px 8px;" class="card">
-      <h4>Best time</h4>{{ formatTime(41294) }}
+  <div style="display: flex; flex-wrap: wrap; margin: 0 -8px 16px;">
+    <div class="card">
+      <h4>Best time</h4>
+      {{ formatTime(currentStats.bestTime) }}
     </div>
-    <div style="flex-grow: 1; margin: 0 4px 8px;" class="card">
-      <h4>Worst time</h4>{{ formatTime(10242) }}
+    <div class="card">
+      <h4>Worst time</h4>
+      {{ formatTime(currentStats.worstTime) }}
     </div>
-    <div style="flex-grow: 1; margin: 0 4px 8px;" class="card">
-      <h4>Total solves</h4>31
+    <div class="card">
+      <h4>Total solves</h4>
+      {{ currentStats.solves.length }}
     </div>
   </div>
   <table>
     <tr>
-      <th></th>
+      <th style="width: 33.3%;"></th>
       <th>Best</th>
       <th>Current</th>
     </tr>
-    <tr>
-      <td>Ao3</td>
-      <td>{{ formatTime(2412) }}</td>
-      <td>{{ formatTime(3292) }}</td>
-    </tr>
-    <tr>
-      <td>Ao5</td>
-      <td>{{ formatTime(3124) }}</td>
-      <td>{{ formatTime(4290) }}</td>
-    </tr>
-    <tr>
-      <td>Ao12</td>
-      <td>{{ formatTime(3412) }}</td>
-      <td>{{ formatTime(4839) }}</td>
+    <tr v-for="i in [3, 5, 12]">
+      <td>Average of {{i}}</td>
+      <td>{{ getBestAverageTime(i) }}</td>
+      <td>{{ getAverageTime(i) }}</td>
     </tr>
   </table>
-  <button style="margin-top: 16px;">Reset stats for {{ eventName(gameSize) }} event</button>
+  <button @click="resetStats(gameSize)" style="margin-top: 24px;">
+    Reset stats for {{ eventName(gameSize) }} event
+  </button>
   <hr>
   <p>
     Created by <a href="https://gitlab.com/janispritzkau"> Janis Pritzkau</a>.
@@ -246,17 +244,35 @@
   </p>
 </main>
 
-<script>(() => {
+<script>
+  (() => {
     const STORAGE_KEY = "loopover"
 
+    const TileMode = { letter: 0, number: 1, coords: 2 }
+    const getTileModeName = tileMode => Object.keys(TileMode).find(k => TileMode[k] == tileMode)
+
+    /** @param {Map} map */
+    const mapToObject = map => {
+      let obj = {}
+      for (let [k, v] of map) obj[k] = v
+      return obj
+    }
+    const objectToMap = obj => new Map(Object.keys(obj).map(k => [k, obj[k]]))
+
     const loadState = () => {
-      try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}
-      } catch (e) { return {} }
+      // try {
+      //   return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}
+      // } catch (e) { return {} }
+      return {}
     }
 
-    const saveState = state => {
-      return localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+    const saveState = data => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        dark: data.dark,
+        tileMode: data.useLetters ? TileMode.letter : TileMode.number,
+        enableSpacing: data.useSpacing,
+        stats: mapToObject(data.stats)
+      }), null, 2)
     }
 
     const checkIfSolved = state => {
@@ -268,8 +284,13 @@
       return true
     }
 
-    const { highScores, ...storedState } = loadState()
+    const { stats, ...storedState } = loadState()
     const gameSizes = [2, 3, 4, 5, 6, 7, 8, 9, 10]
+    const _stats = new Map(stats ? stats : gameSizes.map(g => [g, {
+        bestTime: null,
+        worstTime: null,
+        solves: []
+      }]))
 
     const app = new Vue({
       el: "#app",
@@ -278,28 +299,44 @@
         useLetters: true,
         useSpacing: false,
         isSolved: storedState.game ? checkIfSolved(storedState.game) : true,
+        // isSolved: true,
         isScrambled: false,
         gameStarted: false,
         time: 0, moves: 0,
         gameSizes,
-        gameSize: 5,
+        gameSize: 2,
         game: null,
-        highScores: new Map(highScores || gameSizes.map(gameSize => [gameSize, 0])),
+        stats: new Map(),
+        currentStats: { solves: [] },
         ...storedState
       },
       methods: {
         eventName: gameSize => `${gameSize}×${gameSize}`,
         formatTime(ms, noPad = true) {
+          if (ms == null) return "-"
           const s = ms / 1000
-          const min = s / 60 | 0, sec = s % 60 | 0, mil = ms % 1000
+          const min = s / 60 | 0, sec = s % 60 | 0, mil = (ms % 1000) | 0 
           return `${min}:${sec.toString().padStart(2, 0)}:${mil.toString().padStart(3, 0)}`
         },
+        getBestAverageTime(n) {
+          // return this.solvesPerEvent.get(this.gameSize)
+        },
+        getAverageTime(n) {
+          if (this.currentStats.solves.length < n) return '-'
+          return this.formatTime(
+            this.currentStats.solves.slice(-n).reduce((acc, x) => acc + x.time / n, 0)
+          )
+        },
         saveState() {
-          const { useLetters, useSpacing, gameSize, dark, highScores, game } = this
-          saveState({
-            dark, useLetters, useSpacing, gameSize, game,
-            highScores: [...highScores]
-          })
+          saveState(this)
+          // const { useLetters, useSpacing, gameSize, dark, game, stats } = this
+          // saveState({
+          //   dark, useLetters, useSpacing, gameSize, game, stats: [...stats]
+          // })
+        },
+        resetStats(gameSize) {
+          this.stats.set(gameSize, { bestTime: null, worstTime: null, solves: [] })
+          this.currentStats = this.stats.get(gameSize)
         },
         updateTiles() {
           drawTilesCanvas()
@@ -331,10 +368,18 @@
           this.isSolved = true
           clearInterval(this._timerInterval)
           this.time = Date.now() - this._startTime
-          const highScore = this.highScores.get(this.gameSize)
-          if (highScore == 0 || this.time < highScore) {
-            this.highScores.set(this.gameSize, this.time)
+
+          if (!this.stats.has(this.gameSize)) {
+            this.stats.set(this.gameSize, { solves: [] })
+            this.currentStats = this.stats.get(this.gameSize)
           }
+
+          this.currentStats.solves.push({
+            time: this.time, moves: this.moves
+          })
+
+          if (this.currentStats.bestTime == null || this.time < this.currentStats.bestTime) this.currentStats.bestTime = this.time
+          if (this.currentStats.worstTime == null || this.time > this.currentStats.worstTime) this.currentStats.worstTime = this.time
         },
         onMove(n) {
           this.isSolved = checkIfSolved(state)
@@ -363,6 +408,8 @@
           }
         },
         gameSize() {
+          if (this.stats.has(this.gameSize))
+            this.currentStats = this.stats.get(this.gameSize)
           updateGameSize()
           this.reset()
           updateCanvasSize(canvas.getBoundingClientRect())
@@ -378,6 +425,7 @@
         }
       }
     })
+    window.app = app
 
     /** @type {HTMLCanvasElement} */
     const canvas = document.getElementById("canvas")
@@ -590,6 +638,6 @@
     new ResizeObserver(l => l.forEach(({ contentRect: rect }) => {
       if (lastRect && lastRect.width == rect.width) return
       _updateSize(rect); lastRect = rect
-    }))
-      .observe(canvas)
-  })()</script>
+    })).observe(canvas)
+  })()
+</script>
