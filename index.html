@@ -383,11 +383,11 @@
     ctx.clearRect(0, 0, width, height)
     const moveDir = moveAxis == null ? MoveAxis.row : moveAxis
     for (let j = 0; j < (moveDir == MoveAxis.column ? cols : rows); j++) {
-      let moveAmount = false ? moveAmounts.get(j) || 0 : 0
+      let moveAmount = moveAxis != null ? moveAmounts.get(j) || 0 : 0
       for (let k = Math.floor(-moveAmount); k < (moveDir == MoveAxis.column ? rows : cols) - Math.floor(moveAmount); k++) {
         let [x, y] = [k, j]
         let px = k + moveAmount, py = j
-        if (moveDir == "col") {
+        if (moveDir == MoveAxis.column) {
           [px, py] = [py, px];[x, y] = [y, x];
         }
         drawTile(px * (width - gap * 2) / cols + gap, py * (height - gap * 2) / rows + gap, state[(y + rows * 2) % rows][(x + cols * 2) % cols])
@@ -422,15 +422,38 @@
     touch.startRow = Math.floor(((touch.startY - rect.top) * dpr - gap) / size)
   }
 
+  const easeInOutQuad = t => t<.5 ? 2*t*t : -1+(4-2*t)*t
+
+  const animateMove = (dir, i, n) => {
+    if (n % (dir == MoveAxis.column ? cols : rows) == 0) return
+    moveAmounts.clear()
+    moveAxis = dir
+    moveAmounts.set(i, -n)
+    const start = Date.now()
+    const frame = () => {
+      if (!moveAmounts.has(i)) return
+      const v = (Date.now() - start) / 100
+      moveAmounts.set(i, -n + n * easeInOutQuad(v))
+      if (v < 1) requestAnimationFrame(frame)
+      else moveAmounts.delete(i)      
+      draw()
+    }
+    frame()
+  }
+
   const onMove = touch => {
     touch.col = Math.floor(((touch.x - rect.left) * dpr - gap) / size)
     touch.row = Math.floor(((touch.y - rect.top) * dpr - gap) / size)
     const moveX = touch.row - touch.startRow
     const moveY = touch.col - touch.startCol
-    moveColumn(touch.startCol, moveX)
-    touch.startRow = (touch.row + rows * 512) % rows
-    moveRow(touch.startRow, moveY)
-    touch.startCol = (touch.col + cols * 512) % cols
+    const colI = (touch.startCol + cols * 512) % cols
+    moveColumn(colI, moveX)
+    animateMove(MoveAxis.column, colI, moveX)
+    touch.startRow = touch.row
+    const rowI = (touch.startRow + rows * 512) % rows
+    moveRow(rowI, moveY)
+    animateMove(MoveAxis.row, rowI, moveY)
+    touch.startCol = touch.col
     const moves = Math.abs(moveX) + Math.abs(moveY)
     if (moves) app.onMove(moves)
     draw()
