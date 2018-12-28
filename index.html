@@ -4,7 +4,8 @@
 <link rel="icon" href="icon.png" type="image/png">
 
 <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700,900" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
+<script src="ResizeObserver.js"></script>
 
 <title>Loopover</title>
 
@@ -99,6 +100,7 @@
     font-weight: 500;
     border-radius: 4px;
     cursor: pointer;
+    text-transform: uppercase;
     user-select: none;
     transition: background 150ms;
   }
@@ -192,8 +194,8 @@
       </div>
     </div>
     <div style="margin: 0 0 12px; display: flex;">
-      <button @click="reset" v-if="!isSolved">RESET</button>
-      <button @click="scramble">SCRAMBLE</button>
+      <button @click="reset" v-if="!isSolved">Reset</button>
+      <button @click="scramble">Scramble</button>
     </div>
   </div>
   <canvas id="canvas" width="480" height="480"></canvas>
@@ -203,9 +205,9 @@
     </button>
   </div>
   <hr>
-  <button @click="useSpacing = !useSpacing">{{ useSpacing ? "REMOVE SPACE BETWEEN TILES" : "ADD SPACE BETWEEN TILES" }}</button>
-  <button @click="useLetters = !useLetters">{{ useLetters ? "USE NUMBERS" : "USE LETTERS" }}</button>
-  <button @click="dark = !dark">{{ dark ? "LIGHT THEME" : "DARK THEME" }}</button>
+  <button @click="useSpacing = !useSpacing">{{ useSpacing ? "Remove space between tiles" : "Add space between tiles" }}</button>
+  <button @click="dark = !dark">{{ dark ? "Light theme" : "Dark theme" }}</button>
+  <button @click="tileMode = tileModes[tileMode%3][0]">Tile mode: {{ tileModes[tileMode-1][1] }}</button>
   <hr>
   <h3>Stats for {{ eventName(gameSize) }}</h3>
   <div style="display: flex; flex-wrap: wrap; margin: 0 -8px 16px;">
@@ -246,35 +248,6 @@
 
 <script>
   (() => {
-    const STORAGE_KEY = "loopover"
-
-    const TileMode = { letter: 0, number: 1, coords: 2 }
-    const getTileModeName = tileMode => Object.keys(TileMode).find(k => TileMode[k] == tileMode)
-
-    /** @param {Map} map */
-    const mapToObject = map => {
-      let obj = {}
-      for (let [k, v] of map) obj[k] = v
-      return obj
-    }
-    const objectToMap = obj => new Map(Object.keys(obj).map(k => [k, obj[k]]))
-
-    const loadState = () => {
-      // try {
-      //   return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}
-      // } catch (e) { return {} }
-      return {}
-    }
-
-    const saveState = data => {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        dark: data.dark,
-        tileMode: data.useLetters ? TileMode.letter : TileMode.number,
-        enableSpacing: data.useSpacing,
-        stats: mapToObject(data.stats)
-      }), null, 2)
-    }
-
     const checkIfSolved = state => {
       for (let [rowIndex, row] of state.entries()) {
         for (let [col, tile] of row.entries()) {
@@ -284,31 +257,28 @@
       return true
     }
 
-    const { stats, ...storedState } = loadState()
-    const gameSizes = [2, 3, 4, 5, 6, 7, 8, 9, 10]
-    const _stats = new Map(stats ? stats : gameSizes.map(g => [g, {
-        bestTime: null,
-        worstTime: null,
-        solves: []
-      }]))
+    const TileMode = { letters: 1, numbers: 2, coords: 3 }
 
     const app = new Vue({
       el: "#app",
       data: {
         dark: false,
-        useLetters: true,
+        tileModes: [
+          [TileMode.letters, "Letters"],
+          [TileMode.numbers, "Numbers"],
+          [TileMode.coords, "Coordinates"]
+        ],
+        tileMode: TileMode.letters,
         useSpacing: false,
-        isSolved: storedState.game ? checkIfSolved(storedState.game) : true,
-        // isSolved: true,
+        isSolved: true,
         isScrambled: false,
         gameStarted: false,
-        time: 0, moves: 0,
-        gameSizes,
-        gameSize: 2,
-        game: null,
+        time: 0,
+        moves: 0,
+        gameSizes: [2, 3, 4, 5, 6, 7, 8, 9, 10],
+        gameSize: 5,
         stats: new Map(),
-        currentStats: { solves: [] },
-        ...storedState
+        currentStats: { solves: [] }
       },
       methods: {
         eventName: gameSize => `${gameSize}×${gameSize}`,
@@ -319,7 +289,14 @@
           return `${min}:${sec.toString().padStart(2, 0)}:${mil.toString().padStart(3, 0)}`
         },
         getBestAverageTime(n) {
-          // return this.solvesPerEvent.get(this.gameSize)
+          const solves = this.currentStats.solves
+          if (solves.length < n) return '-'
+          let bestTime = null
+          for (let i = 0; i <= solves.length - n; i++) {
+            let time = this.currentStats.solves.slice(i, i + n).reduce((acc, x) => acc + x.time / n, 0)
+            if (bestTime == null || time < bestTime) bestTime = time
+          }
+          return this.formatTime(bestTime)
         },
         getAverageTime(n) {
           if (this.currentStats.solves.length < n) return '-'
@@ -327,32 +304,23 @@
             this.currentStats.solves.slice(-n).reduce((acc, x) => acc + x.time / n, 0)
           )
         },
-        saveState() {
-          saveState(this)
-          // const { useLetters, useSpacing, gameSize, dark, game, stats } = this
-          // saveState({
-          //   dark, useLetters, useSpacing, gameSize, game, stats: [...stats]
-          // })
-        },
         resetStats(gameSize) {
-          this.stats.set(gameSize, { bestTime: null, worstTime: null, solves: [] })
-          this.currentStats = this.stats.get(gameSize)
-        },
-        updateTiles() {
-          drawTilesCanvas()
-          draw()
+          this.stats.delete(gameSize)
+          this.currentStats = { solves: [] }
         },
         reset() {
-          resetState()
-          this.game = state
-          this.isScrambled = false
+          this.resetGameState()
+          draw()
+        },
+        resetGameState() {
+          this.game = createNewGameState(cols, rows)
+          state = this.game
           this.isSolved = true
+          this.isScrambled = false
           this.gameStarted = false
           this.solves = 0
           this.time = 0
           this.moves = 0
-          this.saveState()
-          draw()
         },
         async scramble() {
           this.gameStarted = false
@@ -369,32 +337,25 @@
           clearInterval(this._timerInterval)
           this.time = Date.now() - this._startTime
 
-          if (!this.stats.has(this.gameSize)) {
-            this.stats.set(this.gameSize, { solves: [] })
-            this.currentStats = this.stats.get(this.gameSize)
-          }
-
           this.currentStats.solves.push({
             time: this.time, moves: this.moves
           })
-
           if (this.currentStats.bestTime == null || this.time < this.currentStats.bestTime) this.currentStats.bestTime = this.time
           if (this.currentStats.worstTime == null || this.time > this.currentStats.worstTime) this.currentStats.worstTime = this.time
         },
+        startGame() {
+          this.gameStarted = true
+          this.isScrambled = false
+          this._timerInterval = setInterval(() => {
+            this.time = Date.now() - this._startTime
+          }, 67)
+          this._startTime = Date.now()
+        },
         onMove(n) {
           this.isSolved = checkIfSolved(state)
-          if (!this.gameStarted && this.isScrambled) {
-            this.gameStarted = true
-            this.isScrambled = false
-            this._timerInterval = setInterval(() => {
-              this.time = Date.now() - this._startTime
-            }, 67)
-            this._startTime = Date.now()
-          }
+          if (!this.gameStarted && this.isScrambled) this.startGame()
           if (this.gameStarted) this.moves += n
           if (this.gameStarted && this.isSolved) this.onSolved()
-          this.game = state
-          this.saveState()
         }
       },
       watch: {
@@ -404,25 +365,25 @@
         dark: {
           immediate: true, handler(value) {
             document.documentElement.classList.toggle("dark", value)
-            this.saveState()
+          }
+        },
+        currentStats: {
+          deep: true, handler() {
+            if (!this.stats.has(this.gameSize))
+              this.stats.set(this.gameSize, this.currentStats)
           }
         },
         gameSize() {
-          if (this.stats.has(this.gameSize))
-            this.currentStats = this.stats.get(this.gameSize)
+          this.currentStats = this.stats.get(this.gameSize) || { solves: [] }
           updateGameSize()
-          this.reset()
-          updateCanvasSize(canvas.getBoundingClientRect())
-          this.saveState()
+          this.resetGameState()
+          updateCanvasSize()
         },
-        useLetters() {
-          this.updateTiles()
-          this.saveState()
+        tileMode(mode) {
+          drawTilesCanvas()
+          draw()
         },
-        useSpacing() {
-          updateCanvasSize(canvas.getBoundingClientRect())
-          this.saveState()
-        }
+        useSpacing: () => updateCanvasSize()
       }
     })
     window.app = app
@@ -435,7 +396,7 @@
     const tilesCtx = tilesCanvas.getContext("2d")
 
     let dpr = devicePixelRatio
-    let cols = 0, rows = 0, aspectRatio = 1
+    let cols = app.gameSize, rows = cols, aspectRatio = 1
     let width = 0, height = 0
     let gap = 0
     let size = 0
@@ -458,11 +419,9 @@
       gap = app.useSpacing ? Math.round((1 + 16 / app.gameSize) * dpr) : 0
     }
 
-    const resetState = () => {
-      state = new Array(rows).fill(null)
-        .map((_, row) => new Array(cols).fill(null)
-          .map((_, col) => row * cols + col))
-    }
+    const createNewGameState = (cols, rows) => new Array(rows).fill(null)
+      .map((_, row) => new Array(cols).fill(null)
+        .map((_, col) => row * cols + col))
 
     const moveRow = (i, n) => {
       const row = state[i]
@@ -485,6 +444,7 @@
     }
 
     const updateCanvasSize = rect => {
+      if (!rect) rect = canvas.getBoundingClientRect()
       width = Math.round(rect.width * dpr)
       height = Math.round(width / aspectRatio)
       updateGapSize()
@@ -506,7 +466,7 @@
     )
 
     const draw = () => {
-      ctx.clearRect(0, 0, width, height)
+      if (gap > 0) ctx.clearRect(0, 0, width, height)
       const moveDir = moveAxis == null ? MoveAxis.row : moveAxis
       for (let j = 0; j < (moveDir == MoveAxis.column ? cols : rows); j++) {
         let moveAmount = moveAxis != null ? moveAmounts.get(j) || 0 : 0
@@ -525,13 +485,19 @@
       tilesCtx.clearRect(0, 0, size * cols * rows, size)
       const radius = Math.min(Math.max(6 * dpr, gap * 2) | 0, 12 * dpr)
       const padd = gap == 0 ? 0 : radius / 2 + gap;
-      tilesCtx.font = `${size * 0.4}px monospace`
+      tilesCtx.font = `${size * 0.4}px Roboto`
       tilesCtx.textBaseline = "middle", tilesCtx.textAlign = "center"
       tilesCtx.lineJoin = "round", tilesCtx.lineWidth = radius
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
           const i = row * cols + col, xOffset = Math.ceil(size) * i
-          const text = app.useLetters && cols * rows <= 26 ? String.fromCharCode(i + 65) : (i + 1).toString()
+          let text = (i + 1).toString()
+          switch (app.tileMode) {
+            case TileMode.letters:
+              if (cols * rows <= 26) text = String.fromCharCode(i + 65)
+              break
+            case TileMode.coords: text = `${row},${col}`
+          }
           const cx = (col + .4) / (cols - .6), cy = (row + .4) / (rows - .6)
           tilesCtx.fillStyle = `rgb(${[cx * 230 + 20, cy * 105 + (1 - cx) * 25 + 60, (1 - cx) * 200].join()})`
           tilesCtx.strokeStyle = tilesCtx.fillStyle
@@ -582,7 +548,6 @@
       touch.startCol = touch.col
       const moves = Math.abs(moveX) + Math.abs(moveY)
       if (moves) app.onMove(moves)
-      draw()
     }
 
     canvas.addEventListener("mousedown", e => {
@@ -630,8 +595,8 @@
       }
     }
 
-    updateGameSize()
-    if (!state) resetState()
+    app.game = createNewGameState(cols, rows)
+    state = app.game
 
     const _updateSize = debounce(updateCanvasSize, 25)
     let lastRect
