@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<meta charset="utf-8">
 <meta name="theme-color" content="#222325">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="icon.png" type="image/png">
@@ -159,9 +160,11 @@
     background: var(--shade-light);
     border-radius: 4px;
     padding: 8px;
+    box-sizing: border-box;
+    width: calc(25% - 8px);
     font-size: 14px;
     margin: 0 4px 8px;
-    min-width: 96px;
+    min-width: 120px;
     flex-grow: 1;
   }
 
@@ -221,6 +224,10 @@
       {{ formatTime(currentStats.worstTime) }}
     </div>
     <div class="card">
+      <h4>Fewest moves</h4>
+      {{ currentStats.fewestMoves || "-" }}
+    </div>
+    <div class="card">
       <h4>Total solves</h4>
       {{ currentStats.solves.length }}
     </div>
@@ -257,6 +264,20 @@
       }
       return true
     }
+
+    const debounce = (fn, time) => {
+      let timeout
+      return function () {
+        const functionCall = () => fn.apply(this, arguments)
+        clearTimeout(timeout)
+        timeout = setTimeout(functionCall, time)
+      }
+    }
+
+    const mapToObject = map => {
+      let obj = {}; for (let [k, v] of map) obj[k] = v; return obj
+    }
+    const objectToMap = obj => new Map(Object.keys(obj).map(k => [Number(k), obj[k]]))
 
     const TileMode = { letters: 1, numbers: 2, coords: 3 }
 
@@ -295,7 +316,7 @@
           if (solves.length < n) return '-'
           let bestTime = null
           for (let i = 0; i <= solves.length - n; i++) {
-            let time = this.currentStats.solves.slice(i, i + n).reduce((acc, x) => acc + x.time / n, 0)
+            let time = this.currentStats.solves.slice(i, i + n).reduce((acc, x) => acc + x / n, 0)
             if (bestTime == null || time < bestTime) bestTime = time
           }
           return this.formatTime(bestTime)
@@ -303,12 +324,14 @@
         getAverageTime(n) {
           if (this.currentStats.solves.length < n) return '-'
           return this.formatTime(
-            this.currentStats.solves.slice(-n).reduce((acc, x) => acc + x.time / n, 0)
+            this.currentStats.solves.slice(-n).reduce((acc, x) => acc + x / n, 0)
           )
         },
         resetStats(gameSize) {
-          this.stats.delete(gameSize)
-          this.currentStats = { solves: [] }
+          if (confirm(`Are you sure you want to reset your stats for ${this.eventName(gameSize)}?`)) {
+            this.stats.delete(gameSize)
+            this.currentStats = { solves: [] }
+          }
         },
         reset() {
           this.resetGameState()
@@ -339,9 +362,8 @@
           clearInterval(this._timerInterval)
           this.time = Date.now() - this._startTime
 
-          this.currentStats.solves.push({
-            time: this.time, moves: this.moves
-          })
+          this.currentStats.solves.push(this.time)
+          if (this.currentStats.fewestMoves == null || this.moves < this.currentStats.fewestMoves) this.currentStats.fewestMoves = this.moves
           if (this.currentStats.bestTime == null || this.time < this.currentStats.bestTime) this.currentStats.bestTime = this.time
           if (this.currentStats.worstTime == null || this.time > this.currentStats.worstTime) this.currentStats.worstTime = this.time
         },
@@ -358,7 +380,31 @@
           if (!this.gameStarted && this.isScrambled) this.startGame()
           if (this.gameStarted) this.moves += n
           if (this.gameStarted && this.isSolved) this.onSolved()
+        },
+        _saveState: debounce(function () {
+          localStorage.setItem("loopover", JSON.stringify({
+            dark: this.dark,
+            tileMode: this.tileMode,
+            fastMode: this.fastMode,
+            useSpacing: this.useSpacing,
+            gameSize: this.gameSize,
+            stats: mapToObject(this.stats)
+          }))
+        }, 500),
+        saveState() {
+          if (this.isLoaded) this._saveState()
+        },
+        loadState() {
+          const data = localStorage.getItem("loopover")
+          if (!data) return
+          let { stats, ...state } = JSON.parse(data)
+          for (let key in state) this.$data[key] = state[key]
+          if (stats) this.stats = objectToMap(stats)
         }
+      },
+      created() {
+        this.loadState()
+        setTimeout(() => this.isLoaded = true)
       },
       watch: {
         gameStarted() {
@@ -367,12 +413,15 @@
         dark: {
           immediate: true, handler(value) {
             document.documentElement.classList.toggle("dark", value)
+            this.saveState()
           }
         },
         currentStats: {
           deep: true, handler() {
-            if (!this.stats.has(this.gameSize))
+            let a = !this.stats.has(this.gameSize)
+            if (!this.stats.has(this.gameSize) && this.currentStats.solves.length > 0)
               this.stats.set(this.gameSize, this.currentStats)
+            this.saveState()
           }
         },
         gameSize() {
@@ -384,8 +433,12 @@
         tileMode(mode) {
           drawTilesCanvas()
           draw()
+          this.saveState()
         },
-        useSpacing: () => updateCanvasSize()
+        useSpacing() {
+          updateCanvasSize()
+          this.saveState()
+        }
       }
     })
     window.app = app
@@ -520,7 +573,7 @@
       moveAmounts.set(i, -n)
       const start = Date.now()
       const frame = () => {
-        // if (!moveAmounts.has(i)) return
+        if (!moveAmounts.has(i)) return
         const v = (Date.now() - start) / 100
         moveAmounts.set(i, -n + n * easeInOutQuad(v))
         if (v < 1) {
@@ -569,13 +622,13 @@
       }
     }
     const onEnd = touch => {
-      if (app.fastMode) return
+      if (app.fastMode || touch.moveIndex == null) return
       const moveN = Math.round(moveAmounts.get(touch.moveIndex))
       if (moveAxis == MoveAxis.row) moveRow(touch.moveIndex, moveN)
       else moveColumn(touch.moveIndex, moveN)
       draw()
       animateMove(moveAxis, touch.moveIndex, -moveAmounts.get(touch.moveIndex) + moveN)
-      app.onMove(Math.abs(moveN))
+      if (moveN != 0) app.onMove(Math.abs(moveN))
     }
 
     canvas.addEventListener("mousedown", e => {
@@ -613,15 +666,6 @@
     addEventListener("touchend", e => {
       for (let item of e.changedTouches) touches.has(item.identifier) && onEnd(touches.get(item.identifier)), touches.delete(item.identifier)
     })
-
-    const debounce = (fn, time) => {
-      let timeout
-      return function () {
-        const functionCall = () => fn.apply(this, arguments)
-        clearTimeout(timeout)
-        timeout = setTimeout(functionCall, time)
-      }
-    }
 
     app.game = createNewGameState(cols, rows)
     state = app.game
