@@ -181,6 +181,7 @@
 
 <main id="app" :class="{big: gameSize > 7}" v-cloak>
   <h1>Loopover</h1>
+  
   <div style="display: flex; align-items: flex-end; height: 72px;">
     <div style="flex-grow: 1; margin-bottom: 16px;">
       <div id="timer">{{ formatTime(time) }}</div>
@@ -196,24 +197,32 @@
         </template>
       </div>
     </div>
+
     <div style="margin: 0 0 12px; display: flex;">
       <button @click="reset" v-if="!isSolved">Reset</button>
       <button @click="scramble">Scramble</button>
     </div>
   </div>
+  
   <canvas id="canvas" width="480" height="480"></canvas>
+  
   <div style="margin-top: 24px; display: flex; flex-wrap: wrap; justify-content: center">
     <button v-for="item in gameSizes" :class="{active: item == gameSize}" @click="gameSize = item">
       {{ eventName(item) }}
     </button>
   </div>
+  
   <hr>
-  <button @click="dark = !dark">{{ dark ? "Light theme" : "Dark theme" }}</button>
+
+  <button @click="dark = !dark">{{ dark ? "Use light theme" : "Use dark theme" }}</button>
   <button @click="useSpacing = !useSpacing">{{ useSpacing ? "Remove space between tiles" : "Add space between tiles" }}</button>
   <button @click="fastMode = !fastMode">{{ fastMode ? "Disable fast mode" : "Enable fast mode" }}</button>
   <button @click="tileMode = tileModes[tileMode%3][0]">Tile mode: {{ tileModes[tileMode-1][1] }}</button>
+  
   <hr>
+  
   <h3>Stats for {{ eventName(gameSize) }}</h3>
+
   <div style="display: flex; flex-wrap: wrap; margin: 0 -8px 16px;">
     <div class="card">
       <h4>Best time</h4>
@@ -232,6 +241,7 @@
       {{ currentStats.solves.length }}
     </div>
   </div>
+
   <table>
     <tr>
       <th style="width: 33.3%;"></th>
@@ -244,13 +254,16 @@
       <td>{{ getAverageTime(i) }}</td>
     </tr>
   </table>
+
   <button @click="resetStats(gameSize)" style="margin-top: 24px;">
     Reset stats for {{ eventName(gameSize) }} event
   </button>
+  
   <hr>
+
   <p>
-    Created by <a href="https://gitlab.com/janispritzkau"> Janis Pritzkau</a>.
-    Remake of carykh's <a href="https://openprocessing.org/sketch/580366">loopover</a>.
+    Created by <a target="_blank" href="https://twitter.com/janispritzkau"> Janis Pritzkau</a>.
+    Remake of carykh's <a target="_blank" href="https://openprocessing.org/sketch/580366">loopover</a>.
   </p>
 </main>
 
@@ -297,7 +310,7 @@
         gameStarted: false,
         time: 0,
         moves: 0,
-        fastMode: false,
+        fastMode: true,
         gameSizes: [2, 3, 4, 5, 6, 7, 8, 9, 10],
         gameSize: 5,
         stats: new Map(),
@@ -343,7 +356,6 @@
           this.isSolved = true
           this.isScrambled = false
           this.gameStarted = false
-          this.solves = 0
           this.time = 0
           this.moves = 0
         },
@@ -502,10 +514,13 @@
       if (!rect) rect = canvas.getBoundingClientRect()
       width = Math.round(rect.width * dpr)
       height = Math.round(width / aspectRatio)
+
       updateGapSize()
       size = Math.ceil((width - gap * 2) / cols)
+
       const tilesCanvasW = Math.ceil(size) * rows * cols
       const tilesCanvasH = Math.ceil(size)
+      
       if (tilesCanvas.width != tilesCanvasW || tilesCanvas.height != tilesCanvasH) {
         tilesCanvas.width = tilesCanvasW, tilesCanvas.height = tilesCanvasH
       }
@@ -523,11 +538,14 @@
     const draw = () => {
       if (gap > 0) ctx.clearRect(0, 0, width, height)
       const moveDir = moveAxis == null ? MoveAxis.row : moveAxis
+
       for (let j = 0; j < (moveDir == MoveAxis.column ? cols : rows); j++) {
         let moveAmount = moveAxis != null ? moveAmounts.get(j) || 0 : 0
+
         for (let k = Math.floor(-moveAmount); k < (moveDir == MoveAxis.column ? rows : cols) - Math.floor(moveAmount); k++) {
           let [x, y] = [k, j]
           let px = k + moveAmount, py = j
+
           if (moveDir == MoveAxis.column) {
             [px, py] = [py, px];[x, y] = [y, x];
           }
@@ -554,7 +572,7 @@
             case TileMode.coords: text = `${row},${col}`
           }
           const cx = (col + .4) / (cols - .6), cy = (row + .4) / (rows - .6)
-          tilesCtx.fillStyle = `rgb(${[cx * 230 + 20, cy * 105 + (1 - cx) * 25 + 60, (1 - cx) * 200].join()})`
+          tilesCtx.fillStyle = `rgb(${[cx * 230 + 20, cy * 105 + (1 - cx) * 25 + 60, (1 - cx) * 200].map(a => Math.floor(a)).join()})`
           tilesCtx.strokeStyle = tilesCtx.fillStyle
           tilesCtx.fillRect(xOffset + padd, padd, size - padd * 2, size - padd * 2)
           if (padd != 0) tilesCtx.strokeRect(xOffset + padd, padd, size - padd * 2, size - padd * 2)
@@ -667,14 +685,14 @@
       for (let item of e.changedTouches) touches.has(item.identifier) && onEnd(touches.get(item.identifier)), touches.delete(item.identifier)
     })
 
-    app.game = createNewGameState(cols, rows)
-    state = app.game
-
     const _updateSize = debounce(updateCanvasSize, 25)
     let lastRect
     new ResizeObserver(l => l.forEach(({ contentRect: rect }) => {
       if (lastRect && lastRect.width == rect.width) return
       _updateSize(rect); lastRect = rect
     })).observe(canvas)
+
+    app.game = createNewGameState(cols, rows)
+    state = app.game
   })()
 </script>
