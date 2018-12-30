@@ -471,7 +471,7 @@
 
     let moveAxis = null
     let touches = new Map
-    let moveAmounts = new Map
+    let transitions = new Map
 
     /** @type {number[][]} */
     let state = app.game
@@ -482,7 +482,7 @@
     }
 
     const updateGapSize = () => {
-      gap = app.useSpacing ? Math.round((1 + 16 / app.gameSize) * dpr) : 0
+      gap = app.useSpacing ? Math.round(1 * dpr + (width / cols * 0.04)) : 0
     }
 
     const createNewGameState = (cols, rows) => new Array(rows).fill(null)
@@ -504,8 +504,8 @@
         if (Math.random() > 0.5) moveRow(Math.floor(Math.random() * rows), Math.floor(Math.random() * cols))
         else moveColumn(Math.floor(Math.random() * cols), Math.floor(Math.random() * rows))
         if (i % 10 == 0) await new Promise(res => setTimeout(res, 0))
-        draw()
-      }
+          draw()
+        }
       if (checkIfSolved(state)) await scramble(moves)
     }
 
@@ -570,8 +570,8 @@
               break
             case TileMode.coords: text = `${row},${col}`
           }
-          const cx = 1 - (col + .4) / (cols - .6), cy = (row + .4) / (rows - .6)
-          tilesCtx.fillStyle = `rgb(${[cx * 235 + 20, cy * 105 + (1 - cx) * 25 + 60, (1 - cx) * 200].map(a => Math.floor(a)).join()})`
+          const cx = 1 - (col + 0.3) / (cols - .25), cy = (row + 0.3) / (rows - .25)
+          tilesCtx.fillStyle = `rgb(${[cx * 230 + 20, cy * 110 + (1 - cx) * 30 + 70, (1 - cx) * 210].map(a => Math.floor(a)).join()})`
           tilesCtx.strokeStyle = tilesCtx.fillStyle
           tilesCtx.fillRect(xOffset + padd, padd, size - padd * 2, size - padd * 2)
           if (padd != 0) tilesCtx.strokeRect(xOffset + padd, padd, size - padd * 2, size - padd * 2)
@@ -592,9 +592,8 @@
           * (transition.easeIn ? easeInOutQuad(t) : easeOutQuad(t))
         if (t >= 1) {
           transitions.delete(i)
-          if (transitions.size == 0) {
-          moveAxis = null
-        }
+          if (transitions.size == 0)
+            moveAxis = null
         }
         draw()
       }
