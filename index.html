@@ -492,12 +492,12 @@
 
     const moveRow = (i, n) => {
       const row = state[i]
-      state[i] = row.map((cell, i) => row[(i + cols * 2 - n) % cols])
+      state[i] = row.map((cell, i) => row[(i + cols * 16 - n) % cols])
     }
 
     const moveColumn = (i, n) => {
       const col = new Array(rows).fill(null).map((_, j) => state[j][i])
-      for (let j = 0; j < rows; j++) state[j][i] = col[(j + rows * 2 - n) % rows]
+      for (let j = 0; j < rows; j++) state[j][i] = col[(j + rows * 16 - n) % rows]
     }
 
     async function scramble(moves = 50) {
@@ -540,7 +540,7 @@
       const moveDir = moveAxis == null ? MoveAxis.row : moveAxis
 
       for (let j = 0; j < (moveDir == MoveAxis.column ? cols : rows); j++) {
-        let moveAmount = moveAxis != null ? moveAmounts.get(j) || 0 : 0
+        const moveAmount = moveAxis != null ? (transitions.get(j) || {}).value || 0 : 0
 
         for (let k = Math.floor(-moveAmount); k < (moveDir == MoveAxis.column ? rows : cols) - Math.floor(moveAmount); k++) {
           let [x, y] = [k, j]
@@ -583,26 +583,46 @@
     }
 
     const easeInOutQuad = t => t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t
+    const easeOutQuad = t => t * (2 - t)
 
-    const animateMove = (dir, i, n) => {
-      if (n % (dir == MoveAxis.column ? cols : rows) == 0) return
-      moveAmounts.clear()
-      moveAxis = dir
-      moveAmounts.set(i, -n)
-      const start = Date.now()
-      const frame = () => {
-        if (!moveAmounts.has(i)) return
-        const v = (Date.now() - start) / 130
-        moveAmounts.set(i, -n + n * easeInOutQuad(v))
-        if (v < 1) {
-          requestAnimationFrame(frame)
-        } else {
-          moveAmounts.delete(i)
+    const animationFrame = () => {
+      for (let [i, transition] of transitions.entries()) {
+        const t = (Date.now() - transition.startTime) / 200  
+        transition.time = t
+        transition.value = transition.start - transition.start
+          * (transition.easeIn ? easeInOutQuad(t) : easeOutQuad(t))
+        if (t >= 1) {
+          transitions.delete(i)
+          if (transitions.size == 0) {
           moveAxis = null
+        }
         }
         draw()
       }
-      frame()
+      if (transitions.size > 0) requestAnimationFrame(animationFrame)
+    }
+
+    const animateMove = (dir, i, n, easeIn = false) => {
+      if (n % (dir == MoveAxis.column ? cols : rows) == 0) return
+
+      if (transitions.has(i) && moveAxis == dir) {
+        const transition = transitions.get(i)
+        transition.start = transition.value - n
+        transition.startTime = Date.now()
+        return
+      } else if (moveAxis != dir) {
+        transitions.clear()
+      }
+      
+      const transition = {
+        value: -n, start: -n, time: 0, startTime: Date.now(), easeIn
+      }
+      
+      if (transitions.size == 0) {
+        moveAxis = dir
+        transitions.set(i, transition)
+        requestAnimationFrame(animationFrame)
+      }
     }
 
     const onMoveStart = touch => {
@@ -614,16 +634,20 @@
       if (app.fastMode) {
         touch.col = Math.floor(((touch.x - rect.left) * dpr - gap) / size)
         touch.row = Math.floor(((touch.y - rect.top) * dpr - gap) / size)
+
         const moveX = touch.row - touch.startRow
         const moveY = touch.col - touch.startCol
-        const colI = (touch.startCol + cols * 512) % cols
+        
+        const colI = Math.min(Math.max(touch.startCol, 0), cols - 1)
         moveColumn(colI, moveX)
         animateMove(MoveAxis.column, colI, moveX)
         touch.startRow = touch.row
-        const rowI = (touch.startRow + rows * 512) % rows
+        
+        const rowI = Math.min(Math.max(touch.startRow, 0), rows - 1)
         moveRow(rowI, moveY)
         animateMove(MoveAxis.row, rowI, moveY)
         touch.startCol = touch.col
+
         const moves = Math.abs(moveX) + Math.abs(moveY)
         if (moves) app.onMove(moves)
       } else {
@@ -634,18 +658,23 @@
           }
           touch.moveIndex = moveAxis == MoveAxis.row ? touch.startRow : touch.startCol
           const moveAmount = moveAxis == MoveAxis.row ? dx / rect.width * cols : dy / rect.height * rows
-          moveAmounts.set(touch.moveIndex, moveAmount)
+          transitions.set(touch.moveIndex, {value: moveAmount})
           draw()
         }
       }
     }
     const onEnd = touch => {
       if (app.fastMode || touch.moveIndex == null) return
-      const moveN = Math.round(moveAmounts.get(touch.moveIndex))
+      const moveN = Math.round(transitions.get(touch.moveIndex).value)
+
       if (moveAxis == MoveAxis.row) moveRow(touch.moveIndex, moveN)
       else moveColumn(touch.moveIndex, moveN)
       draw()
-      animateMove(moveAxis, touch.moveIndex, -moveAmounts.get(touch.moveIndex) + moveN)
+      
+      const moveAmount = -transitions.get(touch.moveIndex).value + moveN
+      transitions.delete(touch.moveIndex)
+      animateMove(moveAxis, touch.moveIndex, moveAmount, true)
+      
       if (moveN != 0) app.onMove(Math.abs(moveN))
     }
 
