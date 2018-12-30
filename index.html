@@ -359,13 +359,10 @@
           this.moves = 0
         },
         async scramble() {
-          this.gameStarted = false
-          await scramble(cols * rows * 2 + 2)
-          this.moves = 0
-          this.time = 0
+          this.resetGameState()
           this.isScrambled = true
           this.isSolved = false
-          draw()
+          await scramble(cols * rows)
         },
         onSolved() {
           this.gameStarted = false
@@ -466,6 +463,8 @@
     let width = 0, height = 0
     let gap = 0
     let size = 0
+    const transitionTime = 200
+    let animationSpeed = 1
 
     const MoveAxis = { row: 0, column: 1 }
 
@@ -500,12 +499,23 @@
     }
 
     async function scramble(moves = 50) {
+      let moveVertical = Math.random() > 0.5
+      animationSpeed = Math.min(moves, 32)
+      
       for (let i = 0; i < moves; i++) {
-        if (Math.random() > 0.5) moveRow(Math.floor(Math.random() * rows), Math.floor(Math.random() * cols))
-        else moveColumn(Math.floor(Math.random() * cols), Math.floor(Math.random() * rows))
-        if (i % 10 == 0) await new Promise(res => setTimeout(res, 0))
-          draw()
-        }
+        const dir = moveVertical ? MoveAxis.column : MoveAxis.row
+        const i = Math.floor(Math.random() * (MoveAxis.row ? rows : cols))
+        const n = Math.ceil(Math.random() * ((MoveAxis.row ? cols : rows) - 1))
+        
+        if (dir == MoveAxis.row) moveRow(i, n)
+        else moveColumn(i, n)
+
+        await new Promise(res => setTimeout(res, transitionTime / animationSpeed))
+        animateMove(dir, i, n)
+
+        moveVertical = !moveVertical
+      }
+      animationSpeed = 1
       if (checkIfSolved(state)) await scramble(moves)
     }
 
@@ -586,7 +596,7 @@
 
     const animationFrame = () => {
       for (let [i, transition] of transitions.entries()) {
-        const t = (Date.now() - transition.startTime) / 200  
+        const t = (Date.now() - transition.startTime) / transitionTime * animationSpeed
         transition.time = t
         transition.value = transition.start - transition.start
           * (transition.easeIn ? easeInOutQuad(t) : easeOutQuad(t))
