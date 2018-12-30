@@ -591,15 +591,13 @@
       }
     }
 
-    const easeInOutQuad = t => t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t
     const easeOutQuad = t => t * (2 - t)
 
     const animationFrame = () => {
       for (let [i, transition] of transitions.entries()) {
         const t = (Date.now() - transition.startTime) / transitionTime * animationSpeed
         transition.time = t
-        transition.value = transition.start - transition.start
-          * (transition.easeIn ? easeInOutQuad(t) : easeOutQuad(t))
+        transition.value = transition.start - transition.start * easeOutQuad(t)
         if (t >= 1) {
           transitions.delete(i)
           if (transitions.size == 0)
@@ -610,7 +608,7 @@
       if (transitions.size > 0) requestAnimationFrame(animationFrame)
     }
 
-    const animateMove = (dir, i, n, easeIn = false) => {
+    const animateMove = (dir, i, n) => {
       if (n % (dir == MoveAxis.column ? cols : rows) == 0) return
 
       if (transitions.has(i) && moveAxis == dir) {
@@ -623,7 +621,7 @@
       }
       
       const transition = {
-        value: -n, start: -n, time: 0, startTime: Date.now(), easeIn
+        value: -n, start: -n, time: 0, startTime: Date.now()
       }
       
       if (transitions.size == 0) {
@@ -681,7 +679,7 @@
       
       const moveAmount = -transitions.get(touch.moveIndex).value + moveN
       transitions.delete(touch.moveIndex)
-      animateMove(moveAxis, touch.moveIndex, moveAmount, true)
+      animateMove(moveAxis, touch.moveIndex, moveAmount)
       
       if (moveN != 0) app.onMove(Math.abs(moveN))
     }
