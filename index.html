@@ -571,8 +571,8 @@
               break
             case TileMode.coords: text = `${row},${col}`
           }
-          const cx = (col + .4) / (cols - .6), cy = (row + .4) / (rows - .6)
-          tilesCtx.fillStyle = `rgb(${[cx * 230 + 20, cy * 105 + (1 - cx) * 25 + 60, (1 - cx) * 200].map(a => Math.floor(a)).join()})`
+          const cx = 1 - (col + .4) / (cols - .6), cy = (row + .4) / (rows - .6)
+          tilesCtx.fillStyle = `rgb(${[cx * 235 + 20, cy * 105 + (1 - cx) * 25 + 60, (1 - cx) * 200].map(a => Math.floor(a)).join()})`
           tilesCtx.strokeStyle = tilesCtx.fillStyle
           tilesCtx.fillRect(xOffset + padd, padd, size - padd * 2, size - padd * 2)
           if (padd != 0) tilesCtx.strokeRect(xOffset + padd, padd, size - padd * 2, size - padd * 2)
@@ -592,7 +592,7 @@
       const start = Date.now()
       const frame = () => {
         if (!moveAmounts.has(i)) return
-        const v = (Date.now() - start) / 100
+        const v = (Date.now() - start) / 130
         moveAmounts.set(i, -n + n * easeInOutQuad(v))
         if (v < 1) {
           requestAnimationFrame(frame)
