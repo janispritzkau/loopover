@@ -588,7 +588,7 @@
             case TileMode.coords: text = `${row},${col}`
           }
           const cx = 1 - (col + 0.3) / (cols - .25), cy = (row + 0.3) / (rows - .25)
-          tilesCtx.fillStyle = `rgb(${[cx * 230 + 20, cy * 110 + (1 - cx) * 30 + 70, (1 - cx) * 210].map(a => Math.floor(a)).join()})`
+          tilesCtx.fillStyle = `rgb(${[cx * 233 + 20, cy * 140 + (1 - cx) * 35 + 40, (1 - cx) * 220].map(a => Math.floor(a)).join()})`
           tilesCtx.strokeStyle = tilesCtx.fillStyle
           tilesCtx.fillRect(xOffset + padd, padd, size - padd * 2, size - padd * 2)
           if (padd != 0) tilesCtx.strokeRect(xOffset + padd, padd, size - padd * 2, size - padd * 2)
