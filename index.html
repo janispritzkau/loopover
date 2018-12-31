@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.png" type="image/png">
 
 <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700,900" rel="stylesheet">
@@ -268,6 +269,12 @@
 
 <script>
   (() => {
+    if (navigator.serviceWorker) {
+      navigator.serviceWorker.register("serviceWorker.js").catch(err => {
+        console.error("Failed to register service worker")
+      })
+    }
+
     const checkIfSolved = state => {
       for (let [rowIndex, row] of state.entries()) {
         for (let [col, tile] of row.entries()) {
