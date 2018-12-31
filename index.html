@@ -217,7 +217,7 @@
   <button @click="dark = !dark">{{ dark ? "Use light theme" : "Use dark theme" }}</button>
   <button @click="useSpacing = !useSpacing">{{ useSpacing ? "Remove space between tiles" : "Add space between tiles" }}</button>
   <button @click="fastMode = !fastMode">{{ fastMode ? "Disable fast mode" : "Enable fast mode" }}</button>
-  <button @click="tileMode = tileModes[tileMode%3][0]">Tile mode: {{ tileModes[tileMode-1][1] }}</button>
+  <button @click="tileMode = tileModes[tileMode%tileModes.length][0]">Tile mode: {{ tileModes[tileMode-1][1] }}</button>
   
   <hr>
   
@@ -454,6 +454,9 @@
         useSpacing() {
           updateCanvasSize()
           this.saveState()
+        },
+        fastMode() {
+          this.saveState()
         }
       }
     })
@@ -467,18 +470,19 @@
     const tilesCtx = tilesCanvas.getContext("2d")
 
     let dpr = devicePixelRatio
-    let cols = app.gameSize, rows = cols, aspectRatio = 1
+    let cols = 4, rows = 3, aspectRatio = cols / rows
     let width = 0, height = 0
     let gap = 0
     let size = 0
+
     const transitionTime = 150
-    let animationSpeed = 1
-
-    const MoveAxis = { row: 0, column: 1 }
-
-    let moveAxis = null
+    /** @type {Map<number, { startCol: number, startRow: number, col: number, row: number }>} */
     let touches = new Map
+    /** @type {Map<number, { value: number, start: number, startTime: number, isAnimated: boolean }>} */
     let transitions = new Map
+    let animating = false
+    /** @type {boolean} */
+    let moveHorizontal = null
 
     /** @type {number[][]} */
     let state = app.game
@@ -508,12 +512,12 @@
 
     function scramble(moves = 50) {
       for (let i = 0; i < moves; i++) {
-        const dir = Math.random() < 0.5 ? MoveAxis.row : MoveAxis.column
-        const index = Math.floor(Math.random() * (MoveAxis.row ? rows : cols))
-        const n = Math.ceil(Math.random() * ((MoveAxis.row ? cols : rows) - 1))
+        const moveVertical = Math.random() < 0.5
+        const index = Math.floor(Math.random() * (moveVertical ? cols : rows))
+        const n = Math.ceil(Math.random() * ((moveVertical ? rows : cols) - 1))
         
-        if (dir == MoveAxis.row) moveRow(index, n)
-        else moveColumn(index, n)
+        if (moveVertical) moveColumn(index, n)
+        else moveRow(index, n)
       }
       if (checkIfSolved(state)) scramble(moves)
     }
@@ -526,8 +530,8 @@
       updateGapSize()
       size = Math.ceil((width - gap * 2) / cols)
 
-      const tilesCanvasW = Math.ceil(size) * rows * cols
-      const tilesCanvasH = Math.ceil(size)
+      const tilesCanvasW = size * cols
+      const tilesCanvasH = size * rows
       
       if (tilesCanvas.width != tilesCanvasW || tilesCanvas.height != tilesCanvasH) {
         tilesCanvas.width = tilesCanvasW, tilesCanvas.height = tilesCanvasH
@@ -540,22 +544,21 @@
     }
 
     const drawTile = (x, y, i) => ctx.drawImage(tilesCanvas,
-      i * size, 0, size, size, gap > 0 ? x : x | 0, gap > 0 ? y : y | 0, size, size
+      (i % cols) * size, ((i / cols) | 0) * size, size, size, gap > 0 ? x : x | 0, gap > 0 ? y : y | 0, size, size
     )
 
     const draw = () => {
       if (gap > 0) ctx.clearRect(0, 0, width, height)
-      const moveDir = moveAxis == null ? MoveAxis.row : moveAxis
 
-      for (let j = 0; j < (moveDir == MoveAxis.column ? cols : rows); j++) {
-        const moveAmount = moveAxis != null ? (transitions.get(j) || {}).value || 0 : 0
+      for (let j = 0; j < (moveHorizontal ? rows : cols); j++) {
+        const moveAmount = moveHorizontal != null ? (transitions.get(j) || {}).value || 0 : 0
 
-        for (let k = Math.floor(-moveAmount); k < (moveDir == MoveAxis.column ? rows : cols) - Math.floor(moveAmount); k++) {
+        for (let k = Math.floor(-moveAmount); k < (moveHorizontal ? cols : rows) - Math.floor(moveAmount); k++) {
           let [x, y] = [k, j]
           let px = k + moveAmount, py = j
 
-          if (moveDir == MoveAxis.column) {
-            [px, py] = [py, px];[x, y] = [y, x];
+          if (!moveHorizontal) {
+            [px, py] = [py, px]; [x, y] = [y, x];
           }
           drawTile(px * (width - gap * 2) / cols + gap, py * (height - gap * 2) / rows + gap, state[(y + rows * 2) % rows][(x + cols * 2) % cols])
         }
@@ -563,7 +566,7 @@
     }
 
     const drawTilesCanvas = () => {
-      tilesCtx.clearRect(0, 0, size * cols * rows, size)
+      tilesCtx.clearRect(0, 0, size * cols, size * rows)
       const radius = Math.min(Math.max(6 * dpr, gap * 2) | 0, 12 * dpr)
       const padd = gap == 0 ? 0 : radius / 2 + gap;
       tilesCtx.font = `${size * 0.4}px Roboto`
@@ -571,62 +574,24 @@
       tilesCtx.lineJoin = "round", tilesCtx.lineWidth = radius
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
-          const i = row * cols + col, xOffset = Math.ceil(size) * i
-          let text = (i + 1).toString()
+          const i = row * cols + col
+          const xOffset = size * col, yOffset = size * row
+          let text = null
           switch (app.tileMode) {
-            case TileMode.letters:
-              if (cols * rows <= 26) text = String.fromCharCode(i + 65)
+            case TileMode.numbers: text = (i + 1).toString()
+              break
+            case TileMode.letters: text = cols * rows <= 26 ? String.fromCharCode(i + 65) : (i + 1).toString()
               break
             case TileMode.coords: text = `${row},${col}`
           }
           const cx = 1 - (col + 0.3) / (cols - .25), cy = (row + 0.3) / (rows - .25)
           tilesCtx.fillStyle = `rgb(${[cx * 233 + 20, cy * 140 + (1 - cx) * 35 + 40, (1 - cx) * 220].map(a => Math.floor(a)).join()})`
           tilesCtx.strokeStyle = tilesCtx.fillStyle
-          tilesCtx.fillRect(xOffset + padd, padd, size - padd * 2, size - padd * 2)
-          if (padd != 0) tilesCtx.strokeRect(xOffset + padd, padd, size - padd * 2, size - padd * 2)
+          tilesCtx.fillRect(xOffset + padd, yOffset + padd, size - padd * 2, size - padd * 2)
+          if (padd != 0) tilesCtx.strokeRect(xOffset + padd, yOffset + padd, size - padd * 2, size - padd * 2)
           tilesCtx.fillStyle = "#fff"
-          tilesCtx.fillText(text, xOffset + size / 2, size / 2 + 2)
+          if (text) tilesCtx.fillText(text, xOffset + size / 2, yOffset + size / 2 + 2)
         }
-      }
-    }
-
-    const easeOutQuad = t => t * (2 - t)
-
-    const animationFrame = () => {
-      for (let [i, transition] of transitions.entries()) {
-        const t = (Date.now() - transition.startTime) / transitionTime * animationSpeed
-        transition.time = t
-        transition.value = transition.start - transition.start * easeOutQuad(t)
-        if (t >= 1) {
-          transitions.delete(i)
-          if (transitions.size == 0)
-            moveAxis = null
-        }
-        draw()
-      }
-      if (transitions.size > 0) requestAnimationFrame(animationFrame)
-    }
-
-    const animateMove = (dir, i, n) => {
-      if (n % (dir == MoveAxis.column ? cols : rows) == 0) return
-
-      if (transitions.has(i) && moveAxis == dir) {
-        const transition = transitions.get(i)
-        transition.start = transition.value - n
-        transition.startTime = Date.now()
-        return
-      } else if (moveAxis != dir) {
-        transitions.clear()
-      }
-      
-      const transition = {
-        value: -n, start: -n, time: 0, startTime: Date.now()
-      }
-      
-      if (transitions.size == 0) {
-        moveAxis = dir
-        transitions.set(i, transition)
-        requestAnimationFrame(animationFrame)
       }
     }
 
@@ -635,34 +600,87 @@
       touch.startRow = Math.floor(((touch.startY - rect.top) * dpr - gap) / size)
     }
 
+    const easeOut = t => t * (2 - t)
+
+    const frame = () => {
+      animating = true
+      let animatedTransitions = 0 
+
+      for (let [index, transition] of transitions.entries()) {
+        if (!transition.isAnimated) continue
+        else animatedTransitions += 1
+        const time = (Date.now() - transition.startTime) / transitionTime
+        transition.value = transition.start - transition.start * easeOut(time)
+
+        if (time >= 1) transitions.delete(index)
+      }
+      draw()
+      if (animatedTransitions == 0) animating = false
+      else requestAnimationFrame(frame)
+    }
+    
+    const animateMove = (isHorizontal, index, start) => {
+      let isSameDirection = moveHorizontal == isHorizontal
+      if (!isSameDirection) {
+        moveHorizontal = isHorizontal
+        transitions.clear()
+      }
+      if (isSameDirection && transitions.has(index)) {
+        const transition = transitions.get(index)
+        transition.startTime = Date.now()
+        transition.start = transition.value + start
+      } else {
+        const transition = {
+          isAnimated: true, start, value: 0, startTime: Date.now()
+        }
+        transitions.set(index, transition)
+      }
+      if (!animating) requestAnimationFrame(frame)
+    }
+    
+    let lockedVertical = null
+    
     const onMove = touch => {
       if (app.fastMode) {
         touch.col = Math.floor(((touch.x - rect.left) * dpr - gap) / size)
         touch.row = Math.floor(((touch.y - rect.top) * dpr - gap) / size)
 
-        const moveX = touch.row - touch.startRow
-        const moveY = touch.col - touch.startCol
+        let moveX = touch.row - touch.startRow
+        let moveY = touch.col - touch.startCol
         
-        const colI = Math.min(Math.max(touch.startCol, 0), cols - 1)
-        moveColumn(colI, moveX)
-        animateMove(MoveAxis.column, colI, moveX)
-        touch.startRow = touch.row
-        
-        const rowI = Math.min(Math.max(touch.startRow, 0), rows - 1)
-        moveRow(rowI, moveY)
-        animateMove(MoveAxis.row, rowI, moveY)
-        touch.startCol = touch.col
+        // // No off-screen draggin
+        // if (touch.col > cols - 1 || touch.col < 0) moveY = 0
+        // if (touch.row > rows - 1 || touch.row < 0) moveX = 0
 
-        const moves = Math.abs(moveX) + Math.abs(moveY)
-        if (moves) app.onMove(moves)
+        if (moveX) {
+          const colI = Math.min(Math.max(touch.startCol, 0), cols - 1)
+          moveColumn(colI, moveX)
+          animateMove(false, colI, -moveX)
+          touch.startRow = touch.row
+        }
+        
+        if (moveY) {
+          const rowI = Math.min(Math.max(touch.startRow, 0), rows - 1)
+          moveRow(rowI, moveY)
+          animateMove(true, rowI, -moveY)
+          touch.startCol = touch.col
+        }
+
+        if (moveX != 0 || moveY != 0) {
+          draw()
+          const moves = Math.abs(moveX) + Math.abs(moveY)
+          if (moves) app.onMove(moves)
+        }
       } else {
         const dx = touch.x - touch.startX, dy = touch.y - touch.startY
-        if (moveAxis != null || Math.hypot(dx, dy) > 8) {
-          if (moveAxis == null) {
-            moveAxis = Math.abs(dx) > Math.abs(dy) ? MoveAxis.row : MoveAxis.column
+        if (lockedVertical != null || Math.hypot(dx, dy) > 8) {
+          if (lockedVertical == null) lockedVertical = Math.abs(dx) < Math.abs(dy)
+          if (moveHorizontal == lockedVertical) {
+            moveHorizontal = !lockedVertical
+            transitions.clear()
           }
-          touch.moveIndex = moveAxis == MoveAxis.row ? touch.startRow : touch.startCol
-          const moveAmount = moveAxis == MoveAxis.row ? dx / rect.width * cols : dy / rect.height * rows
+          touch.moveIndex = lockedVertical ? touch.startCol : touch.startRow
+          const moveAmount = lockedVertical ? dy / rect.height * rows : dx / rect.width * cols
           transitions.set(touch.moveIndex, {value: moveAmount})
           draw()
         }
@@ -672,14 +690,14 @@
       if (app.fastMode || touch.moveIndex == null) return
       const moveN = Math.round(transitions.get(touch.moveIndex).value)
 
-      if (moveAxis == MoveAxis.row) moveRow(touch.moveIndex, moveN)
+      if (!lockedVertical) moveRow(touch.moveIndex, moveN)
       else moveColumn(touch.moveIndex, moveN)
-      draw()
       
       const moveAmount = -transitions.get(touch.moveIndex).value + moveN
       transitions.delete(touch.moveIndex)
-      animateMove(moveAxis, touch.moveIndex, moveAmount)
+      animateMove(!lockedVertical, touch.moveIndex, -moveAmount)
       
+      if (touches.size == 1) lockedVertical = null
       if (moveN != 0) app.onMove(Math.abs(moveN))
     }
 
