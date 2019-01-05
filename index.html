@@ -221,6 +221,14 @@
   
   <hr>
   
+  <h3>Last solves</h3>
+  
+  <ul>
+    <li style="margin-bottom: 4px;" v-for="solve in currentStats.solves.slice(-12).reverse()">{{ formatTime(solve) }}</li>
+  </ul>
+
+  <hr>
+  
   <h3>Stats for {{ eventName(gameSize) }}</h3>
 
   <div style="display: flex; flex-wrap: wrap; margin: 0 -8px 16px;">
