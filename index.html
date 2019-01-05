@@ -369,7 +369,7 @@
           this.resetGameState()
           this.isScrambled = true
           this.isSolved = false
-          scramble(cols * rows + 1)
+          scramble(cols * rows + 8)
           draw()
         },
         onSolved() {
@@ -470,7 +470,7 @@
     const tilesCtx = tilesCanvas.getContext("2d")
 
     let dpr = devicePixelRatio
-    let cols = 4, rows = 3, aspectRatio = cols / rows
+    let cols = 5, rows = 5, aspectRatio = cols / rows
     let width = 0, height = 0
     let gap = 0
     let size = 0
@@ -511,13 +511,15 @@
     }
 
     function scramble(moves = 50) {
+      let a = false
       for (let i = 0; i < moves; i++) {
-        const moveVertical = Math.random() < 0.5
+        const moveVertical = Math.random() > 0.5 ? a : Math.random()
         const index = Math.floor(Math.random() * (moveVertical ? cols : rows))
         const n = Math.ceil(Math.random() * ((moveVertical ? rows : cols) - 1))
         
         if (moveVertical) moveColumn(index, n)
         else moveRow(index, n)
+        a = !moveVertical
       }
       if (checkIfSolved(state)) scramble(moves)
     }
@@ -569,7 +571,7 @@
       tilesCtx.clearRect(0, 0, size * cols, size * rows)
       const radius = Math.min(Math.max(6 * dpr, gap * 2) | 0, 12 * dpr)
       const padd = gap == 0 ? 0 : radius / 2 + gap;
-      tilesCtx.font = `${size * 0.4}px Roboto`
+      tilesCtx.font = `${size * 0.47}px Roboto`
       tilesCtx.textBaseline = "middle", tilesCtx.textAlign = "center"
       tilesCtx.lineJoin = "round", tilesCtx.lineWidth = radius
       for (let row = 0; row < rows; row++) {
@@ -585,7 +587,7 @@
             case TileMode.coords: text = `${row},${col}`
           }
           const cx = 1 - (col + 0.3) / (cols - .25), cy = (row + 0.3) / (rows - .25)
-          tilesCtx.fillStyle = `rgb(${[cx * 233 + 20, cy * 140 + (1 - cx) * 35 + 40, (1 - cx) * 220].map(a => Math.floor(a)).join()})`
+          tilesCtx.fillStyle = `rgb(${[cx * 233 + 20, cy * 160 + (1 - cx) * 40 + 30, (1 - cx) * 220].map(a => Math.floor(a)).join()})`
           tilesCtx.strokeStyle = tilesCtx.fillStyle
           tilesCtx.fillRect(xOffset + padd, yOffset + padd, size - padd * 2, size - padd * 2)
           if (padd != 0) tilesCtx.strokeRect(xOffset + padd, yOffset + padd, size - padd * 2, size - padd * 2)
