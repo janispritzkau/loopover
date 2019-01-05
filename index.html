@@ -223,8 +223,10 @@
   
   <h3>Last solves</h3>
   
-  <ul>
-    <li style="margin-bottom: 4px;" v-for="solve in currentStats.solves.slice(-12).reverse()">{{ formatTime(solve) }}</li>
+  <ul style="list-style-type: none;">
+    <li style="margin-bottom: 4px;" v-for="i in 8">
+      {{ currentStats.solves[currentStats.solves.length - i] ? formatTime(currentStats.solves[currentStats.solves.length - i]) : "-" }}
+    </li>
   </ul>
 
   <hr>
