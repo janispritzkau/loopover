@@ -224,7 +224,7 @@
   <h3>Last solves</h3>
   
   <ul style="list-style-type: none;">
-    <li style="margin-bottom: 4px;" v-for="i in 8">
+    <li style="margin-bottom: 4px;" v-for="i in 5">
       {{ currentStats.solves[currentStats.solves.length - i] ? formatTime(currentStats.solves[currentStats.solves.length - i]) : "-" }}
     </li>
   </ul>
@@ -430,7 +430,10 @@
       },
       created() {
         this.loadState()
-        setTimeout(() => this.isLoaded = true)
+        setTimeout(() => {
+          this.isLoaded = true
+          this.currentStats = this.stats.get(this.gameSize) || { solves: [] }
+        })
       },
       watch: {
         gameStarted() {
@@ -480,7 +483,7 @@
     const tilesCtx = tilesCanvas.getContext("2d")
 
     let dpr = devicePixelRatio
-    let cols = 5, rows = 5, aspectRatio = cols / rows
+    let cols = app.gameSize, rows = cols, aspectRatio = cols / rows
     let width = 0, height = 0
     let gap = 0
     let size = 0
