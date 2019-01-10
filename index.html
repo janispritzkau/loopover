@@ -398,7 +398,7 @@
           this.isScrambled = false
           this._timerInterval = setInterval(() => {
             this.time = Date.now() - this._startTime
-          }, 67)
+          }, 127)
           this._startTime = Date.now()
         },
         onMove(n) {
@@ -488,7 +488,7 @@
     let gap = 0
     let size = 0
 
-    const transitionTime = 150
+    const transitionTime = 120
     /** @type {Map<number, { startCol: number, startRow: number, col: number, row: number }>} */
     let touches = new Map
     /** @type {Map<number, { value: number, start: number, startTime: number, isAnimated: boolean }>} */
