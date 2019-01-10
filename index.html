@@ -260,8 +260,8 @@
     </tr>
     <tr v-for="i in [3, 5, 12]">
       <td>Average of {{i}}</td>
-      <td>{{ getBestAverageTime(i) }}</td>
-      <td>{{ getAverageTime(i) }}</td>
+      <td>{{ bestAverages[i] }}</td>
+      <td>{{ averages[i] }}</td>
     </tr>
   </table>
 
@@ -330,7 +330,9 @@
         gameSizes: [2, 3, 4, 5, 6, 7, 8, 9, 10],
         gameSize: 5,
         stats: new Map(),
-        currentStats: { solves: [] }
+        currentStats: { solves: [] },
+        bestAverages: {},
+        averages: {}
       },
       methods: {
         eventName: gameSize => `${gameSize}×${gameSize}`,
@@ -355,6 +357,12 @@
           return this.formatTime(
             this.currentStats.solves.slice(-n).reduce((acc, x) => acc + x / n, 0)
           )
+        },
+        updateAverages() {
+          [3, 5, 12].forEach(i => {
+            this.averages[i] = this.getAverageTime(i)
+            this.bestAverages[i] = this.getBestAverageTime(i)
+          })
         },
         resetStats(gameSize) {
           if (confirm(`Are you sure you want to reset your stats for ${this.eventName(gameSize)}?`)) {
@@ -392,13 +400,14 @@
           if (this.currentStats.fewestMoves == null || this.moves < this.currentStats.fewestMoves) this.currentStats.fewestMoves = this.moves
           if (this.currentStats.bestTime == null || this.time < this.currentStats.bestTime) this.currentStats.bestTime = this.time
           if (this.currentStats.worstTime == null || this.time > this.currentStats.worstTime) this.currentStats.worstTime = this.time
+          this.updateAverages()
         },
         startGame() {
           this.gameStarted = true
           this.isScrambled = false
           this._timerInterval = setInterval(() => {
             this.time = Date.now() - this._startTime
-          }, 127)
+          }, 63)
           this._startTime = Date.now()
         },
         onMove(n) {
@@ -433,6 +442,7 @@
         setTimeout(() => {
           this.isLoaded = true
           this.currentStats = this.stats.get(this.gameSize) || { solves: [] }
+          this.updateAverages()
         })
       },
       watch: {
@@ -458,6 +468,7 @@
           updateGameSize()
           this.resetGameState()
           updateCanvasSize()
+          this.updateAverages()
         },
         tileMode(mode) {
           drawTilesCanvas()
