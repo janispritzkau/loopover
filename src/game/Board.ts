@@ -27,7 +27,6 @@ export class Board {
         for (let [r, row] of this.grid.entries()) for (let [c, i] of row.entries()) {
             if (i == index) return { col: c, row: r }
         }
-        throw new Error()
     }
 
     moveRow(rowIndex: number, n: number) {
