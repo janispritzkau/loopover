@@ -1,4 +1,4 @@
-import { Axis, Board } from '.'
+import { Axis, Board, Move } from '.'
 import { scrambleBoard } from './scramble';
 
 interface Transition {
@@ -27,10 +27,12 @@ export class Game {
 
     locked = false
     transitionTime = 130
+    pointers: Map<number, Pointer> = new Map
     transitions: Map<number, Transition> = new Map
     private moveAxis: Axis = Axis.Row
-    private pointers: Map<number, Pointer> = new Map
     private animating = false
+
+    onMove?: (move: Move) => void
 
     constructor(private canvas: HTMLCanvasElement) {
         this.ctx = canvas.getContext("2d")!
@@ -65,14 +67,15 @@ export class Game {
         this.render()
     }
 
-    move(axis: Axis, index: number, n: number) {
+    move(axis: Axis, index: number, n: number, isPlayerMove = false) {
         this.board.move(axis, index, n)
+        if (isPlayerMove && this.onMove) this.onMove({ axis, index, n })
     }
 
-    animatedMove(axis: Axis, index: number, n: number) {
+    animatedMove(axis: Axis, index: number, n: number, isPlayerMove = false) {
         if (axis == Axis.Col) index = (index + this.cols) % this.cols
         else index = (index + this.rows) % this.rows
-        this.move(axis, index, n)
+        this.move(axis, index, n, isPlayerMove)
         if (axis != this.moveAxis) this.transitions.clear(), this.moveAxis = axis
         this.transitions.set(index, {
             start: -n, value: -n, startTime: Date.now(), isAnimated: true
@@ -102,7 +105,7 @@ export class Game {
                 const index = this.board.grid[(row + this.rows * 8) % this.rows][(col + this.cols * 8) % this.cols]
                 const cx = (index % this.cols + 0.1) / (this.cols - 0.6)
                 const cy = (((index / this.cols) | 0) + 0.2) / (this.rows - 0.6)
-                const color = [(1 - cx) * 230 + 20, cy * 180 + cx * (1 - cy) * 60 + 40, cx * 220]
+                const color = [(1 - cx) * 230 + 20, cy * 165 + cx * (1 - cy) * 60 + 40, cx * 220]
                 
                 this.ctx.fillStyle = `rgb(${color.map(x => x | 0).join()})`
                 this.ctx.fillRect(x, y, this.tileSize, this.tileSize)
@@ -127,24 +130,24 @@ export class Game {
         else requestAnimationFrame(this.frame)
     }
 
-    private onMoveStart = (identifier: number, pointer: Pointer) => {
+    private onTouchStart = (identifier: number, pointer: Pointer) => {
         if (this.locked) return
         this.pointers.set(identifier, pointer)
         pointer.startCol = Math.floor(pointer.startX * this.dpr / this.width * this.cols)
         pointer.startRow = Math.floor(pointer.startY * this.dpr / this.height * this.rows)
     }
 
-    private onMove = (pointer: Pointer) => {
+    private onTouchMove = (pointer: Pointer) => {
         pointer.col = Math.floor(pointer.x * this.dpr / this.width * this.cols)
         pointer.row = Math.floor(pointer.y * this.dpr / this.height * this.rows)
         const moveX = pointer.row - pointer.startRow, moveY = pointer.col - pointer.startCol
-        if (moveX) this.animatedMove(Axis.Col, (pointer.startCol + this.cols) % this.cols, moveX)
+        if (moveX) this.animatedMove(Axis.Col, (pointer.startCol + this.cols) % this.cols, moveX, true)
         pointer.startRow = pointer.row
-        if (moveY) this.animatedMove(Axis.Row, (pointer.startRow + this.rows) % this.rows, moveY)
+        if (moveY) this.animatedMove(Axis.Row, (pointer.startRow + this.rows) % this.rows, moveY, true)
         pointer.startCol = pointer.col
     }
 
-    private onMoveEnd = (identifier: number, pointer: Pointer) => {
+    private onTouchEnd = (identifier: number, pointer: Pointer) => {
         this.pointers.delete(identifier)
     }
 
@@ -152,7 +155,7 @@ export class Game {
         let rect: ClientRect
         this.canvas.addEventListener("mousedown", e => {
             e.preventDefault(), rect = this.canvas.getBoundingClientRect()
-            this.onMoveStart(-1, {
+            this.onTouchStart(-1, {
                 startX: e.clientX - rect.left, startY: e.clientY - rect.top,
                 x: 0, y: 0, startCol: 0, startRow: 0, col: 0, row: 0
             })
@@ -161,15 +164,15 @@ export class Game {
             const pointer = this.pointers.get(-1)
             if (!pointer) return
             pointer.x = e.clientX - rect.left, pointer.y = e.clientY - rect.top
-            this.onMove(pointer)
+            this.onTouchMove(pointer)
         })
         addEventListener("mouseup", e => {
             const pointer = this.pointers.get(-1)
-            if (pointer) this.onMoveEnd(-1, pointer)
+            if (pointer) this.onTouchEnd(-1, pointer)
         })
         this.canvas.addEventListener("touchstart", e => {
             e.preventDefault(), rect = this.canvas.getBoundingClientRect()
-            for (let touch of e.changedTouches) this.onMoveStart(touch.identifier, {
+            for (let touch of e.changedTouches) this.onTouchStart(touch.identifier, {
                 startX: touch.clientX - rect.left, startY: touch.clientY - rect.top,
                 x: 0, y: 0, startCol: 0, startRow: 0, col: 0, row: 0
             })
@@ -179,13 +182,13 @@ export class Game {
                 const pointer = this.pointers.get(touch.identifier)
                 if (!pointer) continue
                 pointer.x = touch.clientX - rect.left, pointer.y = touch.clientY - rect.top
-                this.onMove(pointer)
+                this.onTouchMove(pointer)
             }
         })
         addEventListener("touchend", e => {
             for (let touch of e.changedTouches) {
                 const pointer = this.pointers.get(touch.identifier)
-                if (pointer) this.onMoveEnd(touch.identifier, pointer)
+                if (pointer) this.onTouchEnd(touch.identifier, pointer)
             }
         })
     }
