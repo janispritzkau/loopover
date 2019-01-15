@@ -28,4 +28,9 @@ export function movesFromString(string: string) {
     return moves
 }
 
+export interface Solve {
+    time: number
+    moves: number
+}
+
 export { Board, Game }
