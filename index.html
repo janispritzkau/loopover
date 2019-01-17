@@ -347,15 +347,17 @@
           if (solves.length < n) return '-'
           let bestTime = null
           for (let i = 0; i <= solves.length - n; i++) {
-            let time = this.currentStats.solves.slice(i, i + n).reduce((acc, x) => acc + x / n, 0)
+            const solves = this.currentStats.solves.slice(i, i + n).sort((a, b) => a - b)
+            let time = n == 3 ? solves[1] : solves.slice(1, n - 1).reduce((acc, x) => acc + x / (n - 2), 0)
             if (bestTime == null || time < bestTime) bestTime = time
           }
           return this.formatTime(bestTime)
         },
         getAverageTime(n) {
           if (this.currentStats.solves.length < n) return '-'
+          const solves = this.currentStats.solves.slice(-n).sort((a, b) => a - b)
           return this.formatTime(
-            this.currentStats.solves.slice(-n).reduce((acc, x) => acc + x / n, 0)
+            n == 3 ? solves[1] : solves.slice(1, n - 1).reduce((acc, x) => acc + x / (n - 2), 0)
           )
         },
         updateAverages() {
