@@ -258,7 +258,7 @@
       <th>Best</th>
       <th>Current</th>
     </tr>
-    <tr v-for="i in [3, 5, 12, 50, 100]">
+    <tr v-for="i in [3, 5, 12, 50]">
       <td>Average of {{i}}</td>
       <td>{{ bestAverages[i] }}</td>
       <td>{{ averages[i] }}</td>
@@ -344,7 +344,6 @@
         },
         getBestAverageTime(n) {
           const solves = this.currentStats.solves
-          if (n > 40) return ''
           if (solves.length < n) return '-'
           let bestTime = null
           for (let i = 0; i <= solves.length - n; i++) {
@@ -362,7 +361,7 @@
           )
         },
         updateAverages() {
-          [3, 5, 12, 50, 100].forEach(i => {
+          [3, 5, 12, 50].forEach(i => {
             this.averages[i] = this.getAverageTime(i)
             this.bestAverages[i] = this.getBestAverageTime(i)
           })
