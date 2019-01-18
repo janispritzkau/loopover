@@ -8,7 +8,7 @@
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.03);
+    background: rgba(0, 0, 0, 0.07);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -19,8 +19,13 @@
     background: rgba(0, 0, 0, 0.2);
 }
 
+::-webkit-scrollbar-thumb:active {
+    background: rgba(0, 0, 0, 0.3);
+}
+
 body {
     overflow-y: scroll;
+    background: #fafafa;
 }
 
 a {
