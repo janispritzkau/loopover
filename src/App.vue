@@ -4,11 +4,11 @@
       <div class="main-wrapper">
         <main>
           <div v-if="!desktopMode" style="height: 0; display: flex; align-items: flex-end;">
-            <div style="flex-grow: 1; margin-bottom: 4px;">
-              <div class="current-time">00:12.142</div>
-              <div class="current-moves">52 moves</div>
+            <div style="flex-grow: 1; margin-bottom: 6px;">
+              <div class="current-time">{{ formatTime(time) }}</div>
+              <div class="current-moves">{{ moves }} moves</div>
             </div>
-            <button style="margin-bottom: 4px;">Scramble</button>
+            <button @click="scramble" :disabled="isScrambled" style="margin-bottom: 4px;">Scramble</button>
           </div>
           <canvas ref="canvas"/>
           <div style="display: flex; padding-top: 4px;" :style="{height: desktopMode ? '24px' : '0'}">
@@ -18,9 +18,9 @@
           </div>
         </main>
         <aside v-if="desktopMode" :style="{ width: sidebarWidth + 'px' }">
-          <button @click="scramble" class="sidebar-button" :disabled="isScrambled">Scramble</button>
-          <div class="current-time">00:12.142</div>
-          <div class="current-moves">52 moves</div>
+          <button @click="scramble" :disabled="isScrambled" class="sidebar-button">Scramble</button>
+          <div class="current-time">{{ formatTime(time) }}</div>
+          <div class="current-moves">{{ moves }} moves</div>
         </aside>
       </div>
     </div>
@@ -29,16 +29,60 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator'
-import { Game } from './game'
+import { Game, Move } from './game'
 
 @Component
 export default class App extends Vue {
   game!: Game
-  desktopMode = true
   cols = 5
   rows = 5
+
+  desktopMode = false
   sidebarWidth = 200
+  
+  gameStarted = false
   isScrambled = false
+  startTime = 0
+  time = 0
+  moves = 0
+  interval!: number
+
+  formatTime(ms: number) {
+    if (ms == null) return "-"
+    const s = ms / 1000
+    const min = (s / 60) | 0, sec = s % 60 | 0, mil = ms % 1000 | 0
+    return `${min}:${sec.toString().padStart(2, "0")}:${mil.toString().padStart(3, "0")}`
+  }
+
+  scramble() {
+    this.game.scramble()
+    this.isScrambled = true
+  }
+
+  startGame() {
+    this.gameStarted = true
+    this.moves = this.time = 0
+    this.startTime = Date.now()
+    this.interval = setInterval(() => {
+      this.time = Date.now() - this.startTime
+    }, 87)
+  }
+
+  onMove(move: Move) {
+    if (this.isScrambled && !this.gameStarted) this.startGame()
+    if (!this.gameStarted) return
+    this.moves += Math.abs(move.n)
+    if (this.game.board.isSolved()) this.onSolved()
+  }
+
+  onSolved() {
+    clearInterval(this.interval)
+    this.time = Date.now() - this.startTime
+    this.isScrambled = false
+    this.gameStarted = false
+    this.game.pointers.clear()
+  }
+
 
   setSize(cols: number, rows?: number) {
     this.cols = cols
@@ -52,7 +96,6 @@ export default class App extends Vue {
     this.updateSize()
   }
 
-  @Watch('desktopMode')
   updateSize() {
     const width = innerWidth - 32
     this.desktopMode = width - this.sidebarWidth > 320
@@ -69,13 +112,10 @@ export default class App extends Vue {
     }
   }
 
-  scramble() {
-    this.game.scramble()
-  }
-
   mounted() {
     this.game = new Game(<any>this.$refs["canvas"])
-    
+    this.game.onMove = this.onMove.bind(this)
+
     addEventListener("resize", this.updateSize.bind(this))
     this.onBoardSizeChange()
     
