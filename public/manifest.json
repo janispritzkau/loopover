@@ -3,6 +3,18 @@
   "short_name": "Loopover",
   "start_url": "./index.html",
   "display": "standalone",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "./icon-480.png",
+      "type": "image/png",
+      "sizes": "480x480"
+    }
+  ],
   "background_color": "#ffffff",
-  "theme_color": "#2698a7"
+  "theme_color": "#47587a"
 }
