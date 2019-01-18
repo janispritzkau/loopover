@@ -1,9 +1,10 @@
 import Vue from 'vue'
-import App from './App.vue'
 import { Game } from './game'
 import './registerServiceWorker'
-import 'typeface-roboto'
 import 'normalize.css'
+import 'typeface-roboto'
+import './main.css'
+import App from './App.vue'
 
 Vue.config.productionTip = false
 
