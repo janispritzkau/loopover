@@ -21,12 +21,12 @@ export class Game {
 
     width!: number
     height!: number
-    private tileSize!: number
+    tileSize!: number
     private dpr = devicePixelRatio
     private ctx: CanvasRenderingContext2D
 
     locked = false
-    transitionTime = 130
+    transitionTime = 120
     pointers: Map<number, Pointer> = new Map
     transitions: Map<number, Transition> = new Map
     private moveAxis: Axis = Axis.Row
@@ -61,6 +61,7 @@ export class Game {
     private updateCanvas() {
         this.canvas.width = this.width, this.canvas.height = this.height
         this.canvas.style.width = `${Math.floor(this.width / this.dpr)}px`
+        this.canvas.style.height = `${Math.floor(this.height / this.dpr)}px`
         this.tileSize = Math.ceil(this.width / this.cols + 0.1)
         this.ctx.textBaseline = "middle"
         this.ctx.textAlign = "center"
