@@ -97,7 +97,7 @@ export default class App extends Vue {
   }
 
   updateSize() {
-    const width = innerWidth - 32
+    const width = this.$el.clientWidth - 32
     this.desktopMode = width - this.sidebarWidth > 320
     const height = innerHeight - (this.desktopMode ? 80 : 128)
     const canvasWidth = this.desktopMode ? width - this.sidebarWidth : width
@@ -131,6 +131,7 @@ export default class App extends Vue {
 #app {
   font-family: 'Roboto', sans-serif;
   color: rgba(0, 0, 0, 0.8);
+  padding-bottom: 320px;
 }
 
 .main-container {
@@ -138,7 +139,9 @@ export default class App extends Vue {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f6f6f6;
+  background: #f4f4f4;
+  box-sizing: content-box;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.05);
 }
 
 .main-wrapper {
