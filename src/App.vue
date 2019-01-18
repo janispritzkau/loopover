@@ -3,10 +3,24 @@
     <div class="main-container">
       <div class="main-wrapper">
         <main>
+          <div v-if="!desktopMode" style="height: 0; display: flex; align-items: flex-end;">
+            <div style="flex-grow: 1; margin-bottom: 4px;">
+              <div class="current-time">00:12.142</div>
+              <div class="current-moves">52 moves</div>
+            </div>
+            <button style="margin-bottom: 4px;">Scramble</button>
+          </div>
           <canvas ref="canvas"/>
+          <div style="display: flex; padding-top: 4px;" :style="{height: desktopMode ? '24px' : '0'}">
+            <button>5×5 Sighted</button>
+            <div style="flex-grow: 1;"/>
+            <button>Options</button>
+          </div>
         </main>
         <aside v-if="desktopMode" :style="{ width: sidebarWidth + 'px' }">
           <button @click="scramble" class="sidebar-button" :disabled="isScrambled">Scramble</button>
+          <div class="current-time">00:12.142</div>
+          <div class="current-moves">52 moves</div>
         </aside>
       </div>
     </div>
@@ -106,9 +120,19 @@ aside {
   display: block;
   width: 100%;
   height: 40px;
+  margin-bottom: 20px;
   background: rgba(0, 0, 0, 0.1);
 }
 .sidebar-button:active {
   background: rgba(0, 0, 0, 0.2);
+}
+
+.current-time {
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.current-moves {
+  opacity: 0.8;
 }
 </style>
