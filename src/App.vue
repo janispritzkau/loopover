@@ -55,7 +55,8 @@ export default class App extends Vue {
   @Watch('desktopMode')
   updateSize() {
     const width = innerWidth - 32
-    const height = innerHeight - (this.desktopMode ? 32 : 128)
+    this.desktopMode = width - this.sidebarWidth > 320
+    const height = innerHeight - (this.desktopMode ? 80 : 128)
     const canvasWidth = this.desktopMode ? width - this.sidebarWidth : width
     const aspectRatio = this.cols / this.rows
 
