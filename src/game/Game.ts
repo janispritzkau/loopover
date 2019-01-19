@@ -22,7 +22,7 @@ export class Game {
     width!: number
     height!: number
     tileSize!: number
-    private dpr = devicePixelRatio
+    dpr = devicePixelRatio
     private ctx: CanvasRenderingContext2D
 
     locked = false
