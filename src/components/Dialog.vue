@@ -41,7 +41,7 @@ export default class Dialog extends Vue {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.3);
   z-index: 100;
 }
 
@@ -54,7 +54,7 @@ export default class Dialog extends Vue {
 }
 
 .dialog {
-  padding: 16px;
+  padding: 24px;
   background: #f6f6f6;
   min-width: 320px;
   border-radius: 2px;
