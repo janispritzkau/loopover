@@ -20,7 +20,11 @@
         <aside v-if="desktopMode" :style="{ width: sidebarWidth + 'px' }">
           <button @click="scramble" :disabled="isScrambled" class="sidebar-button">Scramble</button>
           <div class="current-time">{{ formatTime(time) }}</div>
-          <div class="current-moves">{{ moves }} moves</div>
+          <div class="current-moves" style="margin-bottom: 16px;">{{ moves }} moves</div>
+          <div v-for="(solve, i) in solves.slice(-5).reverse()" :key="i" class="solve">
+            <div class="time">{{ formatTime(solve.time) }}</div>
+            <div class="moves">{{ solve.moves }} moves</div>
+          </div>
         </aside>
       </div>
     </div>
@@ -29,13 +33,13 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator'
-import { Game, Move } from './game'
+import { Game, Move, Solve } from './game'
 
 @Component
 export default class App extends Vue {
   game!: Game
-  cols = 5
-  rows = 5
+  cols = 3
+  rows = 3
 
   desktopMode = false
   sidebarWidth = 200
@@ -46,6 +50,8 @@ export default class App extends Vue {
   time = 0
   moves = 0
   interval!: number
+
+  solves: Solve[] = []
 
   formatTime(ms: number) {
     if (ms == null) return "-"
@@ -81,6 +87,7 @@ export default class App extends Vue {
     this.isScrambled = false
     this.gameStarted = false
     this.game.pointers.clear()
+    this.solves.push({ time: this.time, moves: this.moves })
   }
 
 
@@ -176,7 +183,17 @@ aside {
   font-weight: 500;
 }
 
-.current-moves {
+.current-moves, .moves {
   opacity: 0.8;
+}
+
+.solve {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.solve .time {
+  font-weight: 500;
+  flex-grow: 1;
 }
 </style>
