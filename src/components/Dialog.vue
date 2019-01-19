@@ -1,7 +1,7 @@
 <template>
   <transition name="fade">
     <div v-if="open" class="dialog-container" :class="{ open: open }" @click.self="close">
-      <div class="dialog">
+      <div class="dialog" ref="dialog" tabindex="-1">
         <slot/>
       </div>
     </div>
@@ -11,7 +11,15 @@
 <script lang="ts">
 import { Component, Vue, Watch, Prop } from 'vue-property-decorator'
 
-@Component
+@Component({
+  watch: {
+    async open(open) {
+      await this.$nextTick()
+      const el = <HTMLElement>this.$refs["dialog"]
+      if (open && el) el.focus()
+    }
+  }
+})
 export default class Dialog extends Vue {
   @Prop()
   open = false
@@ -50,6 +58,7 @@ export default class Dialog extends Vue {
   background: #f6f6f6;
   min-width: 320px;
   border-radius: 2px;
+  outline: 0;
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.2);
   transition: transform 150ms ease-out;
 }
