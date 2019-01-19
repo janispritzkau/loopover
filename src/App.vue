@@ -21,13 +21,20 @@
           <button @click="scramble" :disabled="isScrambled" class="sidebar-button">Scramble</button>
           <div class="current-time">{{ formatTime(time) }}</div>
           <div class="current-moves" style="margin-bottom: 16px;">{{ moves }} moves</div>
-          <div v-for="(solve, i) in solves.slice(-5).reverse()" :key="i" class="solve">
+          <div v-for="(solve, i) in solves.slice(-sidebarSolvesNum).reverse()" :key="i" class="solve">
             <div class="time">{{ formatTime(solve.time) }}</div>
             <div class="moves">{{ solve.moves }} moves</div>
           </div>
         </aside>
       </div>
     </div>
+    <section v-if="!desktopMode">
+      <div v-for="(solve, i) in solves.slice(-12).reverse()" :key="i" class="solve">
+        <div class="time">{{ formatTime(solve.time) }}</div>
+        <div class="moves">{{ solve.moves }} moves</div>
+      </div>
+      <div v-if="solves.length == 0" style="opacity: 0.8;">No solves yet</div>
+    </section>
   </div>
 </template>
 
@@ -43,6 +50,7 @@ export default class App extends Vue {
 
   desktopMode = false
   sidebarWidth = 200
+  sidebarSolvesNum = 12
   
   gameStarted = false
   isScrambled = false
@@ -105,7 +113,7 @@ export default class App extends Vue {
 
   updateSize() {
     const width = this.$el.clientWidth - 32
-    this.desktopMode = width - this.sidebarWidth > 320
+    this.desktopMode = width - this.sidebarWidth > 380
     const height = innerHeight - (this.desktopMode ? 80 : 128)
     const canvasWidth = this.desktopMode ? width - this.sidebarWidth : width
     const aspectRatio = this.cols / this.rows
@@ -117,6 +125,7 @@ export default class App extends Vue {
       const maxHeight = this.rows * 64 + 256 / (aspectRatio < 1 ? aspectRatio : 1)
       this.game.setHeight(Math.min(height, maxHeight))
     }
+    this.sidebarSolvesNum = ((this.game.height / this.game.dpr - 96) / 36) | 0
   }
 
   mounted() {
@@ -189,11 +198,19 @@ aside {
 
 .solve {
   display: flex;
+  margin: 0 auto;
   margin-bottom: 8px;
+  max-width: 240px;
 }
 
 .solve .time {
   font-weight: 500;
   flex-grow: 1;
+}
+
+section {
+  max-width: 480px;
+  margin: 32px auto;
+  padding: 0 16px;
 }
 </style>
