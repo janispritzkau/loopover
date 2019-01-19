@@ -3,6 +3,7 @@ import { scrambleBoard } from './scramble';
 
 interface Transition {
     value: number, start?: number
+    time?: number
     startTime?: number
     isAnimated?: boolean
 }
@@ -25,6 +26,7 @@ export class Game {
     dpr = devicePixelRatio
     private ctx: CanvasRenderingContext2D
 
+    blind = false
     locked = false
     transitionTime = 120
     pointers: Map<number, Pointer> = new Map
@@ -103,15 +105,23 @@ export class Game {
                 if (this.moveAxis == Axis.Col) [row, col] = [col, row], [x, y] = [y, x];
                 [x, y] = [(x / this.cols * this.width) | 0, (y / this.rows * this.height) | 0]
 
-                const index = this.board.grid[(row + this.rows * 8) % this.rows][(col + this.cols * 8) % this.cols]
-                const cx = (index % this.cols + 0.1) / (this.cols - 0.6)
-                const cy = (((index / this.cols) | 0) + 0.2) / (this.rows - 0.6)
-                const color = [(1 - cx) * 230 + 20, cy * 190 + cx * (1 - cy) * 50 + 30, cx * 220]
-
-                this.ctx.fillStyle = `rgb(${color.map(x => x | 0).join()})`
-                this.ctx.fillRect(x, y, this.tileSize, this.tileSize)
-                this.ctx.fillStyle = "#fff"
-                this.ctx.fillText((index + 1).toString(), x + this.tileSize / 2, y + this.tileSize / 2 + 1)
+                if (this.blind) {
+                    const t = transition ? transition.time! ** 0.5 : 0
+                    const flash = (t < 0.5 ? t * 2 : 2 - t * 2) * 40
+                    const gap = this.tileSize * 0.04
+                    this.ctx.fillStyle = `rgb(${[100 + flash, 104 + flash, 108 + flash].join()})`
+                    this.ctx.fillRect(x + gap, y + gap, this.tileSize - gap * 2, this.tileSize - gap * 2)
+                } else {
+                    const index = this.board.grid[(row + this.rows * 8) % this.rows][(col + this.cols * 8) % this.cols]
+                    const cx = (index % this.cols + 0.1) / (this.cols - 0.6)
+                    const cy = (((index / this.cols) | 0) + 0.2) / (this.rows - 0.6)
+                    const color = [(1 - cx) * 230 + 20, cy * 190 + cx * (1 - cy) * 50 + 30, cx * 220]
+    
+                    this.ctx.fillStyle = `rgb(${color.map(x => x | 0).join()})`
+                    this.ctx.fillRect(x, y, this.tileSize, this.tileSize)
+                    this.ctx.fillStyle = "#fff"
+                    this.ctx.fillText((index + 1).toString(), x + this.tileSize / 2, y + this.tileSize / 2 + 1)
+                }
             }
         }
     }
@@ -122,7 +132,7 @@ export class Game {
         for (let [index, transition] of this.transitions.entries()) {
             if (!transition.isAnimated) continue
             animatedTransitions += 1
-            const time = (Date.now() - transition.startTime!) / this.transitionTime
+            const time = transition.time = (Date.now() - transition.startTime!) / this.transitionTime
             transition.value = transition.start! - transition.start! * time * (2 - time)
             if (time >= 1) this.transitions.delete(index)
         }
