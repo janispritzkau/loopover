@@ -21,19 +21,13 @@
           <button @click="scramble" :disabled="isScrambled" class="sidebar-button">Scramble</button>
           <div class="current-time">{{ formatTime(time) }}</div>
           <div class="current-moves" style="margin-bottom: 16px;">{{ moves }} moves</div>
-          <div v-for="(solve, i) in solves.slice(-sidebarSolvesNum).reverse()" :key="i" class="solve">
-            <div class="time">{{ formatTime(solve.time) }}</div>
-            <div class="moves">{{ solve.moves }} moves</div>
-          </div>
+          <SolveList :solves="solves" :max="sidebarSolvesNum"/>
         </aside>
       </div>
     </div>
     <section v-if="!desktopMode">
-      <div v-for="(solve, i) in solves.slice(-12).reverse()" :key="i" class="solve">
-        <div class="time">{{ formatTime(solve.time) }}</div>
-        <div class="moves">{{ solve.moves }} moves</div>
-      </div>
-      <div v-if="solves.length == 0" style="opacity: 0.8;">No solves yet</div>
+      <SolveList v-if="solves.length > 0" :solves="solves"/>
+      <div v-else style="opacity: 0.8;">No solves yet</div>
     </section>
     <Dialog :open.sync="eventDialog">
       <h3>Event</h3>
@@ -62,8 +56,9 @@
 import { Component, Vue, Watch } from 'vue-property-decorator'
 import { Game, Move, Solve } from './game'
 import Dialog from "./components/Dialog.vue"
+import SolveList from "./components/SolveList.vue"
 
-@Component({ components: { Dialog } })
+@Component({ components: { Dialog, SolveList } })
 export default class App extends Vue {
   game!: Game
   cols = 3
@@ -155,11 +150,11 @@ export default class App extends Vue {
       const maxHeight = this.rows * 64 + 256 / (aspectRatio < 1 ? aspectRatio : 1)
       this.game.setHeight(Math.min(height, maxHeight))
     }
-    this.sidebarSolvesNum = ((this.game.height / this.game.dpr - 96) / 36) | 0
+    this.sidebarSolvesNum = ((this.game.height / this.game.dpr - 96) / 40) | 0
   }
 
   mounted() {
-    this.game = new Game(<any>this.$refs["canvas"])
+    this.game = new Game(this.$refs.canvas as any)
     this.game.onMove = this.onMove.bind(this)
 
     addEventListener("resize", this.updateSize.bind(this))
