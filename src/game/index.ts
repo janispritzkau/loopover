@@ -31,6 +31,8 @@ export function movesFromString(string: string) {
 export interface Solve {
     time: number
     moves: number
+    dnf?: boolean
+    memoTime?: number
 }
 
 export { Board, Game }
