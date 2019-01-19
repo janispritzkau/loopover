@@ -106,8 +106,8 @@ export class Game {
                 const index = this.board.grid[(row + this.rows * 8) % this.rows][(col + this.cols * 8) % this.cols]
                 const cx = (index % this.cols + 0.1) / (this.cols - 0.6)
                 const cy = (((index / this.cols) | 0) + 0.2) / (this.rows - 0.6)
-                const color = [(1 - cx) * 230 + 20, cy * 160 + cx * (1 - cy) * 55 + 40, cx * 220]
-                
+                const color = [(1 - cx) * 230 + 20, cy * 190 + cx * (1 - cy) * 40 + 30, cx * 230]
+
                 this.ctx.fillStyle = `rgb(${color.map(x => x | 0).join()})`
                 this.ctx.fillRect(x, y, this.tileSize, this.tileSize)
                 this.ctx.fillStyle = "#fff"
