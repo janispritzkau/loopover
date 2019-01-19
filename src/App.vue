@@ -37,10 +37,16 @@
     </section>
     <Dialog :open.sync="eventDialog">
       <h3>Event</h3>
-      <label>Cols: </label>
-      <input type="number" v-model.number.lazy="cols" :min="2" :max="50"><br><br>
-      <label>Rows: </label>
-      <input type="number" v-model.number.lazy="rows" :min="2" :max="50">
+      <div style="display: flex;">
+        <div style="width: 50%; padding-right: 8px;">
+          <label>Cols</label>
+          <input class="input" type="number" v-model.number.lazy="cols" :min="2" :max="50">
+        </div>
+        <div style="flex-grow: 1; padding-left: 8px;">
+          <label>Rows</label>
+          <input class="input" type="number" v-model.number.lazy="rows" :min="2" :max="50">
+        </div>
+      </div>
     </Dialog>
     <Dialog :open.sync="optionsDialog">
       <h3>Options</h3>
