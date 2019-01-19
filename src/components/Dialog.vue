@@ -1,7 +1,7 @@
 <template>
   <transition name="fade">
     <div v-if="open" class="dialog-container" :class="{ open: open }" @click.self="close">
-      <div class="dialog" ref="dialog" tabindex="-1">
+      <div class="dialog" ref="dialog" tabindex="-1" @keydown.esc="close">
         <slot/>
       </div>
     </div>
