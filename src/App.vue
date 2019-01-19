@@ -130,6 +130,9 @@ export default class App extends Vue {
     this.rows = Math.min(Math.max(this.rows, 2), 50)
     this.game.setBoardSize(this.cols, this.rows)
     this.updateSize()
+    this.solves = []
+    this.isScrambled = this.gameStarted = false
+    this.time = this.moves = 0
   }
 
   updateSize() {
