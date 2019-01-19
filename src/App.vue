@@ -12,9 +12,9 @@
           </div>
           <canvas ref="canvas"/>
           <div style="display: flex; padding-top: 4px;" :style="{height: desktopMode ? '24px' : '0'}">
-            <button>5×5 Sighted</button>
+            <button @click="eventDialog = true">Event: {{cols}}×{{rows}}</button>
             <div style="flex-grow: 1;"/>
-            <button>Options</button>
+            <button @click="optionsDialog = true">Options</button>
           </div>
         </main>
         <aside v-if="desktopMode" :style="{ width: sidebarWidth + 'px' }">
@@ -35,14 +35,29 @@
       </div>
       <div v-if="solves.length == 0" style="opacity: 0.8;">No solves yet</div>
     </section>
+    <Dialog :open.sync="eventDialog">
+      <h3>Event</h3>
+      <label>Cols: </label>
+      <input type="number" v-model.number.lazy="cols" :min="2" :max="50"><br><br>
+      <label>Rows: </label>
+      <input type="number" v-model.number.lazy="rows" :min="2" :max="50">
+    </Dialog>
+    <Dialog :open.sync="optionsDialog">
+      <h3>Options</h3>
+      <label>
+        <input type="checkbox" v-model="forceMobile">
+        Force mobile mode
+      </label>
+    </Dialog>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator'
 import { Game, Move, Solve } from './game'
+import Dialog from "./components/Dialog.vue"
 
-@Component
+@Component({ components: { Dialog } })
 export default class App extends Vue {
   game!: Game
   cols = 3
@@ -51,6 +66,9 @@ export default class App extends Vue {
   desktopMode = false
   sidebarWidth = 200
   sidebarSolvesNum = 12
+  forceMobile = false
+  eventDialog = false
+  optionsDialog = false
   
   gameStarted = false
   isScrambled = false
@@ -106,14 +124,17 @@ export default class App extends Vue {
 
   @Watch('cols')
   @Watch('rows')
+  @Watch('forceMobile')
   onBoardSizeChange() {
+    this.cols = Math.min(Math.max(this.cols, 2), 50)
+    this.rows = Math.min(Math.max(this.rows, 2), 50)
     this.game.setBoardSize(this.cols, this.rows)
     this.updateSize()
   }
 
   updateSize() {
     const width = this.$el.clientWidth - 32
-    this.desktopMode = width - this.sidebarWidth > 380
+    this.desktopMode = this.forceMobile ? false : width - this.sidebarWidth > 380
     const height = innerHeight - (this.desktopMode ? 80 : 128)
     const canvasWidth = this.desktopMode ? width - this.sidebarWidth : width
     const aspectRatio = this.cols / this.rows
@@ -212,5 +233,9 @@ section {
   max-width: 480px;
   margin: 32px auto;
   padding: 0 16px;
+}
+
+h3 {
+  margin: 0 0 16px;
 }
 </style>
