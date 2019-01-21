@@ -4,8 +4,10 @@
       <div class="main-wrapper" :style="{ margin: margin + 'px' }">
         <main>
           <div v-if="!desktopMode" style="height: 0; display: flex; align-items: flex-end; transform: translateY(-6px);" :style="{ marginTop: '48px' }">
-            <CurrentSolve :time="time" :moves="moveHistory.length - undoCount" :fmc="eventType == 1" style="flex-grow: 1;" />
-            <button @click="scramble" :disabled="isScrambled">Scramble</button>
+            <CurrentSolve :dnf="dnf" :time="time" :moves="moveHistory.length - undoCount" :fmc="eventType == 1" style="flex-grow: 1;" />
+            <button @click="inSolvingPhase ? done() : scramble()" :disabled="isScrambled && !inSolvingPhase">
+              {{ eventType == 2 && gameStarted ? "Done" : "Scramble" }}
+            </button>
           </div>
           <canvas ref="canvas"/>
           <div style="display: flex; height: 0px; transform: translateY(6px);" :style="{ marginBottom: '36px' }">
@@ -15,12 +17,14 @@
           </div>
         </main>
         <aside v-if="desktopMode" :style="{ width: sidebarWidth + 'px' }">
-          <button @click="scramble" :disabled="isScrambled" class="sidebar-button">Scramble</button>
+          <button @click="inSolvingPhase ? done() : scramble()" :disabled="isScrambled && !inSolvingPhase" class="sidebar-button">
+            {{ eventType == 2 && gameStarted ? "Done" : "Scramble" }}
+          </button>
           <div v-if="eventType == 1" style="margin-bottom: 16px; display: flex;">
             <button @click="undo" style="flex-grow: 1;" :disabled="this.undoCount >= this.moveHistory.length">Undo</button>
             <button @click="redo" style="flex-grow: 1;" :disabled="this.undoCount == 0">Redo</button>
           </div>
-          <CurrentSolve :time="time" :moves="moveHistory.length - undoCount" :fmc="eventType == 1" style="margin-bottom: 8px;" />
+          <CurrentSolve :dnf="dnf" :time="time" :moves="moveHistory.length - undoCount" :fmc="eventType == 1" style="margin-bottom: 8px;" />
           <SolveList :solves="solves" :max="sidebarSolvesNum" :fmc="eventType == 1"/>
         </aside>
       </div>
@@ -92,6 +96,9 @@ export default class App extends Vue {
   isScrambled = false
   startTime = 0
   time = 0
+  memoTime = 0
+  dnf = false
+  inSolvingPhase = false
   interval!: number
 
   solves: Solve[] = []
@@ -134,8 +141,9 @@ export default class App extends Vue {
     this.moveHistory = []
     this.undoCount = 0
     this.solves = []
+    this.dnf = false
     this.isScrambled = this.gameStarted = false
-    this.time = 0
+    this.time = this.memoTime = 0
   }
 
   scramble() {
@@ -143,12 +151,15 @@ export default class App extends Vue {
     this.isScrambled = true
     this.scrambledBoard = this.game.board.clone()
     this.moveHistory = []
+    this.dnf = false
     this.undoCount = 0
+    if (this.eventType == EventType.Blind) this.startGame()
   }
 
   startGame() {
     this.gameStarted = true
-    this.time = 0
+    this.time = this.memoTime = 0
+    this.inSolvingPhase = false
     this.startTime = Date.now()
     this.interval = setInterval(() => {
       this.time = Date.now() - this.startTime
@@ -163,7 +174,21 @@ export default class App extends Vue {
       this.undoCount = 0
     }
     this.moveHistory.push(move)
-    if (this.game.board.isSolved()) this.onSolved()
+    if (this.eventType == EventType.Blind) {
+      this.game.blind = true
+      this.game.render()
+      this.inSolvingPhase = true
+      this.memoTime = Date.now() - this.startTime  
+    } else if (this.game.board.isSolved()) {
+      this.onSolved()
+    }
+  }
+
+  done() {
+    this.game.blind = false
+    this.game.render()
+    this.dnf = !this.game.board.isSolved()
+    this.onSolved()
   }
 
   onSolved() {
@@ -171,16 +196,20 @@ export default class App extends Vue {
     this.time = Date.now() - this.startTime
     this.isScrambled = false
     this.gameStarted = false
+    this.inSolvingPhase = false
     this.game.pointers.clear()
     this.solves.push({
       time: this.time,
+      memoTime: this.memoTime,
       moves: this.moveHistory,
-      scramble: this.scrambledBoard!
+      scramble: this.scrambledBoard!,
+      dnf: this.dnf
     })
   }
 
   @Watch('cols')
   @Watch('rows')
+  @Watch('eventType')
   onBoardSizeChange() {
     this.cols = Math.min(Math.max(this.cols, 2), 50)
     this.rows = Math.min(Math.max(this.rows, 2), 50)

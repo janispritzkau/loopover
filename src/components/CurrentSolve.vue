@@ -1,6 +1,6 @@
 <template>
     <div class="current-solve" :class="{ fmc: fmc }">
-        <div class="current-time">{{ formatTime(time) }}</div>
+        <div class="current-time">{{ formatTime(time) + (dnf && ' DNF' || '') }}</div>
         <div class="current-moves">{{ moves }} moves</div>
     </div>
 </template>
@@ -13,6 +13,7 @@ export default class CurrentSolve extends Vue {
     @Prop() time!: number
     @Prop() moves!: number
     @Prop() fmc!: boolean
+    @Prop() dnf!: boolean
    
     formatTime(ms: number) {
         if (ms == null) return "-"
