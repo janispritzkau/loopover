@@ -1,17 +1,17 @@
 <template>
   <div id="app">
-    <div class="main-container">
-      <div class="main-wrapper">
+    <div class="main-container" :style="{ height: height + 'px' }">
+      <div class="main-wrapper" :style="{ margin: margin + 'px' }">
         <main>
-          <div v-if="!desktopMode" style="height: 0; display: flex; align-items: flex-end;">
-            <div style="flex-grow: 1; margin-bottom: 6px;">
+          <div v-if="!desktopMode" style="height: 0; display: flex; align-items: flex-end; transform: translateY(-6px);" :style="{ marginTop: '48px' }">
+            <div style="flex-grow: 1;">
               <div class="current-time">{{ formatTime(time) }}</div>
               <div class="current-moves">{{ moves }} moves</div>
             </div>
-            <button @click="scramble" :disabled="isScrambled" style="margin-bottom: 4px;">Scramble</button>
+            <button @click="scramble" :disabled="isScrambled">Scramble</button>
           </div>
           <canvas ref="canvas"/>
-          <div style="display: flex; padding-top: 4px;" :style="{height: desktopMode ? '24px' : '0'}">
+          <div style="display: flex; height: 0px; transform: translateY(6px);" :style="{ marginBottom: '36px' }">
             <button @click="eventDialog = true">Event: {{cols}}×{{rows}}</button>
             <div style="flex-grow: 1;"/>
             <button @click="optionsDialog = true">Options</button>
@@ -20,7 +20,7 @@
         <aside v-if="desktopMode" :style="{ width: sidebarWidth + 'px' }">
           <button @click="scramble" :disabled="isScrambled" class="sidebar-button">Scramble</button>
           <div class="current-time">{{ formatTime(time) }}</div>
-          <div class="current-moves" style="margin-bottom: 16px;">{{ moves }} moves</div>
+          <div class="current-moves" style="margin-bottom: 8px;">{{ moves }} moves</div>
           <SolveList :solves="solves" :max="sidebarSolvesNum"/>
         </aside>
       </div>
@@ -65,6 +65,8 @@ export default class App extends Vue {
   rows = 3
 
   desktopMode = false
+  height = 0
+  margin = 16
   sidebarWidth = 200
   sidebarSolvesNum = 12
   forceMobile = false
@@ -125,7 +127,6 @@ export default class App extends Vue {
 
   @Watch('cols')
   @Watch('rows')
-  @Watch('forceMobile')
   onBoardSizeChange() {
     this.cols = Math.min(Math.max(this.cols, 2), 50)
     this.rows = Math.min(Math.max(this.rows, 2), 50)
@@ -136,18 +137,34 @@ export default class App extends Vue {
     this.time = this.moves = 0
   }
 
+  @Watch('forceMobile')
+  @Watch('margin')
   updateSize() {
-    const width = this.$el.clientWidth - 32
-    this.desktopMode = this.forceMobile ? false : width - this.sidebarWidth > 380
-    const height = innerHeight - (this.desktopMode ? 80 : 128)
-    const canvasWidth = this.desktopMode ? width - this.sidebarWidth : width
-    const aspectRatio = this.cols / this.rows
+    const { clientWidth: w, clientHeight: h } = document.documentElement;
+    this.height = h
+    const { cols, rows } = this.game
 
-    if (canvasWidth * (this.rows / this.cols) < height) {
-      const maxWidth = this.cols * 64 + 256 * (aspectRatio > 1 ? aspectRatio : 1)
+    const width = w - this.margin * 2
+    const desktopHeight = h - (this.margin * 2 + 36)
+    const mobileHeight = h - (this.margin * 2 + 36 + 48)
+    const desktopWidth = width - this.sidebarWidth
+
+    if (this.forceMobile) {
+      this.desktopMode = false
+    } else {
+      this.desktopMode = Math.min(width / cols * rows, mobileHeight) < Math.min(desktopWidth / cols * rows, desktopHeight)
+    }
+
+    const height = this.desktopMode ? desktopHeight : mobileHeight
+    const canvasWidth = this.desktopMode ? desktopWidth : width
+    const canvasHeight = canvasWidth / cols * rows
+    const aspectRatio = cols / rows
+
+    if (canvasHeight < height) {
+      const maxWidth = this.cols * 56 + 256 * (aspectRatio > 1 ? aspectRatio : 1)
       this.game.setWidth(Math.min(canvasWidth, maxWidth))
     } else {
-      const maxHeight = this.rows * 64 + 256 / (aspectRatio < 1 ? aspectRatio : 1)
+      const maxHeight = this.rows * 56 + 256 / (aspectRatio < 1 ? aspectRatio : 1)
       this.game.setHeight(Math.min(height, maxHeight))
     }
     this.sidebarSolvesNum = ((this.game.height / this.game.dpr - 96) / 40) | 0
@@ -172,16 +189,15 @@ export default class App extends Vue {
 #app {
   font-family: 'Roboto', sans-serif;
   color: rgba(0, 0, 0, 0.8);
-  padding-bottom: 320px;
 }
 
 .main-container {
-  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #f4f4f4;
   box-sizing: content-box;
+  padding-bottom: 16px;
   border-bottom: 2px solid rgba(0, 0, 0, 0.05);
 }
 
@@ -196,8 +212,7 @@ canvas {
 
 aside {
   width: 240px;
-  min-height: 320px;
-  padding: 2px 0 0 24px;
+  padding: 2px 0 0 16px;
   box-sizing: border-box;
 }
 
@@ -205,7 +220,7 @@ aside {
   display: block;
   width: 100%;
   height: 40px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   background: rgba(0, 0, 0, 0.1);
 }
 .sidebar-button:active {

@@ -33,7 +33,7 @@ export default class SolveItem extends Vue {
     display: flex;
     margin: 0 auto;
     padding: 6px 2px;
-    margin-bottom: 4px;
+    margin-bottom: 0px;
     max-width: 240px;
 }
 
