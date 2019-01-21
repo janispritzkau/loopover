@@ -25,7 +25,7 @@
         </aside>
       </div>
     </div>
-    <section v-if="!desktopMode">
+    <section v-if="!desktopMode || sidebarSolvesNum < 5">
       <SolveList v-if="solves.length > 0" :solves="solves"/>
       <div v-else style="opacity: 0.8;">No solves yet</div>
     </section>
@@ -65,11 +65,12 @@ export default class App extends Vue {
   rows = 3
 
   desktopMode = false
+  forceMobile = false
   height = 0
   margin = 16
-  sidebarWidth = 200
+  sidebarWidth = 192
   sidebarSolvesNum = 12
-  forceMobile = false
+
   eventDialog = false
   optionsDialog = false
   
@@ -87,6 +88,13 @@ export default class App extends Vue {
     const s = ms / 1000
     const min = (s / 60) | 0, sec = s % 60 | 0, mil = ms % 1000 | 0
     return `${min}:${sec.toString().padStart(2, "0")}:${mil.toString().padStart(3, "0")}`
+  }
+
+  reset() {
+    clearInterval(this.interval)
+    this.solves = []
+    this.isScrambled = this.gameStarted = false
+    this.time = this.moves = 0
   }
 
   scramble() {
@@ -119,12 +127,6 @@ export default class App extends Vue {
     this.solves.push({ time: this.time, moves: this.moves })
   }
 
-
-  setSize(cols: number, rows?: number) {
-    this.cols = cols
-    this.rows = rows || cols
-  }
-
   @Watch('cols')
   @Watch('rows')
   onBoardSizeChange() {
@@ -132,9 +134,7 @@ export default class App extends Vue {
     this.rows = Math.min(Math.max(this.rows, 2), 50)
     this.game.setBoardSize(this.cols, this.rows)
     this.updateSize()
-    this.solves = []
-    this.isScrambled = this.gameStarted = false
-    this.time = this.moves = 0
+    this.reset()
   }
 
   @Watch('forceMobile')
@@ -152,6 +152,7 @@ export default class App extends Vue {
     if (this.forceMobile) {
       this.desktopMode = false
     } else {
+      // enable desktop mode if the canvas size is bigger than in mobile mode
       this.desktopMode = Math.min(width / cols * rows, mobileHeight) < Math.min(desktopWidth / cols * rows, desktopHeight)
     }
 
@@ -234,18 +235,6 @@ aside {
 
 .current-moves, .moves {
   opacity: 0.8;
-}
-
-.solve {
-  display: flex;
-  margin: 0 auto;
-  margin-bottom: 8px;
-  max-width: 240px;
-}
-
-.solve .time {
-  font-weight: 500;
-  flex-grow: 1;
 }
 
 section {
