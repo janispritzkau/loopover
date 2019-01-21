@@ -28,7 +28,7 @@ export class Game {
 
     blind = false
     locked = false
-    transitionTime = 120
+    transitionTime = 150
     pointers: Map<number, Pointer> = new Map
     transitions: Map<number, Transition> = new Map
     private moveAxis: Axis = Axis.Row
@@ -107,9 +107,9 @@ export class Game {
 
                 if (this.blind) {
                     const t = transition ? transition.time! ** 0.5 : 0
-                    const flash = (t < 0.5 ? t * 2 : 2 - t * 2) * 40
-                    const gap = this.tileSize * 0.04
-                    this.ctx.fillStyle = `rgb(${[100 + flash, 104 + flash, 108 + flash].join()})`
+                    const flash = (t < 0.5 ? t * 2 : 2 - t * 2) * 60
+                    const gap = this.tileSize * 0.03
+                    this.ctx.fillStyle = `rgb(${[100 + flash, 104 + flash, 109 + flash].join()})`
                     this.ctx.fillRect(x + gap, y + gap, this.tileSize - gap * 2, this.tileSize - gap * 2)
                 } else {
                     const index = this.board.grid[(row + this.rows * 8) % this.rows][(col + this.cols * 8) % this.cols]
