@@ -41,6 +41,14 @@ export class Board {
     }
 
     toJSON() {
-        return JSON.stringify(this.grid)
+        return this.clone().grid
+    }
+
+    clone() {
+        const board = new Board(this.cols, this.rows)
+        for (let r = 0; r < this.rows; r++) for (let c = 0; c < this.cols; c++) {
+            board.grid[r][c] = this.grid[r][c]
+        }
+        return board
     }
 }
