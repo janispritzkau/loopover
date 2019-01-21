@@ -2,7 +2,7 @@
     <div>
         <div v-for="(solve, i) in solves.slice(-max).reverse()" :key="i" class="solve">
             <div class="time">{{ formatTime(solve.time) }}</div>
-            <div class="moves">{{ solve.moves }} moves</div>
+            <div class="moves">{{ solve.moves.length || solve.moves }} moves</div>
         </div>
     </div>
 </template>
