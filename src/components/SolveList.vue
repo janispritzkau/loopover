@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div v-for="(solve, i) in solves.slice(-max).reverse()" :key="i" class="solve">
+        <div v-for="(solve, i) in solves.slice(-max).reverse()" :key="i" class="solve" :class="{ fmc: fmc }">
             <div class="time">{{ formatTime(solve.time) }}</div>
             <div class="moves">{{ solve.moves.length || solve.moves }} moves</div>
         </div>
@@ -19,6 +19,8 @@ export default class SolveItem extends Vue {
     @Prop({ default: 12 })
     max!: number
 
+    @Prop() fmc!: boolean
+
     formatTime(ms: number) {
         if (ms == null) return "-"
         const s = ms / 1000
@@ -36,13 +38,16 @@ export default class SolveItem extends Vue {
     margin-bottom: 0px;
     max-width: 240px;
 }
-
-.moves {
-    opacity: 0.8;
+.solve.fmc {
+    flex-direction: row-reverse;
 }
 
-.solve .time {
+:not(.fmc) > .time, .fmc .moves {
     font-weight: 500;
     flex-grow: 1;
+}
+
+:not(.fmc) > .moves, .fmc .time {
+    opacity: 0.8;
 }
 </style>

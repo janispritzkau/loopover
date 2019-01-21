@@ -4,34 +4,34 @@
       <div class="main-wrapper" :style="{ margin: margin + 'px' }">
         <main>
           <div v-if="!desktopMode" style="height: 0; display: flex; align-items: flex-end; transform: translateY(-6px);" :style="{ marginTop: '48px' }">
-            <div style="flex-grow: 1;">
-              <div class="current-time">{{ formatTime(time) }}</div>
-              <div class="current-moves">{{ moveHistory.length }} moves</div>
-            </div>
+            <CurrentSolve :time="time" :moves="moveHistory.length - undoCount" :fmc="eventType == 1" style="flex-grow: 1;" />
             <button @click="scramble" :disabled="isScrambled">Scramble</button>
           </div>
           <canvas ref="canvas"/>
           <div style="display: flex; height: 0px; transform: translateY(6px);" :style="{ marginBottom: '36px' }">
-            <button @click="eventDialog = true">Event: {{cols}}×{{rows}}</button>
+            <button @click="eventDialog = true">Event: {{cols}}×{{rows}} {{ getEventName(eventType) }}</button>
             <div style="flex-grow: 1;"/>
             <button @click="optionsDialog = true">Options</button>
           </div>
         </main>
         <aside v-if="desktopMode" :style="{ width: sidebarWidth + 'px' }">
           <button @click="scramble" :disabled="isScrambled" class="sidebar-button">Scramble</button>
-          <div class="current-time">{{ formatTime(time) }}</div>
-          <div class="current-moves" style="margin-bottom: 8px;">{{ moveHistory.length }} moves</div>
-          <SolveList :solves="solves" :max="sidebarSolvesNum"/>
+          <div v-if="eventType == 1" style="margin-bottom: 16px; display: flex;">
+            <button @click="undo" style="flex-grow: 1;" :disabled="this.undoCount >= this.moveHistory.length">Undo</button>
+            <button @click="redo" style="flex-grow: 1;" :disabled="this.undoCount == 0">Redo</button>
+          </div>
+          <CurrentSolve :time="time" :moves="moveHistory.length - undoCount" :fmc="eventType == 1" style="margin-bottom: 8px;" />
+          <SolveList :solves="solves" :max="sidebarSolvesNum" :fmc="eventType == 1"/>
         </aside>
       </div>
     </div>
     <section v-if="!desktopMode || sidebarSolvesNum < 5">
-      <SolveList v-if="solves.length > 0" :solves="solves"/>
+      <SolveList v-if="solves.length > 0" :solves="solves" :fmc="eventType == 1"/>
       <div v-else style="opacity: 0.8;">No solves yet</div>
     </section>
     <Dialog :open.sync="eventDialog">
       <h3>Event</h3>
-      <div style="display: flex;">
+      <div style="display: flex; margin-bottom: 16px;">
         <div style="width: 50%; padding-right: 8px;">
           <label>Cols</label>
           <input class="input" type="number" v-model.number.lazy="cols" :min="2" :max="50">
@@ -41,6 +41,12 @@
           <input class="input" type="number" v-model.number.lazy="rows" :min="2" :max="50">
         </div>
       </div>
+      <label>Event type</label>
+      <select v-model.number="eventType">
+        <option :value="0">Normal</option>
+        <option :value="1">FMC</option>
+        <option :value="2">Blind</option>
+      </select>
     </Dialog>
     <Dialog :open.sync="optionsDialog">
       <h3>Options</h3>
@@ -57,12 +63,20 @@ import { Component, Vue, Watch } from 'vue-property-decorator'
 import { Game, Move, Solve, Board } from './game'
 import Dialog from "./components/Dialog.vue"
 import SolveList from "./components/SolveList.vue"
+import CurrentSolve from "./components/CurrentSolve.vue"
 
-@Component({ components: { Dialog, SolveList } })
+enum EventType {
+  Normal = 0,
+  Fmc = 1,
+  Blind = 2
+}
+
+@Component({ components: { Dialog, SolveList, CurrentSolve } })
 export default class App extends Vue {
   game!: Game
   cols = 3
   rows = 3
+  eventType = EventType.Normal
 
   desktopMode = false
   forceMobile = false
@@ -98,6 +112,14 @@ export default class App extends Vue {
     const move = this.moveHistory[this.moveHistory.length - this.undoCount]
     this.game.animatedMove(move.axis, move.index, move.n)
     this.undoCount -= 1
+  }
+
+  getEventName(type: EventType) {
+    switch (type) {
+      case EventType.Normal: return ""
+      case EventType.Fmc: return "FMC"
+      case EventType.Blind: return "Blind"
+    }
   }
 
   formatTime(ms: number) {
