@@ -30,7 +30,8 @@ export function movesFromString(string: string) {
 
 export interface Solve {
     time: number
-    moves: number
+    moves: Move[] | number
+    scramble?: Board
     dnf?: boolean
     memoTime?: number
 }
