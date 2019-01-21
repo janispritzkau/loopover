@@ -6,7 +6,7 @@
           <div v-if="!desktopMode" style="height: 0; display: flex; align-items: flex-end; transform: translateY(-6px);" :style="{ marginTop: '48px' }">
             <div style="flex-grow: 1;">
               <div class="current-time">{{ formatTime(time) }}</div>
-              <div class="current-moves">{{ moves }} moves</div>
+              <div class="current-moves">{{ moveHistory.length }} moves</div>
             </div>
             <button @click="scramble" :disabled="isScrambled">Scramble</button>
           </div>
@@ -20,7 +20,7 @@
         <aside v-if="desktopMode" :style="{ width: sidebarWidth + 'px' }">
           <button @click="scramble" :disabled="isScrambled" class="sidebar-button">Scramble</button>
           <div class="current-time">{{ formatTime(time) }}</div>
-          <div class="current-moves" style="margin-bottom: 8px;">{{ moves }} moves</div>
+          <div class="current-moves" style="margin-bottom: 8px;">{{ moveHistory.length }} moves</div>
           <SolveList :solves="solves" :max="sidebarSolvesNum"/>
         </aside>
       </div>
@@ -54,7 +54,7 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator'
-import { Game, Move, Solve } from './game'
+import { Game, Move, Solve, Board } from './game'
 import Dialog from "./components/Dialog.vue"
 import SolveList from "./components/SolveList.vue"
 
@@ -78,10 +78,27 @@ export default class App extends Vue {
   isScrambled = false
   startTime = 0
   time = 0
-  moves = 0
   interval!: number
 
   solves: Solve[] = []
+  scrambledBoard?: Board
+  moveHistory: Move[] = []
+  undoCount = 0
+
+  undo() {
+    if (this.undoCount >= this.moveHistory.length) return
+    const index = this.moveHistory.length - this.undoCount - 1
+    const move = this.moveHistory[index]
+    this.game.animatedMove(move.axis, move.index, -move.n)
+    this.undoCount += 1
+  }
+
+  redo() {
+    if (this.undoCount == 0) return
+    const move = this.moveHistory[this.moveHistory.length - this.undoCount]
+    this.game.animatedMove(move.axis, move.index, move.n)
+    this.undoCount -= 1
+  }
 
   formatTime(ms: number) {
     if (ms == null) return "-"
@@ -92,19 +109,24 @@ export default class App extends Vue {
 
   reset() {
     clearInterval(this.interval)
+    this.moveHistory = []
+    this.undoCount = 0
     this.solves = []
     this.isScrambled = this.gameStarted = false
-    this.time = this.moves = 0
+    this.time = 0
   }
 
   scramble() {
     this.game.scramble()
     this.isScrambled = true
+    this.scrambledBoard = this.game.board.clone()
+    this.moveHistory = []
+    this.undoCount = 0
   }
 
   startGame() {
     this.gameStarted = true
-    this.moves = this.time = 0
+    this.time = 0
     this.startTime = Date.now()
     this.interval = setInterval(() => {
       this.time = Date.now() - this.startTime
@@ -114,7 +136,11 @@ export default class App extends Vue {
   onMove(move: Move) {
     if (this.isScrambled && !this.gameStarted) this.startGame()
     if (!this.gameStarted) return
-    this.moves += Math.abs(move.n)
+    if (this.undoCount > 0) {
+      this.moveHistory.splice(this.moveHistory.length - this.undoCount, this.undoCount)
+      this.undoCount = 0
+    }
+    this.moveHistory.push(move)
     if (this.game.board.isSolved()) this.onSolved()
   }
 
@@ -124,7 +150,11 @@ export default class App extends Vue {
     this.isScrambled = false
     this.gameStarted = false
     this.game.pointers.clear()
-    this.solves.push({ time: this.time, moves: this.moves })
+    this.solves.push({
+      time: this.time,
+      moves: this.moveHistory,
+      scramble: this.scrambledBoard!
+    })
   }
 
   @Watch('cols')
