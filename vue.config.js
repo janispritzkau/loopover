@@ -1,5 +1,6 @@
 module.exports = {
-  publicPath: "/",
+  publicPath: ".",
+  productionSourceMap: false,
   pwa: {
     name: "Loopover",
     themeColor: "#47587a",
