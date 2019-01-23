@@ -235,7 +235,9 @@ export default class App extends Vue {
     const mobileHeight = h - (this.margin * 2 + 36 + 48)
     const desktopWidth = width - this.sidebarWidth
 
-    if (this.forceMobile) {
+    if (this.eventType == 1) {
+      this.desktopMode = true
+    } else if (this.forceMobile) {
       this.desktopMode = false
     } else {
       // enable desktop mode if the canvas size is bigger than in mobile mode
