@@ -58,6 +58,10 @@
         <input type="checkbox" v-model="forceMobile">
         Force mobile mode
       </label>
+      <label>
+        <input type="checkbox" v-model="useLetters">
+        Use letters
+      </label>
     </Dialog>
   </div>
 </template>
@@ -84,6 +88,7 @@ export default class App extends Vue {
 
   desktopMode = false
   forceMobile = false
+  useLetters = true
   height = 0
   margin = 16
   sidebarWidth = 192
@@ -250,6 +255,11 @@ export default class App extends Vue {
       this.game.setHeight(Math.min(height, maxHeight))
     }
     this.sidebarSolvesNum = ((this.game.height / this.game.dpr - 96) / 40) | 0
+  }
+
+  @Watch('useLetters') onUseLettersChanged() {
+    this.game.useLetters = this.useLetters
+    this.game.render()
   }
 
   mounted() {

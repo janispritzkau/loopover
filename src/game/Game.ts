@@ -28,6 +28,7 @@ export class Game {
 
     blind = false
     locked = false
+    useLetters = true
     transitionTime = 150
     pointers: Map<number, Pointer> = new Map
     transitions: Map<number, Transition> = new Map
@@ -93,6 +94,7 @@ export class Game {
     }
 
     render() {
+        const useLetters = this.useLetters && this.cols * this.rows <= 26
         this.ctx.font = `${this.tileSize * (this.cols >= 32 ? 0.42 : this.cols > 10 ? 0.44 : 0.48)}px Roboto`     
         this.ctx.clearRect(0, 0, this.width, this.height)
         for (let i = 0; i < (this.moveAxis == Axis.Col ? this.cols : this.rows); i++) {
@@ -120,7 +122,8 @@ export class Game {
                     this.ctx.fillStyle = `rgb(${color.map(x => x | 0).join()})`
                     this.ctx.fillRect(x, y, this.tileSize, this.tileSize)
                     this.ctx.fillStyle = "#fff"
-                    this.ctx.fillText((index + 1).toString(), x + this.tileSize / 2, y + this.tileSize / 2 + 1)
+                    const text = useLetters ? String.fromCharCode(index + 65) : (index + 1).toString()
+                    this.ctx.fillText(text, x + this.tileSize / 2, y + this.tileSize / 2 + 1)
                 }
             }
         }
