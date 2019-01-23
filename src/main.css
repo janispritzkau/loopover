@@ -118,4 +118,5 @@ label {
     display: block;
     margin-bottom: 8px;
     opacity: 0.8;
+    user-select: none;
 }
