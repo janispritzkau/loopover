@@ -25,7 +25,7 @@ export default class SolveItem extends Vue {
         if (ms == null) return "-"
         const s = ms / 1000
         const min = (s / 60) | 0, sec = s % 60 | 0, mil = ms % 1000 | 0
-        return `${min}:${sec.toString().padStart(2, "0")}:${mil.toString().padStart(3, "0")}`
+        return `${min}:${sec.toString().padStart(2, "0")}.${mil.toString().padStart(3, "0")}`
     }
 }
 </script>
