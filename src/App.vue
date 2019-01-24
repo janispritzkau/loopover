@@ -152,12 +152,14 @@ export default class App extends Vue {
   }
 
   scramble() {
+    clearInterval(this.interval)
     this.game.scramble()
-    this.isScrambled = true
+    this.gameStarted = false, this.isScrambled = true
     this.scrambledBoard = this.game.board.clone()
     this.moveHistory = []
     this.dnf = false
     this.undoCount = 0
+    this.time = this.memoTime = 0
     if (this.eventType == EventType.Blind) this.startGame()
   }
 
