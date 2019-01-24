@@ -5,7 +5,7 @@
         <main>
           <div v-if="!desktopMode" style="height: 0; display: flex; align-items: flex-end; transform: translateY(-6px);" :style="{ marginTop: '48px' }">
             <CurrentSolve :dnf="dnf" :time="time" :moves="moveHistory.length - undoCount" :fmc="eventType == 1" style="flex-grow: 1;" />
-            <button @click="inSolvingPhase ? done() : scramble()" :disabled="isScrambled && !inSolvingPhase">
+            <button @click="inSolvingPhase ? done() : scramble()" :disabled="eventType == 2 && gameStarted && !inSolvingPhase">
               {{ eventType == 2 && gameStarted ? "Done" : "Scramble" }}
             </button>
           </div>
@@ -17,7 +17,7 @@
           </div>
         </main>
         <aside v-if="desktopMode" :style="{ width: sidebarWidth + 'px' }">
-          <button @click="inSolvingPhase ? done() : scramble()" :disabled="isScrambled && !inSolvingPhase" class="sidebar-button">
+          <button @click="inSolvingPhase ? done() : scramble()" :disabled="eventType == 2 && gameStarted && !inSolvingPhase" class="sidebar-button">
             {{ eventType == 2 && gameStarted ? "Done" : "Scramble" }}
           </button>
           <div v-if="eventType == 1" style="margin-bottom: 16px; display: flex;">
@@ -91,7 +91,7 @@ export default class App extends Vue {
   useLetters = true
   height = 0
   margin = 16
-  sidebarWidth = 176
+  sidebarWidth = 192
   sidebarSolvesNum = 12
 
   eventDialog = false
