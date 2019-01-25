@@ -95,7 +95,7 @@ export class Game {
     }
 
     scramble() {
-        scrambleBoard(this.board)
+        scrambleBoard(this.board, this.noRegrip)
         this.render()
     }
 

@@ -1,9 +1,19 @@
 import { Board } from './Board'
+import { Axis } from '.';
 
-export function scrambleBoard(board: Board) {
-    for (let tries = 0; tries < 20; tries++) {
-        randomizeBoard(board)
-        if (!board.isSolved() && isSolvable(board)) return
+export function scrambleBoard(board: Board, noRegrip = false) {
+    if (noRegrip) {
+        for (let i = 0; i < board.cols * board.rows + 64; i++) {
+            const axis = Math.random() > 0.5 ? Axis.Col : Axis.Row
+            const { row, col } = board.pos(0)!
+            const n = 1 + Math.floor(Math.random() * (axis == Axis.Col ? board.cols - 1 : board.rows - 1))
+            board.move(axis, axis == Axis.Col ? row : col, n)
+        }
+    } else {
+        for (let tries = 0; tries < 20; tries++) {
+            randomizeBoard(board)
+            if (!board.isSolved() && isSolvable(board)) return
+        }
     }
 }
 
