@@ -1,11 +1,11 @@
 import { Board } from './Board'
 import { Axis } from '.';
 
-export function scrambleBoard(board: Board, noRegrip = false) {
-    if (noRegrip) {
+export function scrambleBoard(board: Board, noRegripTile?: number) {
+    if (noRegripTile != null) {
         for (let i = 0; i < board.cols * board.rows + 32; i++) {
             const axis = Math.random() > 0.5 ? Axis.Col : Axis.Row
-            const { row, col } = board.pos(0)!
+            const { row, col } = board.pos(noRegripTile)!
             const n = 1 + Math.floor(Math.random() * (axis == Axis.Col ? board.rows - 1 : board.cols - 1))
             board.move(axis, axis == Axis.Col ? col : row, n)
         }

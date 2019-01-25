@@ -95,7 +95,7 @@ export class Game {
     }
 
     scramble() {
-        scrambleBoard(this.board, this.noRegrip)
+        scrambleBoard(this.board, this.noRegrip ? this.active : undefined)
         this.render()
     }
 
