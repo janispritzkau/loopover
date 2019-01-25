@@ -50,6 +50,7 @@
         <option :value="0">Normal</option>
         <option :value="1">FMC</option>
         <option :value="2">Blind</option>
+        <option :value="3">No Regrip</option>
       </select>
     </Dialog>
     <Dialog :open.sync="optionsDialog">
@@ -76,14 +77,15 @@ import CurrentSolve from "./components/CurrentSolve.vue"
 enum EventType {
   Normal = 0,
   Fmc = 1,
-  Blind = 2
+  Blind = 2,
+  NoRegrip = 3
 }
 
 @Component({ components: { Dialog, SolveList, CurrentSolve } })
 export default class App extends Vue {
   game!: Game
-  cols = 3
-  rows = 3
+  cols = 5
+  rows = 5
   eventType = EventType.Normal
 
   desktopMode = false
@@ -131,6 +133,7 @@ export default class App extends Vue {
       case EventType.Normal: return ""
       case EventType.Fmc: return "FMC"
       case EventType.Blind: return "Blind"
+      case EventType.NoRegrip: return "NRG"
     }
   }
 
@@ -221,6 +224,10 @@ export default class App extends Vue {
     this.cols = Math.min(Math.max(this.cols, 2), 50)
     this.rows = Math.min(Math.max(this.rows, 2), 50)
     this.game.setBoardSize(this.cols, this.rows)
+    this.game.noRegrip = this.eventType == EventType.NoRegrip
+    if (this.game.noRegrip) {
+      this.game.active = this.cols * this.rows - 1
+    }
     this.updateSize()
     this.reset()
   }

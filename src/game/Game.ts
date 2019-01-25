@@ -26,6 +26,8 @@ export class Game {
     dpr = devicePixelRatio
     private ctx: CanvasRenderingContext2D
 
+    noRegrip = false
+    active = 0
     blind = false
     locked = false
     useLetters = true
@@ -79,6 +81,10 @@ export class Game {
     animatedMove(axis: Axis, index: number, n: number, isPlayerMove = false) {
         if (axis == Axis.Col) index = (index + this.cols) % this.cols
         else index = (index + this.rows) % this.rows
+        if (this.noRegrip) {
+            const active = this.board.pos(this.active)!
+            if (isPlayerMove && (axis == Axis.Col ? active.col : active.row) != index) return
+        }
         this.move(axis, index, n, isPlayerMove)
         if (axis != this.moveAxis) this.transitions.clear(), this.moveAxis = axis
         this.transitions.set(index, {
@@ -96,6 +102,7 @@ export class Game {
     render() {
         const useLetters = this.useLetters && this.cols * this.rows <= 26
         this.ctx.font = `${this.tileSize * (this.cols >= 32 ? 0.42 : this.cols > 10 ? 0.44 : 0.48)}px Roboto`     
+        this.ctx.lineWidth = (this.tileSize * 0.1) | 0
         this.ctx.clearRect(0, 0, this.width, this.height)
         for (let i = 0; i < (this.moveAxis == Axis.Col ? this.cols : this.rows); i++) {
             const transition = this.transitions.get(i)
@@ -115,12 +122,18 @@ export class Game {
                     this.ctx.fillRect(x + gap, y + gap, this.tileSize - gap * 2, this.tileSize - gap * 2)
                 } else {
                     const index = this.board.grid[(row + this.rows * 8) % this.rows][(col + this.cols * 8) % this.cols]
+                    const r = (index / this.cols) | 0, c = index % this.cols
                     const cx = (index % this.cols + 0.1) / (this.cols - 0.6)
                     const cy = (((index / this.cols) | 0) + 0.2) / (this.rows - 0.6)
                     const color = [(1 - cx) * 230 + 20, cy * 190 + cx * (1 - cy) * 50 + 30, cx * 220]
-    
+                    
+                    const g = this.ctx.lineWidth
                     this.ctx.fillStyle = `rgb(${color.map(x => x | 0).join()})`
                     this.ctx.fillRect(x, y, this.tileSize, this.tileSize)
+                    if (this.noRegrip && index == this.active) {
+                        this.ctx.strokeStyle = "rgba(255, 255, 255, 0.5)"
+                        this.ctx.strokeRect(x + g / 2, y + g / 2, this.tileSize - g, this.tileSize - g)
+                    }
                     this.ctx.fillStyle = "#fff"
                     const text = useLetters ? String.fromCharCode(index + 65) : (index + 1).toString()
                     this.ctx.fillText(text, x + this.tileSize / 2, y + this.tileSize / 2 + 1)
