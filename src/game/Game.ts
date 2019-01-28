@@ -36,12 +36,16 @@ export class Game {
     transitions: Map<number, Transition> = new Map
     private moveAxis: Axis = Axis.Row
     private animating = false
+    private spaceDown = false
+    private highlightActive = false
 
     onMove?: (move: Move) => void
 
     constructor(private canvas: HTMLCanvasElement) {
         this.ctx = canvas.getContext("2d")!
         this.addEventListeners()
+        this.canvas.tabIndex = 0
+        this.canvas.focus()
     }
 
     setBoardSize(cols: number, rows?: number) {
@@ -130,7 +134,7 @@ export class Game {
                     const g = this.ctx.lineWidth = (this.tileSize * 0.1) | 0
                     this.ctx.fillStyle = `rgb(${color.map(x => x | 0).join()})`
                     this.ctx.fillRect(x | 0, y | 0, this.tileSize, this.tileSize)
-                    if (this.noRegrip && index == this.active) {
+                    if ((this.noRegrip || this.highlightActive) && index == this.active) {
                         this.ctx.strokeStyle = `rgba(255, 255, 255, ${(2 + Math.sin(Date.now() / 100)) * 0.2})`
                         this.ctx.strokeRect(x + g / 2, y + g / 2, this.tileSize - g, this.tileSize - g)
                     }
@@ -161,6 +165,7 @@ export class Game {
         this.pointers.set(identifier, pointer)
         pointer.startCol = Math.floor(pointer.startX * this.dpr / this.width * this.cols)
         pointer.startRow = Math.floor(pointer.startY * this.dpr / this.height * this.rows)
+        this.active = this.board.grid[pointer.startRow][pointer.startCol]
     }
 
     private onTouchMove = (pointer: Pointer) => {
@@ -180,6 +185,7 @@ export class Game {
     private addEventListeners() {
         let rect: ClientRect
         this.canvas.addEventListener("mousedown", e => {
+            this.canvas.focus()
             e.preventDefault(), rect = this.canvas.getBoundingClientRect()
             this.onTouchStart(-1, {
                 startX: e.clientX - rect.left, startY: e.clientY - rect.top,
@@ -216,6 +222,35 @@ export class Game {
                 const pointer = this.pointers.get(touch.identifier)
                 if (pointer) this.onTouchEnd(touch.identifier, pointer)
             }
+        })
+        const move = (axis: Axis, n: number) => {
+            const pos = this.board.pos(this.active)!
+            if (this.spaceDown || this.noRegrip) {
+                this.animatedMove(axis, axis == Axis.Col ? pos.col : pos.row, n, true)
+            } else {
+                if (axis == Axis.Row) {
+                    this.active = this.board.grid[pos.row][(pos.col + n + this.cols) % this.cols]
+                } else {
+                    this.active = this.board.grid[(pos.row + n + this.rows) % this.rows][pos.col]
+                }
+                this.render()
+            }
+        }
+        this.canvas.addEventListener("keydown", e => {
+            switch (e.key) {
+                case " ": this.spaceDown = true; break
+                case "ArrowLeft": move(Axis.Row, -1); break
+                case "ArrowRight": move(Axis.Row, 1); break
+                case "ArrowUp": move(Axis.Col, -1); break
+                case "ArrowDown": move(Axis.Col, 1); break
+                default: return
+            }
+            this.highlightActive = true
+            e.preventDefault()
+            if (!this.animating) requestAnimationFrame(this.frame)
+        })
+        this.canvas.addEventListener("keyup", e => {
+            if (e.key == " ") this.spaceDown = false
         })
     }
 }

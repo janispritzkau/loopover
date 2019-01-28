@@ -221,8 +221,8 @@ export default class App extends Vue {
   @Watch('rows')
   @Watch('eventType')
   onBoardSizeChange() {
-    this.cols = Math.min(Math.max(this.cols, 2), 50)
-    this.rows = Math.min(Math.max(this.rows, 2), 50)
+    // this.cols = Math.min(Math.max(this.cols, 2), 50)
+    // this.rows = Math.min(Math.max(this.rows, 2), 50)
     this.game.setBoardSize(this.cols, this.rows)
     this.game.noRegrip = this.eventType == EventType.NoRegrip
     if (this.game.noRegrip) {
@@ -311,6 +311,7 @@ export default class App extends Vue {
 canvas {
   display: block;
   border-radius: 2px;
+  outline: 0;
 }
 
 aside {
