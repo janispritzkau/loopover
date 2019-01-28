@@ -101,15 +101,16 @@ export class Game {
 
     render() {
         const useLetters = this.useLetters && this.cols * this.rows <= 26
-        this.ctx.font = `${this.tileSize * (this.cols >= 32 ? 0.42 : this.cols > 10 ? 0.44 : 0.48)}px Roboto`     
-        this.ctx.lineWidth = (this.tileSize * 0.1) | 0
+        const fontSize = this.tileSize * (this.cols >= 32 ? 0.42 : this.cols > 10 ? 0.45 : 0.5)
+        this.ctx.font = `${fontSize}px Roboto`
         this.ctx.clearRect(0, 0, this.width, this.height)
         for (let i = 0; i < (this.moveAxis == Axis.Col ? this.cols : this.rows); i++) {
             const transition = this.transitions.get(i)
             const moveAmount = transition ? transition.value : 0
 
-            for (let j = Math.floor(-moveAmount); j < (this.moveAxis == Axis.Col ? this.rows : this.cols) - Math.floor(moveAmount); j++) {
-                let [row, col] = [i, j]
+            const w = (this.moveAxis == Axis.Col ? this.rows : this.cols)
+            for (let j = Math.floor(-moveAmount); j < w - Math.floor(moveAmount); j++) {
+                let [row, col] = [i, (j + w * 2) % w]
                 let [x, y] = [j + moveAmount, i]
                 if (this.moveAxis == Axis.Col) [row, col] = [col, row], [x, y] = [y, x];
                 [x, y] = [(x / this.cols * this.width) | 0, (y / this.rows * this.height) | 0]
@@ -122,21 +123,20 @@ export class Game {
                     this.ctx.fillRect(x + gap, y + gap, this.tileSize - gap * 2, this.tileSize - gap * 2)
                 } else {
                     const index = this.board.grid[(row + this.rows * 8) % this.rows][(col + this.cols * 8) % this.cols]
-                    const r = (index / this.cols) | 0, c = index % this.cols
                     const cx = (index % this.cols + 0.1) / (this.cols - 0.6)
                     const cy = (((index / this.cols) | 0) + 0.2) / (this.rows - 0.6)
                     const color = [(1 - cx) * 230 + 20, cy * 190 + cx * (1 - cy) * 50 + 30, cx * 220]
                     
-                    const g = this.ctx.lineWidth
+                    const g = this.ctx.lineWidth = (this.tileSize * 0.1) | 0
                     this.ctx.fillStyle = `rgb(${color.map(x => x | 0).join()})`
-                    this.ctx.fillRect(x, y, this.tileSize, this.tileSize)
+                    this.ctx.fillRect(x | 0, y | 0, this.tileSize, this.tileSize)
                     if (this.noRegrip && index == this.active) {
-                        this.ctx.strokeStyle = "rgba(255, 255, 255, 0.5)"
+                        this.ctx.strokeStyle = `rgba(255, 255, 255, ${(2 + Math.sin(Date.now() / 100)) * 0.2})`
                         this.ctx.strokeRect(x + g / 2, y + g / 2, this.tileSize - g, this.tileSize - g)
                     }
                     this.ctx.fillStyle = "#fff"
                     const text = useLetters ? String.fromCharCode(index + 65) : (index + 1).toString()
-                    this.ctx.fillText(text, x + this.tileSize / 2, y + this.tileSize / 2 + 1)
+                    this.ctx.fillText(text, x + (this.tileSize / 2) | 0, y + (this.tileSize / 2 + fontSize * 0.05) | 0)
                 }
             }
         }
@@ -153,8 +153,7 @@ export class Game {
             if (time >= 1) this.transitions.delete(index)
         }
         this.render()
-        if (animatedTransitions == 0) this.animating = false
-        else requestAnimationFrame(this.frame)
+        requestAnimationFrame(this.frame)
     }
 
     private onTouchStart = (identifier: number, pointer: Pointer) => {
