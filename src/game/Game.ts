@@ -52,21 +52,21 @@ export class Game {
     }
     
     setWidth(width: number) {
-        this.width = width * this.dpr
+        this.width = Math.round(width * this.dpr)
         this.height = this.width / (this.cols / this.rows)
         this.updateCanvas()
     }
     
     setHeight(height: number) {
-        this.height = height * this.dpr
+        this.height = Math.round(height * this.dpr)
         this.width = this.height * (this.cols / this.rows)
         this.updateCanvas()
     }
     
     private updateCanvas() {
         this.canvas.width = this.width, this.canvas.height = this.height
-        this.canvas.style.width = `${Math.floor(this.width / this.dpr)}px`
-        this.canvas.style.height = `${Math.floor(this.height / this.dpr)}px`
+        this.canvas.style.width = `${this.width / this.dpr}px`
+        this.canvas.style.height = `${this.height / this.dpr}px`
         this.tileSize = Math.ceil(this.width / this.cols + 0.1)
         this.ctx.textBaseline = "middle"
         this.ctx.textAlign = "center"
