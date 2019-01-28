@@ -36,12 +36,16 @@ export class Game {
     transitions: Map<number, Transition> = new Map
     private moveAxis: Axis = Axis.Row
     private animating = false
+    private spaceDown = false
+    private highlightActive = false
 
     onMove?: (move: Move) => void
 
     constructor(private canvas: HTMLCanvasElement) {
         this.ctx = canvas.getContext("2d")!
         this.addEventListeners()
+        this.canvas.tabIndex = 0
+        this.canvas.focus()
     }
 
     setBoardSize(cols: number, rows?: number) {
@@ -108,8 +112,9 @@ export class Game {
             const transition = this.transitions.get(i)
             const moveAmount = transition ? transition.value : 0
 
-            for (let j = Math.floor(-moveAmount); j < (this.moveAxis == Axis.Col ? this.rows : this.cols) - Math.floor(moveAmount); j++) {
-                let [row, col] = [i, j]
+            const g = (this.moveAxis == Axis.Col ? this.rows : this.cols)
+            for (let j = Math.floor(-moveAmount); j < g - Math.floor(moveAmount); j++) {
+                let [row, col] = [i, (j + g * 2) % g]
                 let [x, y] = [j + moveAmount, i]
                 if (this.moveAxis == Axis.Col) [row, col] = [col, row], [x, y] = [y, x];
                 [x, y] = [(x / this.cols * this.width) | 0, (y / this.rows * this.height) | 0]
@@ -121,8 +126,7 @@ export class Game {
                     this.ctx.fillStyle = `rgb(${[100 + flash, 104 + flash, 109 + flash].join()})`
                     this.ctx.fillRect(x + gap, y + gap, this.tileSize - gap * 2, this.tileSize - gap * 2)
                 } else {
-                    const index = this.board.grid[(row + this.rows * 8) % this.rows][(col + this.cols * 8) % this.cols]
-                    const r = (index / this.cols) | 0, c = index % this.cols
+                    const index = this.board.grid[row][col]
                     const cx = (index % this.cols + 0.1) / (this.cols - 0.6)
                     const cy = (((index / this.cols) | 0) + 0.2) / (this.rows - 0.6)
                     const color = [(1 - cx) * 230 + 20, cy * 190 + cx * (1 - cy) * 50 + 30, cx * 220]
@@ -130,13 +134,15 @@ export class Game {
                     const g = this.ctx.lineWidth
                     this.ctx.fillStyle = `rgb(${color.map(x => x | 0).join()})`
                     this.ctx.fillRect(x, y, this.tileSize, this.tileSize)
-                    if (this.noRegrip && index == this.active) {
-                        this.ctx.strokeStyle = "rgba(255, 255, 255, 0.5)"
-                        this.ctx.strokeRect(x + g / 2, y + g / 2, this.tileSize - g, this.tileSize - g)
-                    }
                     this.ctx.fillStyle = "#fff"
                     const text = useLetters ? String.fromCharCode(index + 65) : (index + 1).toString()
-                    this.ctx.fillText(text, x + this.tileSize / 2, y + this.tileSize / 2 + 1)
+                    // this.ctx.fillText(text, x + this.tileSize / 2, y + this.tileSize / 2 + 1)
+                }
+                const index = this.board.grid[row][col]
+                if ((this.noRegrip || this.highlightActive) && index == this.active) {
+                    const g = this.ctx.lineWidth
+                    this.ctx.strokeStyle = `rgba(255, 255, 255, ${0.5 + Math.sin(Date.now() / 100) * 0.2})`
+                    this.ctx.strokeRect(x + g / 2, y + g / 2, this.tileSize - g, this.tileSize - g)
                 }
             }
         }
@@ -153,7 +159,7 @@ export class Game {
             if (time >= 1) this.transitions.delete(index)
         }
         this.render()
-        if (animatedTransitions == 0) this.animating = false
+        if (animatedTransitions == 0 && false) this.animating = false
         else requestAnimationFrame(this.frame)
     }
 
@@ -162,6 +168,7 @@ export class Game {
         this.pointers.set(identifier, pointer)
         pointer.startCol = Math.floor(pointer.startX * this.dpr / this.width * this.cols)
         pointer.startRow = Math.floor(pointer.startY * this.dpr / this.height * this.rows)
+        this.active = this.board.grid[pointer.startRow][pointer.startCol]
     }
 
     private onTouchMove = (pointer: Pointer) => {
@@ -181,6 +188,7 @@ export class Game {
     private addEventListeners() {
         let rect: ClientRect
         this.canvas.addEventListener("mousedown", e => {
+            this.canvas.focus()
             e.preventDefault(), rect = this.canvas.getBoundingClientRect()
             this.onTouchStart(-1, {
                 startX: e.clientX - rect.left, startY: e.clientY - rect.top,
@@ -217,6 +225,35 @@ export class Game {
                 const pointer = this.pointers.get(touch.identifier)
                 if (pointer) this.onTouchEnd(touch.identifier, pointer)
             }
+        })
+        const move = (axis: Axis, n: number) => {
+            const pos = this.board.pos(this.active)!
+            if (this.spaceDown || this.noRegrip) {
+                this.animatedMove(axis, axis == Axis.Col ? pos.col : pos.row, n, true)
+            } else {
+                if (axis == Axis.Row) {
+                    this.active = this.board.grid[pos.row][(pos.col + n + this.cols) % this.cols]
+                } else {
+                    this.active = this.board.grid[(pos.row + n + this.rows) % this.rows][pos.col]
+                }
+                this.render()
+            }
+        }
+        this.canvas.addEventListener("keydown", e => {
+            switch (e.key) {
+                case " ": this.spaceDown = true; break
+                case "ArrowLeft": move(Axis.Row, -1); break
+                case "ArrowRight": move(Axis.Row, 1); break
+                case "ArrowUp": move(Axis.Col, -1); break
+                case "ArrowDown": move(Axis.Col, 1); break
+                default: return
+            }
+            this.highlightActive = true
+            e.preventDefault()
+            if (!this.animating) requestAnimationFrame(this.frame)
+        })
+        this.canvas.addEventListener("keyup", e => {
+            if (e.key == " ") this.spaceDown = false
         })
     }
 }
