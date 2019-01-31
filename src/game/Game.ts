@@ -130,7 +130,7 @@ export class Game {
                 } else {
                     const cx = (index % this.cols + 0.1) / (this.cols - 0.6)
                     const cy = (((index / this.cols) | 0) + 0.2) / (this.rows - 0.6)
-                    const color = [(1 - cx) * 240 + 15, cy * 200 + cx * (1 - cy) * 50 + 20, cx * 230]
+                    const color = [(1 - cx) * 235 + 15, cy * 210 + cx * (1 - cy) * 50 + 15, cx * 220]
                     
                     this.ctx.fillStyle = `rgb(${color.map(x => x | 0).join()})`
                     this.ctx.fillRect(x | 0, y | 0, this.tileSize, this.tileSize)
@@ -166,7 +166,7 @@ export class Game {
         this.pointers.set(identifier, pointer)
         pointer.startCol = Math.floor(pointer.startX * this.dpr / this.width * this.cols)
         pointer.startRow = Math.floor(pointer.startY * this.dpr / this.height * this.rows)
-        if (!this.noRegrip) this.active = this.board.grid[pointer.startRow][pointer.startCol]
+        if (!(this.noRegrip && !this.board.isSolved())) this.active = this.board.grid[pointer.startRow][pointer.startCol]
     }
 
     private onTouchMove = (pointer: Pointer) => {
