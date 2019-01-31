@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div class="main-container" :style="{ height: height + 'px' }">
+    <div class="main-container">
       <div class="main-wrapper" :style="{ margin: margin + 'px' }">
         <main>
           <div v-if="!desktopMode" style="height: 0; display: flex; align-items: flex-end; transform: translateY(-6px);" :style="{ marginTop: '48px' }">
@@ -31,7 +31,7 @@
         </aside>
       </div>
     </div>
-    <section v-if="!desktopMode || sidebarSolvesNum < 5">
+    <section v-if="!desktopMode || sidebarSolvesNum < 8">
       <SolveList v-if="solves.length > 0" :solves="solves" :fmc="eventType == 1"/>
       <div v-else style="opacity: 0.8;">No solves yet</div>
     </section>
@@ -90,16 +90,16 @@ enum EventType {
 @Component({ components: { Dialog, SolveList, CurrentSolve } })
 export default class App extends Vue {
   game!: Game
-  cols = 5
-  rows = 5
+  cols = 3
+  rows = 3
   eventType = EventType.Normal
 
   desktopMode = false
   forceMobile = false
   useLetters = true
   darkText = false
-  height = 0
   margin = 16
+  minMargin = 16
   sidebarWidth = 192
   sidebarSolvesNum = 12
 
@@ -229,8 +229,8 @@ export default class App extends Vue {
   @Watch('rows')
   @Watch('eventType')
   onBoardSizeChange() {
-    // this.cols = Math.min(Math.max(this.cols, 2), 50)
-    // this.rows = Math.min(Math.max(this.rows, 2), 50)
+    this.cols = Math.min(Math.max(this.cols, 2), 50)
+    this.rows = Math.min(Math.max(this.rows, 2), 50)
     this.game.setBoardSize(this.cols, this.rows)
     this.game.noRegrip = this.eventType == EventType.NoRegrip
     if (this.game.noRegrip) {
@@ -243,13 +243,12 @@ export default class App extends Vue {
   @Watch('forceMobile')
   @Watch('margin')
   updateSize() {
-    const { clientWidth: w, clientHeight: h } = document.documentElement;
-    this.height = h
     const { cols, rows } = this.game
-
-    const width = w - this.margin * 2
-    const desktopHeight = h - (this.margin * 2 + 36)
-    const mobileHeight = h - (this.margin * 2 + 36 + 48)
+    const w = this.$el.clientWidth, h = innerHeight
+    this.minMargin = w / cols > 96 ? 24 : 16
+    const width = w - this.minMargin * 2
+    const desktopHeight = h - (this.minMargin * 2 + 36)
+    const mobileHeight = h - (this.minMargin * 2 + 36 + 48)
     const desktopWidth = width - this.sidebarWidth
 
     if (this.forceMobile) {
@@ -271,6 +270,7 @@ export default class App extends Vue {
       const maxHeight = this.rows * 56 + 256 / (aspectRatio < 1 ? aspectRatio : 1)
       this.game.setHeight(Math.min(height, maxHeight))
     }
+    this.margin = this.game.height / this.game.dpr < height - 32 ? 32 : this.minMargin
     this.sidebarSolvesNum = ((this.game.height / this.game.dpr - 96) / 40) | 0
   }
 
@@ -313,13 +313,13 @@ export default class App extends Vue {
 }
 
 .main-container {
+  min-height: 75vh;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #f4f4f4;
   box-sizing: content-box;
-  padding-bottom: 16px;
-  border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .main-wrapper {
