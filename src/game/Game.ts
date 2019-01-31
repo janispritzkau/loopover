@@ -205,6 +205,7 @@ export class Game {
             if (pointer) this.onTouchEnd(-1, pointer)
         })
         this.canvas.addEventListener("touchstart", e => {
+            if (!e.cancelable) return
             e.preventDefault(), rect = this.canvas.getBoundingClientRect()
             for (let touch of e.changedTouches) this.onTouchStart(touch.identifier, {
                 startX: touch.clientX - rect.left, startY: touch.clientY - rect.top,
