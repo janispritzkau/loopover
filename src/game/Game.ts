@@ -165,7 +165,7 @@ export class Game {
         this.pointers.set(identifier, pointer)
         pointer.startCol = Math.floor(pointer.startX * this.dpr / this.width * this.cols)
         pointer.startRow = Math.floor(pointer.startY * this.dpr / this.height * this.rows)
-        this.active = this.board.grid[pointer.startRow][pointer.startCol]
+        if (!this.noRegrip) this.active = this.board.grid[pointer.startRow][pointer.startCol]
     }
 
     private onTouchMove = (pointer: Pointer) => {
@@ -255,6 +255,7 @@ export class Game {
         })
         this.canvas.addEventListener("blur", () => {
             this.highlightActive = false
+            this.render()
         })
     }
 }
