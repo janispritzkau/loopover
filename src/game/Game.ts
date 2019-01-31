@@ -41,7 +41,7 @@ export class Game {
 
     onMove?: (move: Move) => void
 
-    constructor(private canvas: HTMLCanvasElement) {
+    constructor(public canvas: HTMLCanvasElement) {
         this.ctx = canvas.getContext("2d")!
         this.addEventListeners()
         this.canvas.tabIndex = 0
@@ -126,7 +126,7 @@ export class Game {
                     this.ctx.fillStyle = `rgb(${[100 + flash, 104 + flash, 109 + flash].join()})`
                     this.ctx.fillRect(x + gap, y + gap, this.tileSize - gap * 2, this.tileSize - gap * 2)
                 } else {
-                    const index = this.board.grid[(row + this.rows * 8) % this.rows][(col + this.cols * 8) % this.cols]
+                    const index = this.board.grid[row][col]
                     const cx = (index % this.cols + 0.1) / (this.cols - 0.6)
                     const cy = (((index / this.cols) | 0) + 0.2) / (this.rows - 0.6)
                     const color = [(1 - cx) * 230 + 20, cy * 190 + cx * (1 - cy) * 50 + 30, cx * 220]
@@ -195,6 +195,7 @@ export class Game {
         addEventListener("mousemove", e => {
             const pointer = this.pointers.get(-1)
             if (!pointer) return
+            this.highlightActive = false
             pointer.x = e.clientX - rect.left, pointer.y = e.clientY - rect.top
             this.onTouchMove(pointer)
         })
@@ -251,6 +252,9 @@ export class Game {
         })
         this.canvas.addEventListener("keyup", e => {
             if (e.key == " ") this.spaceDown = false
+        })
+        this.canvas.addEventListener("blur", () => {
+            this.highlightActive = false
         })
     }
 }
