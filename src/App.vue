@@ -315,7 +315,7 @@ export default class App extends Vue {
 .main-container {
   min-height: 75vh;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   background: #f4f4f4;
   box-sizing: content-box;
