@@ -5,6 +5,8 @@
         <main>
           <div v-if="!desktopMode" style="height: 0; display: flex; align-items: flex-end; transform: translateY(-6px);" :style="{ marginTop: '48px' }">
             <CurrentSolve :dnf="dnf" :time="time" :moves="moveHistory.length - undoCount" :fmc="eventType == 1" style="flex-grow: 1;" />
+            <button v-if="eventType == 1" @click="undo" :disabled="this.undoCount >= this.moveHistory.length">Undo</button>
+            <button v-if="eventType == 1" @click="redo" :disabled="this.undoCount == 0">Redo</button>
             <button @click="inSolvingPhase ? done() : scramble()" :disabled="eventType == 2 && gameStarted && !inSolvingPhase">
               {{ eventType == 2 && gameStarted ? "Done" : "Scramble" }}
             </button>
@@ -250,9 +252,7 @@ export default class App extends Vue {
     const mobileHeight = h - (this.margin * 2 + 36 + 48)
     const desktopWidth = width - this.sidebarWidth
 
-    if (this.eventType == 1) {
-      this.desktopMode = true
-    } else if (this.forceMobile) {
+    if (this.forceMobile) {
       this.desktopMode = false
     } else {
       // enable desktop mode if the canvas size is bigger than in mobile mode
