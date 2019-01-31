@@ -26,6 +26,7 @@ export class Game {
     dpr = devicePixelRatio
     private ctx: CanvasRenderingContext2D
 
+    darkText = false
     noRegrip = false
     active = 0
     blind = false
@@ -129,11 +130,11 @@ export class Game {
                 } else {
                     const cx = (index % this.cols + 0.1) / (this.cols - 0.6)
                     const cy = (((index / this.cols) | 0) + 0.2) / (this.rows - 0.6)
-                    const color = [(1 - cx) * 230 + 20, cy * 190 + cx * (1 - cy) * 50 + 30, cx * 220]
+                    const color = [(1 - cx) * 230 + 20, cy * 200 + cx * (1 - cy) * 40 + 20, cx * 220]
                     
                     this.ctx.fillStyle = `rgb(${color.map(x => x | 0).join()})`
                     this.ctx.fillRect(x | 0, y | 0, this.tileSize, this.tileSize)
-                    this.ctx.fillStyle = "#fff"
+                    this.ctx.fillStyle = this.darkText ? "#111" : "#fff"
                     const text = useLetters ? String.fromCharCode(index + 65) : (index + 1).toString()
                     this.ctx.fillText(text, x + (this.tileSize / 2) | 0, y + (this.tileSize / 2 + fontSize * 0.05) | 0)
                 }

@@ -63,6 +63,10 @@
         <input type="checkbox" v-model="useLetters">
         Use letters
       </label>
+      <label>
+        <input type="checkbox" v-model="darkText">
+        Dark text
+      </label>
     </Dialog>
   </div>
 </template>
@@ -91,6 +95,7 @@ export default class App extends Vue {
   desktopMode = false
   forceMobile = false
   useLetters = true
+  darkText = false
   height = 0
   margin = 16
   sidebarWidth = 192
@@ -271,6 +276,11 @@ export default class App extends Vue {
 
   @Watch('useLetters') onUseLettersChanged() {
     this.game.useLetters = this.useLetters
+    this.game.render()
+  }
+
+  @Watch('darkText') onDarkTextChanged() {
+    this.game.darkText = this.darkText
     this.game.render()
   }
 
