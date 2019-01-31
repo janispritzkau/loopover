@@ -106,7 +106,7 @@ export class Game {
 
     render() {
         const useLetters = this.useLetters && this.cols * this.rows <= 26
-        const fontSize = this.tileSize * (this.cols >= 32 ? 0.42 : this.cols > 10 ? 0.45 : 0.5)
+        const fontSize = this.tileSize * (this.cols >= 32 ? 0.42 : this.cols > 10 ? 0.45 : 0.53)
         this.ctx.font = `${fontSize}px Roboto`
         this.ctx.clearRect(0, 0, this.width, this.height)
         for (let i = 0; i < (this.moveAxis == Axis.Col ? this.cols : this.rows); i++) {
