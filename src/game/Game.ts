@@ -130,7 +130,7 @@ export class Game {
                 } else {
                     const cx = (index % this.cols + 0.1) / (this.cols - 0.6)
                     const cy = (((index / this.cols) | 0) + 0.2) / (this.rows - 0.6)
-                    const color = [(1 - cx) * 230 + 20, cy * 200 + cx * (1 - cy) * 40 + 20, cx * 220]
+                    const color = [(1 - cx) * 240 + 15, cy * 200 + cx * (1 - cy) * 50 + 20, cx * 230]
                     
                     this.ctx.fillStyle = `rgb(${color.map(x => x | 0).join()})`
                     this.ctx.fillRect(x | 0, y | 0, this.tileSize, this.tileSize)
