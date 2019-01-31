@@ -155,6 +155,7 @@ export default class App extends Vue {
   }
 
   scramble() {
+    this.game.canvas.focus()
     clearInterval(this.interval)
     this.game.scramble()
     this.gameStarted = false, this.isScrambled = true
