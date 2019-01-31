@@ -119,6 +119,7 @@ export class Game {
                 if (this.moveAxis == Axis.Col) [row, col] = [col, row], [x, y] = [y, x];
                 [x, y] = [(x / this.cols * this.width) | 0, (y / this.rows * this.height) | 0]
 
+                const index = this.board.grid[row][col]
                 if (this.blind) {
                     const t = transition ? transition.time! ** 0.5 : 0
                     const flash = (t < 0.5 ? t * 2 : 2 - t * 2) * 60
@@ -126,21 +127,20 @@ export class Game {
                     this.ctx.fillStyle = `rgb(${[100 + flash, 104 + flash, 109 + flash].join()})`
                     this.ctx.fillRect(x + gap, y + gap, this.tileSize - gap * 2, this.tileSize - gap * 2)
                 } else {
-                    const index = this.board.grid[row][col]
                     const cx = (index % this.cols + 0.1) / (this.cols - 0.6)
                     const cy = (((index / this.cols) | 0) + 0.2) / (this.rows - 0.6)
                     const color = [(1 - cx) * 230 + 20, cy * 190 + cx * (1 - cy) * 50 + 30, cx * 220]
                     
-                    const g = this.ctx.lineWidth = (this.tileSize * 0.1) | 0
                     this.ctx.fillStyle = `rgb(${color.map(x => x | 0).join()})`
                     this.ctx.fillRect(x | 0, y | 0, this.tileSize, this.tileSize)
-                    if ((this.noRegrip || this.highlightActive) && index == this.active) {
-                        this.ctx.strokeStyle = `rgba(255, 255, 255, ${(2 + Math.sin(Date.now() / 100)) * 0.2})`
-                        this.ctx.strokeRect(x + g / 2, y + g / 2, this.tileSize - g, this.tileSize - g)
-                    }
                     this.ctx.fillStyle = "#fff"
                     const text = useLetters ? String.fromCharCode(index + 65) : (index + 1).toString()
                     this.ctx.fillText(text, x + (this.tileSize / 2) | 0, y + (this.tileSize / 2 + fontSize * 0.05) | 0)
+                }
+                if ((this.noRegrip || this.highlightActive) && index == this.active) {
+                    const g = this.ctx.lineWidth = (this.tileSize * 0.1) | 0
+                    this.ctx.strokeStyle = `rgba(255, 255, 255, ${(2 + Math.sin(Date.now() / 100)) * 0.2})`
+                    this.ctx.strokeRect(x + g / 2, y + g / 2, this.tileSize - g, this.tileSize - g)
                 }
             }
         }

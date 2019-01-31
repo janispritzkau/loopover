@@ -284,6 +284,13 @@ export default class App extends Vue {
     if (document.fonts) document.fonts.ready.then(() => this.game.render())
     else setTimeout(() => this.game.render(), 50)
 
+    this.game.canvas.addEventListener("keydown", e => {
+      switch (e.key) {
+        case "u": this.undo(); break
+        case "r": this.redo(); break
+      }
+    })
+
     window.app = this, window.game = this.game
   }
 }
