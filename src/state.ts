@@ -4,8 +4,7 @@ import { Vue, Watch, Component } from 'vue-property-decorator'
 export enum EventType {
     Normal = 0,
     Fmc = 1,
-    Blind = 2,
-    NoRegrip = 3
+    Blind = 2
 }
 
 @Component
@@ -14,6 +13,7 @@ export class State extends Vue {
     rows = 5
     cols = 5
     event = EventType.Normal
+    noRegrips = false
 
     gameStarted = false
     isScrambled = false
@@ -135,13 +135,13 @@ export class State extends Vue {
 
     @Watch('cols')
     @Watch('rows')
-    @Watch('event')
+    @Watch('noRegrips')
     onBoardSizeChange() {
         this.cols = Math.min(Math.max(this.cols, 2), 50)
         this.rows = Math.min(Math.max(this.rows, 2), 50)
         this.game.setBoardSize(this.cols, this.rows)
-        this.game.noRegrip = this.event == EventType.NoRegrip
-        if (this.game.noRegrip) {
+        this.game.noRegrip = this.noRegrips
+        if (this.noRegrips) {
             this.game.active = this.cols * this.rows - 1
         }
         this.reset()

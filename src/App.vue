@@ -13,7 +13,7 @@
           </div>
           <canvas ref="canvas"/>
           <div style="display: flex; height: 0px; transform: translateY(6px);" :style="{ marginBottom: '36px' }">
-            <button @click="eventDialog = true">Event: {{state.cols}}×{{state.rows}} {{ getEventName(state.event) }}</button>
+            <button @click="eventDialog = true">Event: {{state.cols}}×{{state.rows}} {{ state.noRegrips ? "NRG" : "" }} {{ getEventName(state.event) }}</button>
             <div style="flex-grow: 1;"/>
             <button @click="optionsDialog = true">Options</button>
           </div>
@@ -48,12 +48,15 @@
         </div>
       </div>
       <label>Event type</label>
-      <select v-model.number="state.event">
+      <select v-model.number="state.event" style="margin-bottom: 16px;">
         <option :value="0">Normal</option>
-        <option :value="1">FMC</option>
+        <option :value="1">Fewest move count</option>
         <option :value="2">Blind</option>
-        <option :value="3">No Regrip</option>
       </select>
+      <label>
+        <input type="checkbox" v-model="state.noRegrips">
+        No Regrips
+      </label>
     </Dialog>
     <Dialog :open.sync="optionsDialog">
       <h3>Options</h3>
@@ -109,7 +112,7 @@ export default class App extends Vue {
     switch (type) {
       case EventType.Normal: return ""
       case EventType.Fmc: return "FMC"
-      case EventType.Blind: return "Blind"
+      case EventType.Blind: return "BLD"
       case EventType.NoRegrip: return "NRG"
     }
   }
