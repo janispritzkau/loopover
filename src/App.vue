@@ -4,35 +4,35 @@
       <div class="main-wrapper" :style="{ margin: margin + 'px' }">
         <main>
           <div v-if="!desktopMode" style="height: 0; display: flex; align-items: flex-end; transform: translateY(-6px);" :style="{ marginTop: '48px' }">
-            <CurrentSolve :dnf="dnf" :time="time" :moves="moveHistory.length - undoCount" :fmc="eventType == 1" style="flex-grow: 1;" />
-            <button v-if="eventType == 1" @click="undo" :disabled="this.undoCount >= this.moveHistory.length">Undo</button>
-            <button v-if="eventType == 1" @click="redo" :disabled="this.undoCount == 0">Redo</button>
-            <button @click="inSolvingPhase ? done() : scramble()" :disabled="eventType == 2 && gameStarted && !inSolvingPhase">
-              {{ eventType == 2 && gameStarted ? "Done" : "Scramble" }}
+            <CurrentSolve :dnf="state.dnf" :time="state.time" :moves="state.moveHistory.length - state.undoCount" :fmc="state.event == 1" style="flex-grow: 1;" />
+            <button v-if="state.event == 1" @click="state.undo" :disabled="state.undoCount >= state.moveHistory.length">Undo</button>
+            <button v-if="state.event == 1" @click="state.redo" :disabled="state.undoCount == 0">Redo</button>
+            <button @click="state.inSolvingPhase ? state.done() : state.scramble()" :disabled="state.event == 2 && state.gameStarted && !state.inSolvingPhase">
+              {{ state.event == 2 && state.gameStarted ? "Done" : "Scramble" }}
             </button>
           </div>
           <canvas ref="canvas"/>
           <div style="display: flex; height: 0px; transform: translateY(6px);" :style="{ marginBottom: '36px' }">
-            <button @click="eventDialog = true">Event: {{cols}}×{{rows}} {{ getEventName(eventType) }}</button>
+            <button @click="eventDialog = true">Event: {{state.cols}}×{{state.rows}} {{ getEventName(state.event) }}</button>
             <div style="flex-grow: 1;"/>
             <button @click="optionsDialog = true">Options</button>
           </div>
         </main>
         <aside v-if="desktopMode" :style="{ width: sidebarWidth + 'px' }">
-          <button @click="inSolvingPhase ? done() : scramble()" :disabled="eventType == 2 && gameStarted && !inSolvingPhase" class="sidebar-button">
-            {{ eventType == 2 && gameStarted ? "Done" : "Scramble" }}
+          <button @click="state.inSolvingPhase ? state.done() : state.scramble()" :disabled="state.event == 2 && state.gameStarted && !state.inSolvingPhase" class="sidebar-button">
+            {{ state.event == 2 && state.gameStarted ? "Done" : "Scramble" }}
           </button>
-          <div v-if="eventType == 1" style="margin-bottom: 16px; display: flex;">
-            <button @click="undo" style="flex-grow: 1;" :disabled="this.undoCount >= this.moveHistory.length">Undo</button>
-            <button @click="redo" style="flex-grow: 1;" :disabled="this.undoCount == 0">Redo</button>
+          <div v-if="state.event == 1" style="margin-bottom: 16px; display: flex;">
+            <button @click="state.undo" style="flex-grow: 1;" :disabled="state.undoCount >= state.moveHistory.length">Undo</button>
+            <button @click="state.redo" style="flex-grow: 1;" :disabled="state.undoCount == 0">Redo</button>
           </div>
-          <CurrentSolve :dnf="dnf" :time="time" :moves="moveHistory.length - undoCount" :fmc="eventType == 1" style="margin-bottom: 8px;" />
-          <SolveList :solves="solves" :max="sidebarSolvesNum" :fmc="eventType == 1"/>
+          <CurrentSolve :dnf="state.dnf" :time="state.time" :moves="state.moveHistory.length - state.undoCount" :fmc="state.event == 1" style="margin-bottom: 8px;" />
+          <SolveList :solves="state.solves" :max="sidebarSolvesNum" :fmc="state.event == 1"/>
         </aside>
       </div>
     </div>
     <section v-if="!desktopMode || sidebarSolvesNum < 8">
-      <SolveList v-if="solves.length > 0" :solves="solves" :fmc="eventType == 1"/>
+      <SolveList v-if="state.solves.length > 0" :solves="state.solves" :fmc="state.event == 1"/>
       <div v-else style="opacity: 0.8;">No solves yet</div>
     </section>
     <Dialog :open.sync="eventDialog">
@@ -40,15 +40,15 @@
       <div style="display: flex; margin-bottom: 16px;">
         <div style="width: 50%; padding-right: 8px;">
           <label>Cols</label>
-          <input class="input" type="number" v-model.number.lazy="cols" :min="2" :max="50">
+          <input class="input" type="number" v-model.number.lazy="state.cols" :min="2" :max="50">
         </div>
         <div style="flex-grow: 1; padding-left: 8px;">
           <label>Rows</label>
-          <input class="input" type="number" v-model.number.lazy="rows" :min="2" :max="50">
+          <input class="input" type="number" v-model.number.lazy="state.rows" :min="2" :max="50">
         </div>
       </div>
       <label>Event type</label>
-      <select v-model.number="eventType">
+      <select v-model.number="state.event">
         <option :value="0">Normal</option>
         <option :value="1">FMC</option>
         <option :value="2">Blind</option>
@@ -76,9 +76,10 @@
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator'
 import { Game, Move, Solve, Board } from './game'
-import Dialog from "./components/Dialog.vue"
-import SolveList from "./components/SolveList.vue"
-import CurrentSolve from "./components/CurrentSolve.vue"
+import Dialog from "@/components/Dialog.vue"
+import SolveList from "@/components/SolveList.vue"
+import CurrentSolve from "@/components/CurrentSolve.vue"
+import { State } from '@/state'
 
 enum EventType {
   Normal = 0,
@@ -90,9 +91,7 @@ enum EventType {
 @Component({ components: { Dialog, SolveList, CurrentSolve } })
 export default class App extends Vue {
   game!: Game
-  cols = 3
-  rows = 3
-  eventType = EventType.Normal
+  state = new State
 
   desktopMode = false
   forceMobile = false
@@ -105,35 +104,6 @@ export default class App extends Vue {
 
   eventDialog = false
   optionsDialog = false
-  
-  gameStarted = false
-  isScrambled = false
-  startTime = 0
-  time = 0
-  memoTime = 0
-  dnf = false
-  inSolvingPhase = false
-  interval!: number
-
-  solves: Solve[] = []
-  scrambledBoard?: Board
-  moveHistory: Move[] = []
-  undoCount = 0
-
-  undo() {
-    if (this.undoCount >= this.moveHistory.length) return
-    const index = this.moveHistory.length - this.undoCount - 1
-    const move = this.moveHistory[index]
-    this.game.animatedMove(move.axis, move.index, -move.n)
-    this.undoCount += 1
-  }
-
-  redo() {
-    if (this.undoCount == 0) return
-    const move = this.moveHistory[this.moveHistory.length - this.undoCount]
-    this.game.animatedMove(move.axis, move.index, move.n)
-    this.undoCount -= 1
-  }
 
   getEventName(type: EventType) {
     switch (type) {
@@ -151,95 +121,8 @@ export default class App extends Vue {
     return `${min}:${sec.toString().padStart(2, "0")}.${mil.toString().padStart(3, "0")}`
   }
 
-  reset() {
-    clearInterval(this.interval)
-    this.moveHistory = []
-    this.undoCount = 0
-    this.solves = []
-    this.dnf = false
-    this.isScrambled = this.gameStarted = false
-    this.time = this.memoTime = 0
-  }
-
-  scramble() {
-    this.game.canvas.focus()
-    clearInterval(this.interval)
-    this.game.scramble()
-    this.gameStarted = false, this.isScrambled = true
-    this.scrambledBoard = this.game.board.clone()
-    this.moveHistory = []
-    this.dnf = false
-    this.undoCount = 0
-    this.time = this.memoTime = 0
-    if (this.eventType == EventType.Blind) this.startGame()
-  }
-
-  startGame() {
-    this.gameStarted = true
-    this.time = this.memoTime = 0
-    this.inSolvingPhase = false
-    this.startTime = Date.now()
-    this.interval = setInterval(() => {
-      this.time = Date.now() - this.startTime
-    }, 87)
-  }
-
-  onMove(move: Move) {
-    if (this.isScrambled && !this.gameStarted) this.startGame()
-    if (!this.gameStarted) return
-    if (this.undoCount > 0) {
-      this.moveHistory.splice(this.moveHistory.length - this.undoCount, this.undoCount)
-      this.undoCount = 0
-    }
-    this.moveHistory.push(move)
-    if (this.eventType == EventType.Blind) {
-      this.game.blind = true
-      this.game.render()
-      this.inSolvingPhase = true
-      this.memoTime = Date.now() - this.startTime  
-    } else if (this.game.board.isSolved()) {
-      this.onSolved()
-    }
-  }
-
-  done() {
-    this.game.blind = false
-    this.game.render()
-    this.dnf = !this.game.board.isSolved()
-    this.onSolved()
-  }
-
-  onSolved() {
-    clearInterval(this.interval)
-    this.time = Date.now() - this.startTime
-    this.isScrambled = false
-    this.gameStarted = false
-    this.inSolvingPhase = false
-    this.game.pointers.clear()
-    this.solves.push({
-      time: this.time,
-      memoTime: this.memoTime,
-      moves: this.moveHistory,
-      scramble: this.scrambledBoard!,
-      dnf: this.dnf
-    })
-  }
-
-  @Watch('cols')
-  @Watch('rows')
-  @Watch('eventType')
-  onBoardSizeChange() {
-    this.cols = Math.min(Math.max(this.cols, 2), 50)
-    this.rows = Math.min(Math.max(this.rows, 2), 50)
-    this.game.setBoardSize(this.cols, this.rows)
-    this.game.noRegrip = this.eventType == EventType.NoRegrip
-    if (this.game.noRegrip) {
-      this.game.active = this.cols * this.rows - 1
-    }
-    this.updateSize()
-    this.reset()
-  }
-
+  @Watch('state.cols')
+  @Watch('state.rows')
   @Watch('forceMobile')
   @Watch('margin')
   updateSize() {
@@ -264,10 +147,10 @@ export default class App extends Vue {
     const aspectRatio = cols / rows
 
     if (canvasHeight < height) {
-      const maxWidth = this.cols * 56 + 256 * (aspectRatio > 1 ? aspectRatio : 1)
+      const maxWidth = cols * 56 + 256 * (aspectRatio > 1 ? aspectRatio : 1)
       this.game.setWidth(Math.min(canvasWidth, maxWidth))
     } else {
-      const maxHeight = this.rows * 56 + 256 / (aspectRatio < 1 ? aspectRatio : 1)
+      const maxHeight = rows * 56 + 256 / (aspectRatio < 1 ? aspectRatio : 1)
       this.game.setHeight(Math.min(height, maxHeight))
     }
     this.margin = this.game.height / this.game.dpr < height - 32 ? 32 : this.minMargin
@@ -286,22 +169,14 @@ export default class App extends Vue {
 
   mounted() {
     this.game = new Game(this.$refs.canvas as any)
-    this.game.onMove = this.onMove.bind(this)
-
-    addEventListener("resize", this.updateSize.bind(this))
-    this.onBoardSizeChange()
+    this.state.init(this.game)
     
     if (document.fonts) document.fonts.ready.then(() => this.game.render())
     else setTimeout(() => this.game.render(), 50)
+    this.updateSize()
+    addEventListener("resize", this.updateSize.bind(this))
 
-    this.game.canvas.addEventListener("keydown", e => {
-      switch (e.key) {
-        case "u": this.undo(); break
-        case "r": this.redo(); break
-      }
-    })
-
-    window.app = this, window.game = this.game
+    window.app = this, window.game = this.game, window.state = this.state
   }
 }
 </script>

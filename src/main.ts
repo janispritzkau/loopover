@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import { Game } from './game'
+import { State } from './state'
 import './registerServiceWorker'
 import 'normalize.css'
 import 'typeface-roboto'
@@ -16,7 +17,9 @@ declare global {
   interface Window {
     app: App
     game: Game
+    state: State
   }
+  
   interface Document {
     fonts?: { ready: Promise<any> }
   }
