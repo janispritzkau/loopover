@@ -36,7 +36,6 @@ export class Game {
     pointers: Map<number, Pointer> = new Map
     transitions: Map<number, Transition> = new Map
     private moveAxis: Axis = Axis.Row
-    private animating = false
     private spaceDown = false
     private highlightActive = false
 
@@ -47,6 +46,7 @@ export class Game {
         this.addEventListeners()
         this.canvas.tabIndex = 0
         this.canvas.focus()
+        requestAnimationFrame(this.frame)
     }
 
     setBoardSize(cols: number, rows?: number) {
@@ -75,7 +75,6 @@ export class Game {
         this.tileSize = Math.ceil(this.width / this.cols + 0.1)
         this.ctx.textBaseline = "middle"
         this.ctx.textAlign = "center"
-        this.render()
     }
 
     move(axis: Axis, index: number, n: number, isPlayerMove = false) {
@@ -95,19 +94,17 @@ export class Game {
         this.transitions.set(index, {
             start: -n, value: -n, startTime: Date.now(), isAnimated: true
         })
-        if (!this.animating) requestAnimationFrame(this.frame)
         return new Promise(res => setTimeout(res, this.transitionTime))
     }
 
     scramble() {
         scrambleBoard(this.board, this.noRegrip ? this.active : undefined)
-        this.render()
     }
 
     render() {
         const useLetters = this.useLetters && this.cols * this.rows <= 26
         const fontSize = this.tileSize * (this.cols >= 32 ? 0.42 : this.cols > 10 ? 0.45 : 0.53)
-        this.ctx.font = `${fontSize}px Roboto`
+        this.ctx.font = `${this.darkText ? 500 : 400} ${fontSize}px Roboto`
         this.ctx.clearRect(0, 0, this.width, this.height)
         for (let i = 0; i < (this.moveAxis == Axis.Col ? this.cols : this.rows); i++) {
             const transition = this.transitions.get(i)
@@ -134,7 +131,7 @@ export class Game {
                     
                     this.ctx.fillStyle = `rgb(${color.map(x => x | 0).join()})`
                     this.ctx.fillRect(x | 0, y | 0, this.tileSize, this.tileSize)
-                    this.ctx.fillStyle = this.darkText ? "#111" : "#fff"
+                    this.ctx.fillStyle = this.darkText ? "rgba(0, 0, 0, 0.9)" : "#fff"
                     const text = useLetters ? String.fromCharCode(index + 65) : (index + 1).toString()
                     this.ctx.fillText(text, x + (this.tileSize / 2) | 0, y + (this.tileSize / 2 + fontSize * 0.05) | 0)
                 }
@@ -148,11 +145,8 @@ export class Game {
     }
 
     private frame = () => {
-        this.animating = true
-        let animatedTransitions = 0
         for (let [index, transition] of this.transitions.entries()) {
             if (!transition.isAnimated) continue
-            animatedTransitions += 1
             const time = transition.time = (Date.now() - transition.startTime!) / this.transitionTime
             transition.value = transition.start! - transition.start! * time * (2 - time)
             if (time >= 1) this.transitions.delete(index)
@@ -228,7 +222,7 @@ export class Game {
         })
         const move = (axis: Axis, n: number) => {
             const pos = this.board.pos(this.active)!
-            if (this.spaceDown || this.noRegrip) {
+            if (this.spaceDown || (this.noRegrip && !this.board.isSolved())) {
                 this.animatedMove(axis, axis == Axis.Col ? pos.col : pos.row, n, true)
             } else {
                 if (axis == Axis.Row) {
@@ -236,7 +230,6 @@ export class Game {
                 } else {
                     this.active = this.board.grid[(pos.row + n + this.rows) % this.rows][pos.col]
                 }
-                this.render()
             }
         }
         this.canvas.addEventListener("keydown", e => {
@@ -250,14 +243,12 @@ export class Game {
             }
             this.highlightActive = true
             e.preventDefault()
-            if (!this.animating) requestAnimationFrame(this.frame)
         })
         this.canvas.addEventListener("keyup", e => {
             if (e.key == " ") this.spaceDown = false
         })
         this.canvas.addEventListener("blur", () => {
             this.highlightActive = false
-            this.render()
         })
     }
 }

@@ -137,8 +137,8 @@ export class State extends Vue {
     @Watch('rows')
     @Watch('noRegrips')
     onBoardSizeChange() {
-        this.cols = Math.min(Math.max(this.cols, 2), 50)
-        this.rows = Math.min(Math.max(this.rows, 2), 50)
+        this.cols = Math.min(Math.max(this.cols, 2), 20)
+        this.rows = Math.min(Math.max(this.rows, 2), 20)
         this.game.setBoardSize(this.cols, this.rows)
         this.game.noRegrip = this.noRegrips
         if (this.noRegrips) {
