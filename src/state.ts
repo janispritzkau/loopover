@@ -55,14 +55,16 @@ export class State extends Vue {
             }
         })
         this.load()
-        setInterval(this.save.bind(this), 5000)
         this.onBoardSizeChange()
     }
 
+    @Watch('cols') @Watch('rows')
+    @Watch('event') @Watch('noRegrips')
     @Watch('useLetters')
     @Watch('darkText')
-    @Watch('event')
-    save() {
+    @Watch('forceMobile')
+    async save() {
+        await this.$nextTick
         const state: StoredState = {
             version: 0,
             cols: this.cols, rows: this.rows,
@@ -70,13 +72,13 @@ export class State extends Vue {
         }
         if (this.noRegrips) state.noRegrips = true
         if (this.darkText) state.darkText = true
-        if (this.useLetters) state.useLetters = true
+        if (!this.useLetters) state.useLetters = false
         if (this.forceMobile) state.forceMobile = true
-        localStorage.setItem("loopover-new", JSON.stringify(state))
+        localStorage.setItem("loopover_new", JSON.stringify(state))
     }
-
+    
     load() {
-        const item = localStorage.getItem("loopover-new")
+        const item = localStorage.getItem("loopover_new")
         if (!item) return
         const state = JSON.parse(item) as StoredState
         if (state.version != 0) return
@@ -199,6 +201,5 @@ export class State extends Vue {
             this.game.active = this.game.board.grid[Math.ceil((this.rows - 1) / 2)][Math.ceil((this.cols - 1) / 2)]
         }
         this.reset()
-        this.save()
     }
 }
