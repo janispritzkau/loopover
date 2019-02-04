@@ -61,15 +61,15 @@
     <Dialog :open.sync="optionsDialog">
       <h3>Options</h3>
       <label>
-        <input type="checkbox" v-model="forceMobile">
+        <input type="checkbox" v-model="state.forceMobile">
         Force mobile mode
       </label>
       <label>
-        <input type="checkbox" v-model="useLetters">
+        <input type="checkbox" v-model="state.useLetters">
         Use letters
       </label>
       <label>
-        <input type="checkbox" v-model="darkText">
+        <input type="checkbox" v-model="state.darkText">
         Dark text
       </label>
     </Dialog>
@@ -97,9 +97,6 @@ export default class App extends Vue {
   state = new State
 
   desktopMode = false
-  forceMobile = false
-  useLetters = true
-  darkText = false
   margin = 16
   minMargin = 16
   sidebarWidth = 192
@@ -126,7 +123,7 @@ export default class App extends Vue {
 
   @Watch('state.cols')
   @Watch('state.rows')
-  @Watch('forceMobile')
+  @Watch('state.forceMobile')
   @Watch('margin')
   updateSize() {
     const { cols, rows } = this.game
@@ -137,7 +134,7 @@ export default class App extends Vue {
     const mobileHeight = h - (this.minMargin * 2 + 36 + 48)
     const desktopWidth = width - this.sidebarWidth
 
-    if (this.forceMobile) {
+    if (this.state.forceMobile) {
       this.desktopMode = false
     } else {
       // enable desktop mode if the canvas size is bigger than in mobile mode
@@ -158,16 +155,6 @@ export default class App extends Vue {
     }
     this.margin = this.game.height / this.game.dpr < height - 32 ? 32 : this.minMargin
     this.sidebarSolvesNum = ((this.game.height / this.game.dpr - 96) / 40) | 0
-  }
-
-  @Watch('useLetters') onUseLettersChanged() {
-    this.game.useLetters = this.useLetters
-    this.game.render()
-  }
-
-  @Watch('darkText') onDarkTextChanged() {
-    this.game.darkText = this.darkText
-    this.game.render()
   }
 
   mounted() {

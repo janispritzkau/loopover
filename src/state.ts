@@ -7,6 +7,16 @@ export enum EventType {
     Blind = 2
 }
 
+interface StoredState {
+    version: number
+    cols: number, rows: number
+    event: EventType
+    noRegrips?: boolean
+    forceMobile?: boolean
+    useLetters?: boolean
+    darkText?: boolean
+}
+
 @Component
 export class State extends Vue {
     game!: Game
@@ -14,6 +24,10 @@ export class State extends Vue {
     cols = 5
     event = EventType.Normal
     noRegrips = false
+
+    forceMobile = false
+    useLetters = true
+    darkText = false
 
     gameStarted = false
     isScrambled = false
@@ -40,7 +54,37 @@ export class State extends Vue {
                 case "r": this.redo(); break
             }
         })
+        this.load()
+        setInterval(this.save.bind(this), 5000)
         this.onBoardSizeChange()
+    }
+
+    @Watch('useLetters')
+    @Watch('darkText')
+    @Watch('event')
+    save() {
+        const state: StoredState = {
+            version: 0,
+            cols: this.cols, rows: this.rows,
+            event: this.event
+        }
+        if (this.noRegrips) state.noRegrips = true
+        if (this.darkText) state.darkText = true
+        if (this.useLetters) state.useLetters = true
+        if (this.forceMobile) state.forceMobile = true
+        localStorage.setItem("loopover-new", JSON.stringify(state))
+    }
+
+    load() {
+        const item = localStorage.getItem("loopover-new")
+        if (!item) return
+        const state = JSON.parse(item) as StoredState
+        if (state.version != 0) return
+        const { cols, rows, event, ...rest } = state
+        this.cols = cols, this.rows = rows, this.event = event
+        for (let [key, value] of Object.entries(rest)) {
+            if (value != null) this.$data[key] = value
+        }
     }
 
     undo() {
@@ -133,6 +177,16 @@ export class State extends Vue {
         })
     }
 
+    @Watch('useLetters') onUseLettersChanged() {
+        this.game.useLetters = this.useLetters
+        this.game.render()
+    }
+
+    @Watch('darkText') onDarkTextChanged() {
+        this.game.darkText = this.darkText
+        this.game.render()
+    }
+
     @Watch('cols')
     @Watch('rows')
     @Watch('noRegrips')
@@ -142,8 +196,9 @@ export class State extends Vue {
         this.game.setBoardSize(this.cols, this.rows)
         this.game.noRegrip = this.noRegrips
         if (this.noRegrips) {
-            this.game.active = this.cols * this.rows - 1
+            this.game.active = this.game.board.grid[Math.ceil((this.rows - 1) / 2)][Math.ceil((this.cols - 1) / 2)]
         }
         this.reset()
+        this.save()
     }
 }
