@@ -55,19 +55,19 @@ export class Game {
         this.rows = rows, this.cols = cols
         this.setWidth(this.width / this.dpr)
     }
-    
+
     setWidth(width: number) {
         this.width = Math.round(width * this.dpr)
         this.height = this.width / (this.cols / this.rows)
         this.updateCanvas()
     }
-    
+
     setHeight(height: number) {
         this.height = Math.round(height * this.dpr)
         this.width = this.height * (this.cols / this.rows)
         this.updateCanvas()
     }
-    
+
     private updateCanvas() {
         this.canvas.width = this.width, this.canvas.height = this.height
         this.canvas.style.width = `${this.width / this.dpr}px`
@@ -128,7 +128,7 @@ export class Game {
                     const cx = (index % this.cols + 0.1) / (this.cols - 0.6)
                     const cy = (((index / this.cols) | 0) + 0.2) / (this.rows - 0.6)
                     const color = [(1 - cx) * 235 + 15, cy * 210 + cx * (1 - cy) * 50 + 15, cx * 220]
-                    
+
                     this.ctx.fillStyle = `rgb(${color.map(x => x | 0).join()})`
                     this.ctx.fillRect(x | 0, y | 0, this.tileSize, this.tileSize)
                     this.ctx.fillStyle = this.darkText ? "rgba(0, 0, 0, 0.9)" : "#fff"
@@ -235,10 +235,10 @@ export class Game {
         this.canvas.addEventListener("keydown", e => {
             switch (e.key) {
                 case " ": this.spaceDown = true; break
-                case "ArrowLeft": move(Axis.Row, -1); break
-                case "ArrowRight": move(Axis.Row, 1); break
-                case "ArrowUp": move(Axis.Col, -1); break
-                case "ArrowDown": move(Axis.Col, 1); break
+                case "ArrowLeft": case "a": move(Axis.Row, -1); break
+                case "ArrowRight": case "d": move(Axis.Row, 1); break
+                case "ArrowUp": case "w": move(Axis.Col, -1); break
+                case "ArrowDown": case "s": move(Axis.Col, 1); break
                 default: return
             }
             this.highlightActive = true
