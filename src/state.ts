@@ -25,6 +25,7 @@ export class State extends Vue {
     event = EventType.Normal
     noRegrips = false
 
+    darkMode = false
     forceMobile = false
     useLetters = true
     darkText = false
@@ -76,7 +77,7 @@ export class State extends Vue {
         if (this.forceMobile) state.forceMobile = true
         localStorage.setItem("loopover_new", JSON.stringify(state))
     }
-    
+
     load() {
         const item = localStorage.getItem("loopover_new")
         if (!item) return

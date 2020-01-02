@@ -50,6 +50,10 @@ button {
     box-sizing: border-box;
 }
 
+.dark button {
+    color: rgba(255, 255, 255, 0.8);
+}
+
 button:hover {
     background: rgba(0, 0, 0, 0.05);
 }
@@ -110,9 +114,12 @@ td {
     width: 100%;
     height: 36px;
     padding: 8px;
-    background: rgba(0, 0, 0, 0.07);
+    background: rgba(120, 122, 130, 0.15);
+    color: inherit;
     border-radius: 2px;
 }
+
+select option { color: initial; }
 
 label {
     display: block;

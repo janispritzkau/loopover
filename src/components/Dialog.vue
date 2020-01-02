@@ -68,6 +68,10 @@ export default class Dialog extends Vue {
   transition: transform 150ms ease-out;
 }
 
+.dark .dialog {
+  background: #303237;
+}
+
 .fade-enter .dialog,
 .fade-leave-to .dialog {
   transform: scale(0.75);

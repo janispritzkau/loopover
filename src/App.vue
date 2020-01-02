@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" :class="{ dark: state.darkMode }">
     <div class="main-container">
       <div class="main-wrapper" :style="{ margin: margin + 'px' }">
         <main>
@@ -60,6 +60,10 @@
     </Dialog>
     <Dialog :open.sync="optionsDialog">
       <h3>Options</h3>
+      <label>
+        <input type="checkbox" v-model="state.darkMode">
+        Dark mode
+      </label>
       <label>
         <input type="checkbox" v-model="state.forceMobile">
         Force mobile mode
@@ -182,6 +186,12 @@ export default class App extends Vue {
 #app {
   font-family: "Roboto", sans-serif;
   color: rgba(0, 0, 0, 0.8);
+  min-height: 100vh;
+}
+
+#app.dark {
+  background: #303237;
+  color: #fff;
 }
 
 .main-container {
@@ -192,6 +202,10 @@ export default class App extends Vue {
   background: #f4f4f4;
   box-sizing: content-box;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.dark .main-container {
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .main-wrapper {
@@ -215,10 +229,10 @@ aside {
   width: 100%;
   height: 40px;
   margin-bottom: 16px;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(120, 122, 130, 0.15);
 }
 .sidebar-button:active {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(120, 122, 130, 0.3);
 }
 
 .current-time {
