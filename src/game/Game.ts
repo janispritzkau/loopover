@@ -1,5 +1,5 @@
 import { Axis, Board, Move } from '.'
-import { scrambleBoard } from './scramble';
+import { scrambleBoard } from './scramble'
 
 interface Transition {
     value: number, start?: number

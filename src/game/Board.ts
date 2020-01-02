@@ -5,8 +5,8 @@ export class Board {
 
     constructor(public cols: number, public rows: number) {
         this.grid = [...Array(this.rows)]
-        .map((_, row) => [...Array(this.cols)]
-        .map((_, col) => row * this.cols + col))
+            .map((_, row) => [...Array(this.cols)]
+                .map((_, col) => row * this.cols + col))
     }
 
     move(axis: Axis, index: number, n: number) {

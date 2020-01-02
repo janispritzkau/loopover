@@ -1,5 +1,5 @@
 import { Board } from './Board'
-import { Axis } from '.';
+import { Axis } from '.'
 
 export function scrambleBoard(board: Board, noRegripTile?: number) {
     if (noRegripTile != null) {
@@ -41,7 +41,7 @@ function isSolvable(board: Board) {
 function shuffle<T>(array: T[]) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+        [array[i], array[j]] = [array[j], array[i]]
     }
-    return array;
+    return array
 }

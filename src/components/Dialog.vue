@@ -50,7 +50,9 @@ export default class Dialog extends Vue {
 .fade-leave-active {
   transition: opacity 150ms;
 }
-.fade-enter, .fade-leave-to {
+
+.fade-enter,
+.fade-leave-to {
   opacity: 0;
 }
 
@@ -66,7 +68,8 @@ export default class Dialog extends Vue {
   transition: transform 150ms ease-out;
 }
 
-.fade-enter .dialog, .fade-leave-to .dialog {
+.fade-enter .dialog,
+.fade-leave-to .dialog {
   transform: scale(0.75);
 }
 </style>

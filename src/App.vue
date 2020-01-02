@@ -129,6 +129,7 @@ export default class App extends Vue {
     const { cols, rows } = this.game
     const w = this.$el.clientWidth, h = innerHeight
     this.minMargin = w / cols > 96 ? 24 : 16
+
     const width = w - this.minMargin * 2
     const desktopHeight = h - (this.minMargin * 2 + 36)
     const mobileHeight = h - (this.minMargin * 2 + 36 + 48)
@@ -160,20 +161,26 @@ export default class App extends Vue {
   mounted() {
     this.game = new Game(this.$refs.canvas as any)
     this.state.init(this.game)
-    
-    if (document.fonts) document.fonts.ready.then(() => this.game.render())
-    else setTimeout(() => this.game.render(), 50)
+
+    if (document.fonts) {
+      document.fonts.ready.then(() => this.game.render())
+    } else {
+      setTimeout(() => this.game.render(), 50)
+    }
+
     this.updateSize()
     addEventListener("resize", this.updateSize.bind(this))
 
-    window.app = this, window.game = this.game, window.state = this.state
+    window.app = this
+    window.game = this.game
+    window.state = this.state
   }
 }
 </script>
 
 <style scoped>
 #app {
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   color: rgba(0, 0, 0, 0.8);
 }
 
@@ -219,7 +226,8 @@ aside {
   font-weight: 500;
 }
 
-.current-moves, .moves {
+.current-moves,
+.moves {
   opacity: 0.8;
 }
 
