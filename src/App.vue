@@ -190,7 +190,7 @@ export default class App extends Vue {
 }
 
 #app.dark {
-  background: #303237;
+  background: #33363c;
   color: #fff;
 }
 
@@ -205,7 +205,8 @@ export default class App extends Vue {
 }
 
 .dark .main-container {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 4, 10, 0.11);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
 }
 
 .main-wrapper {
