@@ -8,17 +8,17 @@
   },
   "dependencies": {
     "normalize.css": "^8.0.1",
-    "register-service-worker": "^1.5.2",
-    "typeface-roboto": "0.0.54",
-    "vue": "^2.5.22",
-    "vue-class-component": "^6.3.2",
-    "vue-property-decorator": "^7.3.0"
+    "register-service-worker": "^1.6.2",
+    "typeface-roboto": "^0.0.75",
+    "vue": "^2.6.11",
+    "vue-class-component": "^7.1.0",
+    "vue-property-decorator": "^8.3.0"
   },
   "devDependencies": {
-    "@vue/cli-plugin-pwa": "^3.4.0",
-    "@vue/cli-plugin-typescript": "^3.4.0",
-    "@vue/cli-service": "^3.4.0",
-    "typescript": "^3.3.1",
-    "vue-template-compiler": "^2.5.22"
+    "@vue/cli-plugin-pwa": "^4.1.2",
+    "@vue/cli-plugin-typescript": "^4.1.2",
+    "@vue/cli-service": "^4.1.2",
+    "typescript": "^3.7.4",
+    "vue-template-compiler": "^2.6.11"
   }
 }
