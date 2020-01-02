@@ -12,6 +12,7 @@ interface StoredState {
     cols: number, rows: number
     event: EventType
     noRegrips?: boolean
+    darkMode?: boolean
     forceMobile?: boolean
     useLetters?: boolean
     darkText?: boolean
@@ -64,27 +65,38 @@ export class State extends Vue {
     @Watch('useLetters')
     @Watch('darkText')
     @Watch('forceMobile')
+    @Watch('darkMode')
     async save() {
-        await this.$nextTick
+        await Promise.resolve()
+
         const state: StoredState = {
             version: 0,
             cols: this.cols, rows: this.rows,
             event: this.event
         }
+
         if (this.noRegrips) state.noRegrips = true
         if (this.darkText) state.darkText = true
         if (!this.useLetters) state.useLetters = false
         if (this.forceMobile) state.forceMobile = true
+        if (this.darkMode) state.darkMode = true
+
         localStorage.setItem("loopover_new", JSON.stringify(state))
     }
 
     load() {
         const item = localStorage.getItem("loopover_new")
         if (!item) return
+
         const state = JSON.parse(item) as StoredState
         if (state.version != 0) return
+
         const { cols, rows, event, ...rest } = state
-        this.cols = cols, this.rows = rows, this.event = event
+
+        this.cols = cols
+        this.rows = rows
+        this.event = event
+
         for (let [key, value] of Object.entries(rest)) {
             if (value != null) this.$data[key] = value
         }
