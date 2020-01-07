@@ -2,7 +2,8 @@ import { Board } from "./Board"
 import { Game } from "./Game"
 
 export enum Axis {
-    Row = 1, Col
+    Row = "row",
+    Col = "col"
 }
 
 export interface Move {
