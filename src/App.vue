@@ -31,14 +31,13 @@
         </aside>
       </div>
     </div>
-    <section v-if="!desktopMode || sidebarSolvesNum < 8" style="margin-bottom: 64px;">
+    <section v-if="!desktopMode || sidebarSolvesNum < 8">
       <SolveList v-if="state.solves.length > 0" :solves="state.solves" :fmc="state.event == 1"/>
       <div v-else style="opacity: 0.8;">No solves yet</div>
     </section>
-    <section>
-      <p>Created by <a target="_blank" href="https://twitter.com/janispritzkau">Janis Pritzkau</a>. Remake of carykh's <a target="_blank" href="https://openprocessing.org/sketch/580366">loopover</a>.</p>
-      <p>The old version is available at <a href="https://loopover.gitlab.io/old">loopover.gitlab.io/old</a>.</p>
-    </section>
+    <footer>
+      <p>Created by <a target="_blank" href="https://twitter.com/janispritzkau">Janis Pritzkau</a>. Remake of carykh's <a target="_blank" href="https://openprocessing.org/sketch/580366">Loopover</a>. The old version is available at <a href="https://loopover.gitlab.io/old">loopover.gitlab.io/old</a>.</p>
+    </footer>
     <Dialog :open.sync="eventDialog">
       <h3>Event</h3>
       <div style="display: flex; margin-bottom: 16px;">
@@ -250,10 +249,17 @@ aside {
   opacity: 0.8;
 }
 
-section {
+section, footer {
   max-width: 480px;
   margin: 32px auto;
   padding: 0 16px;
+}
+
+footer {
+  opacity: 0.85;
+  font-weight: 300;
+  margin-bottom: 0;
+  padding-bottom: 32px;
 }
 
 h3 {

@@ -28,9 +28,13 @@ body {
     background: #fafafa;
 }
 
+p {
+    line-height: 1.5;
+}
+
 a {
     color: inherit;
-    font-weight: bold;
+    font-weight: 500;
     text-transform: underline;
 }
 
