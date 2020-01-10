@@ -1,6 +1,6 @@
 {
   "name": "loopover",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -9,7 +9,6 @@
   "dependencies": {
     "normalize.css": "^8.0.1",
     "register-service-worker": "^1.6.2",
-    "typeface-roboto": "^0.0.75",
     "vue": "^2.6.11",
     "vue-class-component": "^7.1.0",
     "vue-property-decorator": "^8.3.0"
