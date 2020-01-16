@@ -6,7 +6,7 @@
           <div v-if="!desktopMode" style="height: 0; display: flex; align-items: flex-end; transform: translateY(-6px);" :style="{ marginTop: '48px' }">
             <CurrentSolve :dnf="state.dnf" :time="state.time" :moves="state.moveHistory.length - state.undoCount" :fmc="state.event == 1" style="flex-grow: 1;" />
             <button v-if="state.event == 1" @click="state.undo" :disabled="state.undoCount >= state.moveHistory.length">Undo</button>
-            <button v-if="state.event == 1" @click="state.redo" :disabled="state.undoCount == 0">Redo</button>
+            <button v-if="state.event == 1" @click="state.redo" :disabled="state.undoCount == 0" style="margin-right: 8px;">Redo</button>
             <button @click="state.inSolvingPhase ? state.done() : state.scramble()" :disabled="state.event == 2 && state.gameStarted && !state.inSolvingPhase">
               {{ state.event == 2 && state.gameStarted ? "Done" : "Scramble" }}
             </button>
