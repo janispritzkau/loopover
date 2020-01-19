@@ -49,9 +49,11 @@
       </div>
     </div>
 
-    <section v-if="!desktopMode || this.$state.solves.length > this.sidebarLimit">
+    <section v-if="!desktopMode">
       <SolveList />
     </section>
+
+    <Stats />
 
     <footer>
       <p>
@@ -90,12 +92,14 @@ import SettingsDialog from "./components/SettingsDialog.vue"
 import EventDialog from "./components/EventDialog.vue"
 import SolveView from "./components/Solve.vue"
 import SolveList from "./components/SolveList.vue"
+import Stats from "./components/Stats.vue"
 import { EventType } from "./state"
 
 @Component({
   components: {
     Solve: SolveView,
     SolveList,
+    Stats,
     EventDialog,
     SettingsDialog
   }

@@ -49,9 +49,3 @@ export default Vue.extend({
   }
 })
 </script>
-
-<style scoped>
-h3 {
-  margin: 0 0 16px;
-}
-</style>

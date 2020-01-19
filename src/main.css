@@ -20,6 +20,11 @@ a {
   text-transform: underline;
 }
 
+h3 {
+  font-size: 18px;
+  margin: 0 0 16px;
+}
+
 .btn {
   border: none;
   background: none;
@@ -171,6 +176,27 @@ select option {
   background-color: currentColor;
 }
 
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+}
+
+td,
+th {
+  border-right: 1px solid var(--contrast-3);
+  padding: 12px;
+  text-align: right;
+}
+
+tr:nth-child(2n) > * {
+  background: var(--contrast-3);
+}
+td:last-child,
+th:last-child {
+  border-right: none;
+}
+
 .update-notification {
   position: fixed;
   bottom: 16px;
@@ -205,7 +231,7 @@ select option {
 }
 
 .dark {
-  --background: #36383d;
+  --background: #34363d;
   --background-darker: #2c2e33;
   --contrast: rgba(255, 255, 255, 0.85);
   --contrast-0: rgba(255, 255, 255, 0.35);

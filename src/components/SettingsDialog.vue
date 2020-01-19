@@ -17,6 +17,7 @@
       <input v-model="$state.darkText" type="checkbox" />
       <span>Dark text</span>
     </label>
+    <button class="btn export" @click="$state.export()">Export solves</button>
   </Dialog>
 </template>
 
@@ -35,7 +36,7 @@ export default Vue.extend({
 </script>
 
 <style scoped>
-h3 {
-  margin: 0 0 16px;
+.export {
+  margin: 16px 0 0;
 }
 </style>

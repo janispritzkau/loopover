@@ -4,7 +4,7 @@
     :class="{ fmc: fmc, current: current, clickable: $listeners.click }"
     @click="$emit('click', $event)"
   >
-    <div class="time">{{ formatTime(time) + (dnf && ' DNF' || '') }}</div>
+    <div class="time">{{ $state.formatTime(time) + (dnf && ' DNF' || '') }}</div>
     <div class="moves">{{ moves }} moves</div>
   </div>
 </template>
@@ -18,14 +18,6 @@ export default Vue.extend({
     fmc: Boolean,
     dnf: Boolean,
     current: Boolean
-  },
-  methods: {
-    formatTime(ms: number) {
-      if (ms == null) return "-"
-      const s = ms / 1000
-      const min = (s / 60) | 0, sec = s % 60 | 0, mil = ms % 1000 | 0
-      return `${min}:${sec.toString().padStart(2, "0")}.${mil.toString().padStart(3, "0")}`
-    }
   }
 })
 </script>

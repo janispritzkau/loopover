@@ -92,6 +92,17 @@ export class State {
     return this.undos == 0
   }
 
+  formatTime(ms?: number | null, compact = false) {
+    if (ms == null) return "―"
+    const s = ms / 1000
+    const min = (s / 60) | 0, sec = s % 60 | 0, millis = ms % 1000 | 0
+    if (compact) {
+      return `${min > 0 ? `${min}:` : ""}${(s % 60).toPrecision(3)}`
+    } else {
+      return `${min}:${sec.toString().padStart(2, "0")}.${millis.toString().padStart(3, "0")}`
+    }
+  }
+
   start() {
     this.started = true
 
