@@ -267,7 +267,7 @@ export class State {
 const state = new State()
 const vue = new Vue({ data: state })
 
-vue.$watch(() => [state.cols, state.rows, state.noRegrips], () => {
+vue.$watch(() => [state.cols, state.rows, state.event, state.noRegrips], () => {
   state.cols = Math.min(Math.max(state.cols, 1), 50)
   state.rows = Math.min(Math.max(state.rows, 1), 50)
 

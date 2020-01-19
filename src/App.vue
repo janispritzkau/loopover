@@ -63,6 +63,10 @@
           href="https://openprocessing.org/sketch/580366"
         >Loopover</a>.
       </p>
+      <p>
+        Loopover Discord:
+        <a target="_blank" href="https://discord.gg/DXASrTp">discord.gg/DXASrTp</a>
+      </p>
     </footer>
 
     <div v-if="refresh" class="update-notification">
@@ -257,7 +261,8 @@ aside {
   margin-bottom: 12px;
 }
 
-section {
+section,
+footer {
   max-width: 480px;
   margin: 0 auto;
   padding: 32px 16px 0;
