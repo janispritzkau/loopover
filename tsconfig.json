@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2015",
+    "target": "esnext",
     "module": "esnext",
     "strict": true,
     "jsx": "preserve",
@@ -34,7 +34,6 @@
     "tests/**/*.tsx"
   ],
   "exclude": [
-    "node_modules",
-    "src/**/*.old.*"
+    "node_modules"
   ]
 }

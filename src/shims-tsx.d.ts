@@ -1,13 +1,24 @@
-import Vue, { VNode } from 'vue'
+import Vue, { VNode } from "vue"
+import { State } from "./state"
+import App from "./App.vue"
 
 declare global {
   namespace JSX {
-    // tslint:disable no-empty-interface
     interface Element extends VNode {}
-    // tslint:disable no-empty-interface
     interface ElementClass extends Vue {}
     interface IntrinsicElements {
       [elem: string]: any
     }
+  }
+
+  interface Window {
+    app: App
+    state: State
+  }
+}
+
+declare module "vue/types/vue" {
+  interface Vue {
+    $state: State
   }
 }

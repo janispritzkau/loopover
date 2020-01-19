@@ -1,268 +1,280 @@
 <template>
-  <div id="app" :class="{ dark: state.darkMode }">
+  <div class="app" :class="{ dark: $state.darkMode }">
     <div class="main-container">
-      <div class="main-wrapper" :style="{ margin: margin + 'px' }">
+      <div class="main-wrapper" :class="{ desktopMode }">
+        <h1>Loopover</h1>
+
         <main>
-          <div v-if="!desktopMode" style="height: 0; display: flex; align-items: flex-end; transform: translateY(-6px);" :style="{ marginTop: '48px' }">
-            <CurrentSolve :dnf="state.dnf" :time="state.time" :moves="state.moveHistory.length - state.undoCount" :fmc="state.event == 1" style="flex-grow: 1;" />
-            <button v-if="state.event == 1" @click="state.undo" :disabled="state.undoCount >= state.moveHistory.length">Undo</button>
-            <button v-if="state.event == 1" @click="state.redo" :disabled="state.undoCount == 0" style="margin-right: 8px;">Redo</button>
-            <button @click="state.inSolvingPhase ? state.done() : state.scramble()" :disabled="state.event == 2 && state.gameStarted && !state.inSolvingPhase">
-              {{ state.event == 2 && state.gameStarted ? "Done" : "Scramble" }}
-            </button>
+          <div v-if="!desktopMode" class="top">
+            <Solve
+              current
+              :time="$state.displayTime"
+              :moves="$state.moves"
+              :fmc="fmc"
+              :dnf="$state.dnf"
+              style="flex-grow: 1;"
+            />
+            <button class="btn" @click="handleMainButtonClick">{{ mainButtonText }}</button>
+            <template v-if="$state.showUndoRedo">
+              <button class="btn undo" @click="$state.undo()" :disabled="$state.undoable">Undo</button>
+              <button class="btn" @click="$state.redo()" :disabled="$state.redoable">Redo</button>
+            </template>
           </div>
-          <canvas ref="canvas"/>
-          <div style="display: flex; height: 0px; transform: translateY(6px);" :style="{ marginBottom: '36px' }">
-            <button @click="eventDialog = true">Event: {{state.cols}}×{{state.rows}} {{ state.noRegrips ? "NRG" : "" }} {{ getEventName(state.event) }}</button>
-            <div style="flex-grow: 1;"/>
-            <button @click="optionsDialog = true">Options</button>
+
+          <canvas ref="canvas" />
+
+          <div class="bottom">
+            <button class="btn" @click="eventDialog = true">Event: {{ eventName }}</button>
+            <div style="flex-grow: 1;"></div>
+            <button class="btn" @click="settingsDialog = true">Settings</button>
           </div>
         </main>
+
         <aside v-if="desktopMode" :style="{ width: sidebarWidth + 'px' }">
-          <button @click="state.inSolvingPhase ? state.done() : state.scramble()" :disabled="state.event == 2 && state.gameStarted && !state.inSolvingPhase" class="sidebar-button">
-            {{ state.event == 2 && state.gameStarted ? "Done" : "Scramble" }}
-          </button>
-          <div v-if="state.event == 1" style="margin-bottom: 16px; display: flex;">
-            <button @click="state.undo" style="flex-grow: 1;" :disabled="state.undoCount >= state.moveHistory.length">Undo</button>
-            <button @click="state.redo" style="flex-grow: 1;" :disabled="state.undoCount == 0">Redo</button>
+          <button class="btn filled" @click="handleMainButtonClick">{{ mainButtonText }}</button>
+          <div v-if="$state.showUndoRedo" class="fmc-button-wrapper">
+            <button class="btn" @click="$state.undo()" :disabled="$state.undoable">Undo</button>
+            <button class="btn" @click="$state.redo()" :disabled="$state.redoable">Redo</button>
           </div>
-          <CurrentSolve :dnf="state.dnf" :time="state.time" :moves="state.moveHistory.length - state.undoCount" :fmc="state.event == 1" style="margin-bottom: 8px;" />
-          <SolveList :solves="state.solves" :max="sidebarSolvesNum" :fmc="state.event == 1"/>
+          <Solve
+            class="current-solve"
+            current
+            :time="$state.displayTime"
+            :moves="$state.moves"
+            :fmc="fmc"
+            :dnf="$state.dnf"
+          />
+          <SolveList :limit="sidebarLimit" />
         </aside>
       </div>
     </div>
-    <section v-if="!desktopMode || sidebarSolvesNum < 8">
-      <SolveList v-if="state.solves.length > 0" :solves="state.solves" :fmc="state.event == 1"/>
-      <div v-else style="opacity: 0.8;">No solves yet</div>
+
+    <section v-if="!desktopMode || this.$state.solves.length > this.sidebarLimit">
+      <SolveList />
     </section>
+
     <footer>
-      <p>Created by <a target="_blank" href="https://twitter.com/janispritzkau">Janis Pritzkau</a>. Remake of carykh's <a target="_blank" href="https://openprocessing.org/sketch/580366">Loopover</a>. The old version is available at <a href="https://loopover.gitlab.io/old">loopover.gitlab.io/old</a>.</p>
+      <p>
+        Created by
+        <a target="_blank" href="https://twitter.com/janispritzkau">Janis Pritzkau</a>.
+        Remake of carykh's
+        <a
+          target="_blank"
+          href="https://openprocessing.org/sketch/580366"
+        >Loopover</a>.
+      </p>
     </footer>
-    <Dialog :open.sync="eventDialog">
-      <h3>Event</h3>
-      <div style="display: flex; margin-bottom: 16px;">
-        <div style="width: 50%; padding-right: 8px;">
-          <label>Cols</label>
-          <input class="input" type="number" v-model.number.lazy="state.cols" :min="2" :max="50">
-        </div>
-        <div style="flex-grow: 1; padding-left: 8px;">
-          <label>Rows</label>
-          <input class="input" type="number" v-model.number.lazy="state.rows" :min="2" :max="50">
-        </div>
-      </div>
-      <label>Event type</label>
-      <select v-model.number="state.event" style="margin-bottom: 16px;">
-        <option :value="0">Normal</option>
-        <option :value="1">Fewest move count</option>
-        <option :value="2">Blind</option>
-      </select>
-      <label>
-        <input type="checkbox" v-model="state.noRegrips">
-        No Regrips
-      </label>
-    </Dialog>
-    <Dialog :open.sync="optionsDialog">
-      <h3>Options</h3>
-      <label>
-        <input type="checkbox" v-model="state.darkMode">
-        Dark mode
-      </label>
-      <label>
-        <input type="checkbox" v-model="state.forceMobile">
-        Force mobile mode
-      </label>
-      <label>
-        <input type="checkbox" v-model="state.useLetters">
-        Use letters
-      </label>
-      <label>
-        <input type="checkbox" v-model="state.darkText">
-        Dark text
-      </label>
-    </Dialog>
+
+    <div v-if="refresh" class="update-notification">
+      A new version is available. Please refresh to update.
+      <button
+        class="btn secondary"
+        @click="refresh"
+      >Refresh</button>
+    </div>
+
+    <EventDialog :open.sync="eventDialog" />
+    <SettingsDialog :open.sync="settingsDialog" />
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from 'vue-property-decorator'
-import { Game, Move, Solve, Board } from './game'
-import Dialog from "@/components/Dialog.vue"
-import SolveList from "@/components/SolveList.vue"
-import CurrentSolve from "@/components/CurrentSolve.vue"
-import { State } from '@/state'
+import { Component, Vue, Watch } from "vue-property-decorator"
+import { Game, Move, Board } from "./game"
 
-enum EventType {
-  Normal = 0,
-  Fmc = 1,
-  Blind = 2,
-  NoRegrip = 3
-}
+import SettingsDialog from "./components/SettingsDialog.vue"
+import EventDialog from "./components/EventDialog.vue"
+import SolveView from "./components/Solve.vue"
+import SolveList from "./components/SolveList.vue"
+import { EventType } from "./state"
 
-@Component({ components: { Dialog, SolveList, CurrentSolve } })
+@Component({
+  components: {
+    Solve: SolveView,
+    SolveList,
+    EventDialog,
+    SettingsDialog
+  }
+})
 export default class App extends Vue {
-  game!: Game
-  state = new State
-
-  desktopMode = false
-  margin = 16
-  minMargin = 16
-  sidebarWidth = 192
-  sidebarSolvesNum = 12
+  refresh: Function | null = null
 
   eventDialog = false
-  optionsDialog = false
+  settingsDialog = false
 
-  getEventName(type: EventType) {
-    switch (type) {
-      case EventType.Normal: return ""
-      case EventType.Fmc: return "FMC"
-      case EventType.Blind: return "BLD"
-      case EventType.NoRegrip: return "NRG"
+  desktopMode = false
+  sidebarWidth = 240
+  sidebarLimit = 12
+
+  get fmc() {
+    return this.$state.event == EventType.Fmc
+  }
+
+  get eventName() {
+    return `${this.$state.cols}×${this.$state.rows}`
+      + ["", " FMC", " BLD"][this.$state.event]
+      + (this.$state.noRegrips ? " NRG" : "")
+  }
+
+  get mainButtonText() {
+    return this.$state.inSolvingPhase ? "Done" : "Scramble"
+  }
+
+  handleMainButtonClick() {
+    if (this.$state.inSolvingPhase) {
+      this.$state.done()
+    } else {
+      this.$state.scramble()
     }
   }
 
-  formatTime(ms: number) {
-    if (ms == null) return "-"
-    const s = ms / 1000
-    const min = (s / 60) | 0, sec = s % 60 | 0, mil = ms % 1000 | 0
-    return `${min}:${sec.toString().padStart(2, "0")}.${mil.toString().padStart(3, "0")}`
-  }
-
-  @Watch('state.cols')
-  @Watch('state.rows')
-  @Watch('state.forceMobile')
-  @Watch('margin')
+  @Watch("$state.cols")
+  @Watch("$state.rows")
+  @Watch("$state.forceMobile")
   updateSize() {
-    const { cols, rows } = this.game
-    const w = this.$el.clientWidth, h = innerHeight
-    this.minMargin = w / cols > 96 ? 24 : 16
+    const { game } = this.$state
+    const { cols, rows } = this.$state.game
+    const aspect = cols / rows
 
-    const width = w - this.minMargin * 2
-    const desktopHeight = h - (this.minMargin * 2 + 36)
-    const mobileHeight = h - (this.minMargin * 2 + 36 + 48)
-    const desktopWidth = width - this.sidebarWidth
+    const mobileWidth = this.$el.clientWidth - 32
+    const mobileHeight = Math.max(100 + 100 / aspect, innerHeight - 32 * 3 - 96)
 
-    if (this.state.forceMobile) {
-      this.desktopMode = false
-    } else {
-      // enable desktop mode if the canvas size is bigger than in mobile mode
-      this.desktopMode = Math.min(width / cols * rows, mobileHeight) < Math.min(desktopWidth / cols * rows, desktopHeight)
-    }
+    const desktopWidth = this.$el.clientWidth - this.sidebarWidth - 32
+    const desktopHeight = innerHeight - 32 * 3 - 48
 
+    this.desktopMode = !this.$state.forceMobile
+      // choose desktop mode if the canvas size is bigger than in mobile mode
+      && Math.min(mobileWidth / aspect, mobileHeight) < Math.min(desktopWidth / aspect, desktopHeight)
+      && desktopHeight > 320 // minimum height of sidebar
+
+    const width = this.desktopMode ? desktopWidth : mobileWidth
     const height = this.desktopMode ? desktopHeight : mobileHeight
-    const canvasWidth = this.desktopMode ? desktopWidth : width
-    const canvasHeight = canvasWidth / cols * rows
-    const aspectRatio = cols / rows
 
-    if (canvasHeight < height) {
-      const maxWidth = cols * 56 + 256 * (aspectRatio > 1 ? aspectRatio : 1)
-      this.game.setWidth(Math.min(canvasWidth, maxWidth))
+    if (width / aspect < height) {
+      game.setWidth(Math.min(width, cols * 50 + 250 * Math.max(aspect, 1)))
     } else {
-      const maxHeight = rows * 56 + 256 / (aspectRatio < 1 ? aspectRatio : 1)
-      this.game.setHeight(Math.min(height, maxHeight))
+      game.setHeight(Math.min(height, rows * 50 + 250 / Math.min(aspect, 1)))
     }
-    this.margin = this.game.height / this.game.dpr < height - 32 ? 32 : this.minMargin
-    this.sidebarSolvesNum = ((this.game.height / this.game.dpr - 96) / 40) | 0
+
+    this.sidebarLimit = ~~((game.height / devicePixelRatio - (this.fmc ? 160 : 100)) / 36)
   }
 
   mounted() {
-    this.game = new Game(this.$refs.canvas as any)
-    this.state.init(this.game)
-
-    if (document.fonts) {
-      document.fonts.ready.then(() => this.game.render())
-    } else {
-      setTimeout(() => this.game.render(), 50)
-    }
-
-    this.updateSize()
-    addEventListener("resize", this.updateSize.bind(this))
-
     window.app = this
-    window.game = this.game
-    window.state = this.state
+
+    const game = new Game(this.$refs.canvas as HTMLCanvasElement)
+    this.$state.game = game
+    this.$state.reset()
+    game.onMove = this.$state.handleMove.bind(this.$state)
+
+    window.addEventListener("resize", this.updateSize.bind(this))
+    this.$nextTick(this.updateSize)
   }
 }
 </script>
 
 <style scoped>
-#app {
-  font-family: "Roboto", sans-serif;
-  color: rgba(0, 0, 0, 0.8);
+.app {
   min-height: 100vh;
-}
-
-#app.dark {
-  background: #33363c;
-  color: #fff;
+  color: var(--contrast);
+  background: var(--background);
 }
 
 .main-container {
-  min-height: 75vh;
+  min-height: 60vh;
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  background: #f4f4f4;
-  box-sizing: content-box;
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.05);
-}
-
-.dark .main-container {
-  background: rgba(0, 4, 10, 0.11);
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  background: var(--background-darker);
+  box-shadow: 0 -2px 0 var(--contrast-3) inset;
 }
 
 .main-wrapper {
+  position: relative;
   display: flex;
+  margin: 32px 0;
+  padding-bottom: 32px;
+  padding-top: 96px;
+}
+
+.main-wrapper.desktopMode {
+  padding-top: 48px;
+}
+
+h1 {
+  position: absolute;
+  top: -8px;
+  font-weight: 900;
+  font-size: 30px;
+  margin: 0 0 4px;
 }
 
 canvas {
   display: block;
-  border-radius: 2px;
+  border-radius: 3px;
   outline: 0;
+  transition: all 0.3s;
 }
 
 aside {
-  width: 240px;
-  padding: 2px 0 0 16px;
-  box-sizing: border-box;
+  padding: 0 0 0 16px;
 }
 
-.sidebar-button {
-  display: block;
+.top {
+  height: 0;
+  display: flex;
+  align-items: flex-end;
+  transform: translateY(-8px);
+}
+
+.bottom {
+  height: 0;
+  transform: translateY(8px);
+  display: flex;
+}
+
+.btn.undo {
+  margin-left: 8px;
+}
+
+.btn.filled {
   width: 100%;
-  height: 40px;
+  height: 48px;
   margin-bottom: 16px;
-  background: rgba(120, 122, 130, 0.15);
-}
-.sidebar-button:active {
-  background: rgba(120, 122, 130, 0.3);
 }
 
-.current-time {
-  font-size: 24px;
-  font-weight: 500;
+.fmc-button-wrapper {
+  display: flex;
+  margin-bottom: 16px;
 }
 
-.current-moves,
-.moves {
-  opacity: 0.8;
+.fmc-button-wrapper .btn {
+  width: 50%;
 }
 
-section, footer {
+.current-solve {
+  margin-bottom: 12px;
+}
+
+section {
   max-width: 480px;
-  margin: 32px auto;
-  padding: 0 16px;
+  margin: 0 auto;
+  padding: 32px 16px 0;
+  box-sizing: content-box;
+}
+
+section::after {
+  content: "";
+  display: block;
+  padding-top: 31px;
+  border-bottom: 1px solid var(--contrast-2);
 }
 
 footer {
-  opacity: 0.85;
-  font-weight: 300;
-  margin-bottom: 0;
-  padding-bottom: 32px;
-}
-
-h3 {
-  margin: 0 0 16px;
+  opacity: 0.9;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px 16px;
 }
 </style>

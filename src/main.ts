@@ -1,25 +1,28 @@
-import Vue from 'vue'
-import { Game } from './game'
-import { State } from './state'
-import './registerServiceWorker'
-import 'normalize.css'
-import './main.css'
-import App from './App.vue'
+import Vue from "vue"
+import { register } from "register-service-worker"
+import state from "./state"
+
+import "normalize.css"
+import "./main.css"
+import App from "./App.vue"
 
 Vue.config.productionTip = false
 
+Vue.prototype.$state = state
+window.state = state
+
 new Vue({
+  data: state,
   render: h => h(App),
-}).$mount('#app')
+}).$mount("#app")
 
-declare global {
-  interface Window {
-    app: App
-    game: Game
-    state: State
-  }
-
-  interface Document {
-    fonts?: { ready: Promise<any> }
-  }
+if (process.env.NODE_ENV === "production") {
+  register(`${process.env.BASE_URL}service-worker.js`, {
+    updated(registration) {
+      (window.app as any).refresh = () => {
+        registration.waiting.postMessage({ type: "SKIP_WAITING" })
+        location.reload()
+      }
+    }
+  })
 }

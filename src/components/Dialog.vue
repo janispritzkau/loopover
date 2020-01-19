@@ -2,32 +2,36 @@
   <transition name="fade">
     <div v-if="open" class="dialog-container" :class="{ open: open }" @click.self="close">
       <div class="dialog" ref="dialog" tabindex="-1" @keydown.esc="close">
-        <slot/>
+        <slot />
+        <div class="actions">
+          <button class="btn" @click="close">Close</button>
+        </div>
       </div>
     </div>
   </transition>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch, Prop } from 'vue-property-decorator'
+import Vue from "vue"
 
-@Component({
+export default Vue.extend({
+  props: {
+    open: Boolean
+  },
   watch: {
-    async open(open) {
-      await this.$nextTick()
-      const el = <HTMLElement>this.$refs["dialog"]
-      if (open && el) el.focus()
+    open(open) {
+      if (!open) return
+      setTimeout(() => {
+        (this.$refs.dialog as HTMLDivElement).focus()
+      })
+    }
+  },
+  methods: {
+    close() {
+      this.$emit("update:open", false)
     }
   }
 })
-export default class Dialog extends Vue {
-  @Prop()
-  open = false
-
-  close() {
-    this.$emit("update:open", false)
-  }
-}
 </script>
 
 
@@ -42,7 +46,7 @@ export default class Dialog extends Vue {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.4);
   z-index: 100;
 }
 
@@ -58,22 +62,24 @@ export default class Dialog extends Vue {
 
 .dialog {
   padding: 24px;
-  background: #f6f6f6;
+  background: var(--background);
   min-width: 240px;
-  max-width: 400px;
+  max-width: 440px;
   width: 100%;
-  border-radius: 2px;
+  border-radius: 3px;
   outline: 0;
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.2);
   transition: transform 150ms ease-out;
 }
 
-.dark .dialog {
-  background: #303237;
-}
-
 .fade-enter .dialog,
 .fade-leave-to .dialog {
   transform: scale(0.75);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: -8px;
 }
 </style>
