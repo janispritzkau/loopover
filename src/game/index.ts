@@ -31,18 +31,7 @@ export function movesFromString(string: string) {
 }
 
 export function movesToString(moves: Move[]) {
-  moves = moves.reduce<Move[]>((moves, { ...move }) => {
-    if (moves.length == 0) return (moves.push(move), moves)
-    const lastMove = moves[moves.length - 1]
-    if (lastMove.axis == move.axis && lastMove.index == move.index) {
-      lastMove.n += move.n
-    } else {
-      moves.push(move)
-    }
-    return moves
-  }, [])
-
   return moves.map(move => {
-    return (move.n == -1 ? "-" : move.n == 1 ? "" : move.n) + (move.axis == Axis.Row ? "R" : "C") + move.index
+    return move.n + (move.axis == Axis.Row ? "R" : "C") + move.index
   }).join(" ")
 }
