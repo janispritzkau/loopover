@@ -1,6 +1,6 @@
 <template>
   <button
-    @click="handleClick"
+    @click="$emit('click', $event)"
     @mousedown="start"
     @touchstart="start"
     @touchend="stop"
@@ -19,12 +19,8 @@ export default class RepeatButton extends Vue {
   timeout = 0
   interval = 0
 
-  handleClick(event: Event) {
-    this.$emit("click", event)
-  }
-
   start(event: Event) {
-    event.preventDefault()
+    this.stop()
     this.timeout = setTimeout(() => {
       this.interval = setInterval(() => {
         this.$emit("click", new Event("click"))

@@ -4,7 +4,7 @@
       <div class="main-wrapper" :class="{ desktopMode }">
         <h1>Loopover</h1>
 
-        <main>
+        <main :style="{ width: mainWidth + 'px' }">
           <div v-if="!desktopMode" class="top">
             <Solve
               current
@@ -12,7 +12,7 @@
               :moves="$state.moves"
               :fmc="fmc"
               :dnf="$state.dnf"
-              style="flex-grow: 1;"
+              style="flex-grow: 1; min-width: 0;"
             />
             <button class="btn" @click="handleMainButtonClick">{{ mainButtonText }}</button>
             <template v-if="$state.showUndoRedo">
@@ -116,6 +116,8 @@ export default class App extends Vue {
   sidebarWidth = 240
   sidebarLimit = 12
 
+  mainWidth = 320
+
   get fmc() {
     return this.$state.event == EventType.Fmc
   }
@@ -140,6 +142,7 @@ export default class App extends Vue {
 
   @Watch("$state.cols")
   @Watch("$state.rows")
+  @Watch("$state.showUndoRedo")
   @Watch("$state.forceMobile")
   updateSize() {
     const { game } = this.$state
@@ -161,12 +164,13 @@ export default class App extends Vue {
     const height = this.desktopMode ? desktopHeight : mobileHeight
 
     if (width / aspect < height) {
-      game.setWidth(Math.min(width, cols * 50 + 250 * Math.max(aspect, 1)))
+      game.setWidth(Math.min(width, cols * 50 + 200 * Math.max(aspect, 1)))
     } else {
-      game.setHeight(Math.min(height, rows * 50 + 250 / Math.min(aspect, 1)))
+      game.setHeight(Math.min(height, rows * 50 + 200 / Math.min(aspect, 1)))
     }
 
-    this.sidebarLimit = ~~((game.height / devicePixelRatio - (this.fmc ? 160 : 100)) / 36)
+    this.mainWidth = Math.max(Math.min(mobileWidth, 320), game.width / devicePixelRatio)
+    this.sidebarLimit = ~~((game.height / devicePixelRatio - (this.$state.showUndoRedo ? 160 : 120)) / 36)
   }
 
   mounted() {
@@ -222,6 +226,7 @@ h1 {
 
 canvas {
   display: block;
+  margin: 0 auto;
   border-radius: 3px;
   outline: 0;
   transition: all 0.3s;

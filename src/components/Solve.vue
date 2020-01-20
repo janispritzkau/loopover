@@ -57,6 +57,12 @@ export default Vue.extend({
   flex-direction: column-reverse;
 }
 
+.solve .time,
+.solve .moves {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 :not(.fmc) > .time,
 .fmc .moves {
   font-weight: 500;
@@ -73,8 +79,6 @@ export default Vue.extend({
 
 :not(.fmc) > .moves,
 .fmc .time {
-  overflow: hidden;
   opacity: 0.8;
-  text-overflow: ellipsis;
 }
 </style>
