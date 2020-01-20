@@ -39,12 +39,12 @@ export default Vue.extend({
   },
   methods: {
     exportSolves() {
-      let text = "event,time,memo_time,dnf,moves,scramble,moves_alg\n"
+      let text = "event,time,moves,dnf,memo_time,scramble,moves_alg\n"
 
       text += Object.entries(this.$state.eventSolves)
         .map(([event, solves]) => solves.map(solve => {
           return [
-            event, solve.time, solve.moves.length, solve.memoTime || 0, !!solve.dnf,
+            event, solve.time, solve.moves.length, !!solve.dnf, solve.memoTime || 0,
             movesToString(solve.moves), solve.scramble.grid.flat().join(" ")
           ]
         }).join("\n")).flat().join("\n")
