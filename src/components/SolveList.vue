@@ -7,7 +7,7 @@
       :moves="solve.moves.length"
       :fmc="solve.fmc"
       :dnf="solve.dnf"
-      @click="$state.inspect(solve)"
+      @click="!$state.started && $state.inspect(solve)"
     />
     <p v-if="$state.solves.length == 0" style="opacity: 0.8;">No solves yet</p>
   </div>
