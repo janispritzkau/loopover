@@ -8,6 +8,7 @@ body {
   height: 100vh;
   overflow-y: scroll;
   font-family: "Roboto", sans-serif;
+  touch-action: manipulation;
 }
 
 p {

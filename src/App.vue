@@ -16,8 +16,8 @@
             />
             <button class="btn" @click="handleMainButtonClick">{{ mainButtonText }}</button>
             <template v-if="$state.showUndoRedo">
-              <button class="btn undo" @click="$state.undo()" :disabled="$state.undoable">Undo</button>
-              <button class="btn" @click="$state.redo()" :disabled="$state.redoable">Redo</button>
+              <RepeatButton class="btn undo" @click="$state.undo()" :disabled="$state.undoable">Undo</RepeatButton>
+              <RepeatButton class="btn" @click="$state.redo()" :disabled="$state.redoable">Redo</RepeatButton>
             </template>
           </div>
 
@@ -33,8 +33,8 @@
         <aside v-if="desktopMode" :style="{ width: sidebarWidth + 'px' }">
           <button class="btn filled" @click="handleMainButtonClick">{{ mainButtonText }}</button>
           <div v-if="$state.showUndoRedo" class="fmc-button-wrapper">
-            <button class="btn" @click="$state.undo()" :disabled="$state.undoable">Undo</button>
-            <button class="btn" @click="$state.redo()" :disabled="$state.redoable">Redo</button>
+            <RepeatButton class="btn" @click="$state.undo()" :disabled="$state.undoable">Undo</RepeatButton>
+            <RepeatButton class="btn" @click="$state.redo()" :disabled="$state.redoable">Redo</RepeatButton>
           </div>
           <Solve
             class="current-solve"
@@ -90,6 +90,7 @@ import { Game, Move, Board } from "./game"
 
 import SettingsDialog from "./components/SettingsDialog.vue"
 import EventDialog from "./components/EventDialog.vue"
+import RepeatButton from "./components/RepeatButton.vue"
 import SolveView from "./components/Solve.vue"
 import SolveList from "./components/SolveList.vue"
 import Stats from "./components/Stats.vue"
@@ -99,6 +100,7 @@ import { EventType } from "./state"
   components: {
     Solve: SolveView,
     SolveList,
+    RepeatButton,
     Stats,
     EventDialog,
     SettingsDialog
