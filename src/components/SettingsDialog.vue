@@ -17,13 +17,18 @@
       <input v-model="$state.darkText" type="checkbox" />
       <span>Dark text</span>
     </label>
-    <button class="btn export" @click="$state.export()">Export solves</button>
+    <button
+      v-if="Object.keys($state.eventSolves).length > 0"
+      class="btn export"
+      @click="exportSolves"
+    >Export solves as CSV</button>
   </Dialog>
 </template>
 
 <script lang="ts">
 import Vue from "vue"
 import Dialog from "./Dialog.vue"
+import { movesToString } from '../game'
 
 export default Vue.extend({
   components: {
@@ -31,6 +36,28 @@ export default Vue.extend({
   },
   props: {
     open: Boolean
+  },
+  methods: {
+    exportSolves() {
+      let text = "event,time,memo_time,dnf,moves,scramble,moves_alg\n"
+
+      text += Object.entries(this.$state.eventSolves)
+        .map(([event, solves]) => solves.map(solve => {
+          return [
+            event, solve.time, solve.moves.length, solve.memoTime || 0, !!solve.dnf,
+            movesToString(solve.moves), solve.scramble.grid.flat().join(" ")
+          ]
+        }).join("\n")).flat().join("\n")
+
+      const url = URL.createObjectURL(new Blob([text], { type: "text/csv" }))
+      const a = document.createElement("a")
+      a.href = url
+      a.download = "solves.csv"
+      document.body.append(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    }
   }
 })
 </script>
