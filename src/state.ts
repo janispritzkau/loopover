@@ -145,7 +145,7 @@ export class State {
     this.game.blind = false
 
     if (this.game.noRegrips = this.noRegrips) {
-      this.game.active = this.game.board.grid[Math.ceil((this.rows - 1) / 2)][Math.ceil((this.cols - 1) / 2)]
+      this.game.activeTile = this.game.board.grid[Math.ceil((this.rows - 1) / 2)][Math.ceil((this.cols - 1) / 2)]
     }
   }
 

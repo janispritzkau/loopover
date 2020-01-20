@@ -176,7 +176,7 @@ export default class App extends Vue {
   mounted() {
     window.app = this
 
-    const game = new Game(this.$refs.canvas as HTMLCanvasElement)
+    const game = new Game(this.$refs.canvas as HTMLCanvasElement, this.$state.cols, this.$state.rows)
     this.$state.game = game
     this.$state.reset()
     game.onMove = this.$state.handleMove.bind(this.$state)
