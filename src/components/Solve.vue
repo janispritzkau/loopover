@@ -5,7 +5,10 @@
     @click="$emit('click', $event)"
   >
     <div class="time">{{ $state.formatTime(time) + (dnf && ' DNF' || '') }}</div>
-    <div class="moves">{{ moves }} moves</div>
+    <div class="moves">
+      {{ moves }} moves
+      {{ fmc ? "" : `/ ${time && (~~(moves / time * 10000) / 10)} mps` }}
+    </div>
   </div>
 </template>
 
