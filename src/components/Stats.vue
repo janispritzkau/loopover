@@ -24,16 +24,16 @@ import Vue from "vue"
 export default Vue.extend({
   computed: {
     averages() {
-      return [1, 3, 5, 12].map(n => {
-        if (this.$state.solves.length < n) return { n }
+      const solves = this.$state.solves.map(s => s.time)
+      return [1, 3, 5, 12, 50].map(n => {
+        if (solves.length < n) return { n }
         let best = Infinity
         let worst = -Infinity
-        let current = this.$state.solves.slice(-n).reduce((a, x) => a + x.time, 0) / n
+        let current = sum(solves, solves.length - n) / n
 
-        const length = this.$state.solves.length - n + 1
+        const length = solves.length - n + 1
         for (let i = 0; i < length; i++) {
-          const solves = this.$state.solves.slice(i, i + n)
-          const time = solves.reduce((a, x) => a + x.time, 0) / n
+          const time = sum(solves, i, i + n) / n
           if (time > worst) worst = time
           if (time < best) best = time
         }
@@ -43,4 +43,12 @@ export default Vue.extend({
     }
   }
 })
+
+function sum(array: number[], start = 0, end = array.length) {
+  let sum = 0
+  for (let i = start; i < end; i++) {
+    sum += array[i]
+  }
+  return sum
+}
 </script>

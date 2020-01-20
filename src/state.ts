@@ -232,7 +232,7 @@ export class State {
     if (this.memoTime > 0) solve.memoTime = this.memoTime
     if (this.dnf) solve.dnf = true
 
-    this.solves.push(solve)
+    this.solves.push(Object.freeze(solve))
 
     if (!this.eventSolves[this.eventName]) {
       Vue.set(this.eventSolves, this.eventName, this.solves)
