@@ -1,13 +1,11 @@
 import { Axis, Move } from "."
 
 export class Board {
-  grid: number[][]
-
-  constructor(public cols: number, public rows: number) {
-    this.grid = [...Array(this.rows)]
-      .map((_, row) => [...Array(this.cols)]
-        .map((_, col) => row * this.cols + col))
-  }
+  constructor(public cols: number, public rows: number,
+    public grid: number[][] = [...Array(rows)]
+      .map((_, row) => [...Array(cols)]
+        .map((_, col) => row * cols + col))
+  ) { }
 
   reset() {
     for (let r = 0; r < this.rows; r++) {

@@ -1,4 +1,5 @@
 import Vue from "vue"
+import { openDB, IDBPDatabase } from "idb"
 import { Move, Board, Game } from "./game"
 
 export enum EventType {
@@ -58,7 +59,11 @@ export class State {
   inspecting = false
 
   solves: Solve[] = []
-  eventSolves: { [event: string]: Solve[] } = {}
+  allSolves: Solve[] = []
+  sessionSolves: { [event: string]: Solve[] } = {}
+
+  db?: IDBPDatabase
+  sessionId?: number
 
   game!: Game
 
@@ -103,6 +108,16 @@ export class State {
     }
   }
 
+  async getSolvesByEvent(): Promise<{ [event: string]: Solve[] }> {
+    if (!this.db) return {}
+    const solves: { event: string, solve: Solve }[] = await this.db?.getAll("solves")
+
+    return solves.reduce<{ [event: string]: Solve[] }>((solves, { event, solve }) => {
+      (solves[event] = solves[event] ?? []).push(solve)
+      return solves
+    }, {})
+  }
+
   start() {
     this.started = true
 
@@ -126,26 +141,38 @@ export class State {
     if (this.event == EventType.Blind) this.start()
   }
 
-  reset(onlyResetState = false) {
+  async reset(onlyResetState = false) {
     clearInterval(this.interval)
 
     this.started = false
     this.scrambled = false
     this.inSolvingPhase = false
     this.dnf = false
-    this.solves = this.eventSolves[this.eventName] || []
     this.moveHistory = []
     this.undos = 0
     this.time = 0
     this.memoTime = 0
     this.inspecting = false
 
+    if (this.sessionSolves[this.eventName] == null) {
+      this.sessionSolves[this.eventName] = []
+    }
+    this.solves = this.sessionSolves[this.eventName] || []
+
     if (onlyResetState) return
+
     this.game.setBoardSize(this.cols, this.rows)
     this.game.blind = false
 
     if (this.game.noRegrips = this.noRegrips) {
       this.game.activeTile = this.game.board.grid[Math.ceil((this.rows - 1) / 2)][Math.ceil((this.cols - 1) / 2)]
+    }
+
+    if (this.db) {
+      this.allSolves = (await this.db.getAllFromIndex("solves", "event", this.eventName))
+        .map(({ solve }) => Object.freeze({
+          ...solve, scramble: new Board(solve.scramble.cols, solve.scramble.rows, solve.scramble.grid)
+        })) || []
     }
   }
 
@@ -214,7 +241,7 @@ export class State {
     }
   }
 
-  handleSolved() {
+  async handleSolved() {
     clearInterval(this.interval)
 
     this.time = Date.now() - this.startTime
@@ -233,9 +260,18 @@ export class State {
     if (this.dnf) solve.dnf = true
 
     this.solves.push(Object.freeze(solve))
+    this.allSolves.push(solve)
 
-    if (!this.eventSolves[this.eventName]) {
-      Vue.set(this.eventSolves, this.eventName, this.solves)
+    if (this.db) {
+      if (!this.sessionId) {
+        this.sessionId = await this.db.put("sessions", { created: Date.now() }) as number
+      }
+
+      this.db.put("solves", {
+        event: this.eventName,
+        session: this.sessionId,
+        solve
+      })
     }
   }
 
@@ -279,8 +315,8 @@ const state = new State()
 const vue = new Vue({ data: state })
 
 vue.$watch(() => [state.cols, state.rows, state.event, state.noRegrips], () => {
-  state.cols = Math.min(Math.max(state.cols, 1), 50)
-  state.rows = Math.min(Math.max(state.rows, 1), 50)
+  state.cols = Math.floor(Math.min(Math.max(state.cols, 1), 50))
+  state.rows = Math.floor(Math.min(Math.max(state.rows, 1), 50))
 
   state.game.setBoardSize(state.cols, state.rows)
   state.reset()
@@ -296,5 +332,18 @@ state.loadFromLocalStorage()
 vue.$watch(state.serialize, state => {
   localStorage.loopover = JSON.stringify(state)
 }, { deep: true })
+
+openDB("loopover", 1, {
+  upgrade(db) {
+    db.createObjectStore("sessions", { autoIncrement: true, keyPath: "id" })
+
+    const solvesStore = db.createObjectStore("solves", { autoIncrement: true })
+    solvesStore.createIndex("event", "event", { unique: false })
+    solvesStore.createIndex("session", "session", { unique: false })
+  }
+}).then(async db => {
+  state.db = db
+  state.reset()
+})
 
 export default state

@@ -18,7 +18,6 @@
       <span>Dark text</span>
     </label>
     <button
-      v-if="Object.keys($state.eventSolves).length > 0"
       class="btn export"
       @click="exportSolves"
     >Export solves as CSV</button>
@@ -38,10 +37,10 @@ export default Vue.extend({
     open: Boolean
   },
   methods: {
-    exportSolves() {
-      let text = "event,time,moves,dnf,memo_time,scramble,moves_alg\n"
+    async exportSolves() {
+      let text = "event,time,moves,dnf,memo_time,moves_alg,scramble\n"
 
-      text += Object.entries(this.$state.eventSolves)
+      text += Object.entries(await this.$state.getSolvesByEvent())
         .map(([event, solves]) => solves.map(solve => {
           return [
             event, solve.time, solve.moves.length, !!solve.dnf, solve.memoTime || 0,

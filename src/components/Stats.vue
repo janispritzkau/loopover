@@ -24,7 +24,7 @@ import Vue from "vue"
 export default Vue.extend({
   computed: {
     averages() {
-      const solves = this.$state.solves.map(s => s.time)
+      const solves = this.$state.allSolves.map(s => s.time)
       return [1, 3, 5, 12, 50].map(n => {
         if (solves.length < n) return { n }
         let best = Infinity
