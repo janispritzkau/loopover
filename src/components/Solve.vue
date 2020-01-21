@@ -7,7 +7,7 @@
     <div class="time">{{ $state.formatTime(time) + (dnf && ' DNF' || '') }}</div>
     <div class="moves">
       {{ moves }} moves
-      {{ fmc ? "" : `/ ${time && (~~(moves / time * 10000) / 10)} mps` }}
+      {{ fmc ? "" : `/ ${time && (~~((moves - 1) / time * 100000) / 100)} mps` }}
     </div>
   </div>
 </template>
