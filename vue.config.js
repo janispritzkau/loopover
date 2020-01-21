@@ -1,7 +1,7 @@
 module.exports = {
   publicPath: ".",
   pwa: {
-    name: "Loopover",
+    name: process.env.VUE_APP_NAME,
     themeColor: "#47587a"
   }
 }
