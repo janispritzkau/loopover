@@ -44,13 +44,19 @@
             :fmc="fmc"
             :dnf="$state.dnf"
           />
-          <SolveList :limit="sidebarLimit" />
+          <SolveList :solves="$state.solves" :limit="sidebarLimit" />
         </aside>
       </div>
     </div>
 
-    <section v-if="!desktopMode">
-      <SolveList />
+    <section
+      v-if="$state.allSolves.length - $state.solves.length > 0 || $state.solves.length > sidebarLimit"
+    >
+      <SolveList
+        :solves="$state.allSolves"
+        :skip="Math.min(sidebarLimit, $state.solves.length)"
+        :limit="Math.min(Math.max($state.solves.length - sidebarLimit, 0), 10)"
+      />
     </section>
 
     <Stats />
@@ -150,27 +156,30 @@ export default class App extends Vue {
     const aspect = cols / rows
 
     const mobileWidth = this.$el.clientWidth - 32
-    const mobileHeight = Math.max(100 + 100 / aspect, innerHeight - 32 * 3 - 96)
+    const mobileHeight = Math.max(150 + 150 / aspect, innerHeight - 32 * 3 - 96)
 
     const desktopWidth = this.$el.clientWidth - this.sidebarWidth - 32
     const desktopHeight = innerHeight - 32 * 3 - 48
 
     this.desktopMode = !this.$state.forceMobile
       // choose desktop mode if the canvas size is bigger than in mobile mode
-      && Math.min(mobileWidth / aspect, mobileHeight) < Math.min(desktopWidth / aspect, desktopHeight)
+      && (Math.min(mobileWidth / aspect, mobileHeight) < Math.min(desktopWidth / aspect, desktopHeight))
+      && rows > 1
       && desktopHeight > 320 // minimum height of sidebar
 
     const width = this.desktopMode ? desktopWidth : mobileWidth
     const height = this.desktopMode ? desktopHeight : mobileHeight
 
     if (width / aspect < height) {
-      game.setWidth(Math.min(width, cols * 50 + 200 * Math.max(aspect, 1)))
+      game.setWidth(Math.min(width, cols * 50 + 250 * Math.max(aspect, 1)))
     } else {
-      game.setHeight(Math.min(height, rows * 50 + 200 / Math.min(aspect, 1)))
+      game.setHeight(Math.min(height, rows * 50 + 250 / Math.min(aspect, 1)))
     }
 
     this.mainWidth = Math.max(Math.min(mobileWidth, 320), game.width / devicePixelRatio)
-    this.sidebarLimit = ~~((game.height / devicePixelRatio - (this.$state.showUndoRedo ? 160 : 120)) / 36)
+    this.sidebarLimit = this.desktopMode
+      ? ~~((game.height / devicePixelRatio - (this.$state.showUndoRedo ? 180 : 140)) / 36)
+      : 0
   }
 
   mounted() {
@@ -276,14 +285,20 @@ section,
 footer {
   max-width: 480px;
   margin: 0 auto;
-  padding: 32px 16px 0;
+  padding: 0 16px;
   box-sizing: content-box;
+}
+
+section::before {
+  content: "";
+  display: block;
+  margin-bottom: 32px;
 }
 
 section::after {
   content: "";
   display: block;
-  padding-top: 31px;
+  margin-top: 31px;
   border-bottom: 1px solid var(--contrast-2);
 }
 
