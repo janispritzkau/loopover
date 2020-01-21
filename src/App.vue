@@ -66,8 +66,8 @@
         >Loopover</a>.
       </p>
       <p>
-        Loopover Discord:
-        <a target="_blank" href="https://discord.gg/DXASrTp">discord.gg/DXASrTp</a>
+        <a target="_blank" href="https://discord.gg/DXASrTp">discord.gg/DXASrTp</a> |
+        <a target="_blank" href="https://github.com/janispritzkau/loopover">Source code</a>
       </p>
     </footer>
 
@@ -291,6 +291,7 @@ footer {
   opacity: 0.9;
   max-width: 480px;
   margin: 0 auto;
+  text-align: center;
   padding: 16px 16px;
 }
 </style>
