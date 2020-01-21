@@ -1,6 +1,18 @@
 <template>
   <section>
-    <h3>Averages</h3>
+    <h3>Statistics</h3>
+    <div class="cards">
+      <div class="card">
+        <h5>Session solves</h5>
+        {{ $state.solves.length }}
+      </div>
+      <div class="card">
+        <h5>Total solves</h5>
+        {{ $state.allSolves.length }}
+      </div>
+    </div>
+
+    <h4>Averages</h4>
     <table>
       <tr>
         <th>∑</th>
@@ -52,3 +64,15 @@ function sum(array: number[], start = 0, end = array.length) {
   return sum
 }
 </script>
+
+<style scoped>
+.cards {
+  display: flex;
+  margin: 0 -4px;
+}
+
+.card {
+  width: 50%;
+  margin: 4px;
+}
+</style>
