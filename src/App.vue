@@ -334,7 +334,7 @@ aside {
 .new-record {
   font-size: 18px;
   font-weight: 500;
-  color: #282;
+  color: var(--green);
   margin: 0 0 8px;
   display: inline-block;
 }
