@@ -7,6 +7,9 @@
         <code>Space</code> move tile when pressing arrow key
       </li>
       <li>
+        <code>Ctrl or<br>Shift</code> move twice when pressing arrow key
+      </li>
+      <li>
         <code>↑ or w</code> move up
       </li>
       <li>

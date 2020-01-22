@@ -228,6 +228,8 @@ export class Game {
 
       if (multiplier) {
         n *= Math.min(multiplier, axis == Axis.Col ? this.rows : this.cols)
+      } else if (event.ctrlKey || event.shiftKey) {
+        n *= 2
       }
 
       if (this.spaceDown || (this.noRegrips && !this.board.isSolved())) {
