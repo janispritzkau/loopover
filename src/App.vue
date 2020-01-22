@@ -207,6 +207,8 @@ export default class App extends Vue {
       if (document.activeElement == document.body) {
         game.handleKeyDown(event)
         if (event.defaultPrevented) game.canvas.focus()
+      } else if (document.activeElement != game.canvas) {
+        return
       }
 
       switch (event.key) {
