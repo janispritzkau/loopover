@@ -274,22 +274,32 @@ export class Game {
       }
     })
 
+    let timeout: any
+    let string = ""
+
     const move = (axis: Axis, n: number) => {
       const pos = this.board.pos(this.activeTile!)!
+      const mul = parseInt(string.slice(0, 2))
+      string = ""
+      if (mul) n *= mul
 
       if (this.spaceDown || (this.noRegrips && !this.board.isSolved())) {
         this.animatedMove(axis, axis == Axis.Col ? pos.col : pos.row, n, true)
       } else {
         if (axis == Axis.Row) {
-          this.activeTile = this.board.grid[pos.row][(pos.col + n + this.cols) % this.cols]
+          this.activeTile = this.board.grid[pos.row][(pos.col + n + this.cols * 10) % this.cols]
         } else {
-          this.activeTile = this.board.grid[(pos.row + n + this.rows) % this.rows][pos.col]
+          this.activeTile = this.board.grid[(pos.row + n + this.rows * 10) % this.rows][pos.col]
         }
       }
     }
 
     this.canvas.addEventListener("keydown", event => {
-      event.preventDefault()
+      if ("1234567890".includes(event.key)) {
+        clearTimeout(timeout)
+        timeout = setTimeout(() => string = "", 1000)
+        string += event.key
+      }
 
       switch (event.key) {
         case " ": this.spaceDown = true; break
@@ -300,6 +310,7 @@ export class Game {
         default: return
       }
 
+      event.preventDefault()
       this.highlightActive = true
     })
 

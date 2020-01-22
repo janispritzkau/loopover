@@ -190,6 +190,17 @@ export default class App extends Vue {
     this.$state.reset()
     game.onMove = this.$state.handleMove.bind(this.$state)
 
+    game.canvas.addEventListener("keydown", event => {
+      if (event.ctrlKey || event.shiftKey) return
+      switch (event.key) {
+        case "u": this.$state.showUndoRedo && this.$state.undo(); break
+        case "r": this.$state.showUndoRedo && this.$state.redo(); break
+        case "Enter": this.handleMainButtonClick(); break
+        default: return;
+      }
+      event.preventDefault()
+    })
+
     window.addEventListener("resize", this.updateSize.bind(this))
     this.$nextTick(this.updateSize)
   }
