@@ -263,18 +263,6 @@ export class State {
     this.solves.push(Object.freeze(solve))
     this.allSolves.push(solve)
 
-    if (this.db) {
-      if (!this.sessionId) {
-        this.sessionId = await this.db.put("sessions", { created: Date.now() }) as number
-      }
-
-      this.db.put("solves", {
-        event: this.eventName,
-        session: this.sessionId,
-        solve
-      })
-    }
-
     const averageNums = [1, 3, 5]
     const lastAverages = averageNums.map(n => this.averages.get(n))
     this.newRecord = null
@@ -290,6 +278,18 @@ export class State {
         this.newRecord = { n, diff: lastAverage.best - average.best }
         break
       }
+    }
+
+    if (this.db) {
+      if (!this.sessionId) {
+        this.sessionId = await this.db.put("sessions", { created: Date.now() }) as number
+      }
+
+      this.db.put("solves", {
+        event: this.eventName,
+        session: this.sessionId,
+        solve
+      })
     }
   }
 
