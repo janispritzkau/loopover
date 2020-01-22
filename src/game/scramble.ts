@@ -3,12 +3,17 @@ import { Axis } from "."
 
 export function scrambleBoard(board: Board, noRegripsTile?: number) {
   for (let tries = 0; tries < 20; tries++) {
-    if (noRegripsTile != null) {
+    if (noRegripsTile != null || board.cols == 1 || board.rows == 1) {
       for (let i = 0; i < board.cols * board.rows + 50; i++) {
         const axis = Math.random() > 0.5 ? Axis.Col : Axis.Row
-        const { row, col } = board.pos(noRegripsTile)!
         const n = 1 + Math.floor(Math.random() * (axis == Axis.Col ? board.rows - 1 : board.cols - 1))
-        board.move({ axis, index: axis == Axis.Col ? col : row, n })
+
+        if (noRegripsTile != null) {
+          const { row, col } = board.pos(noRegripsTile)!
+          board.move({ axis, index: axis == Axis.Col ? col : row, n })
+        } else {
+          board.move({ axis, index: ~~(Math.random() * (axis == Axis.Col ? board.cols : board.rows)), n })
+        }
       }
     } else {
       randomizeBoard(board)
@@ -18,8 +23,6 @@ export function scrambleBoard(board: Board, noRegripsTile?: number) {
 }
 
 function randomizeBoard(board: Board) {
-  if (board.cols < 2 || board.rows < 2) return
-
   const indices = [...Array(board.cols * board.rows)].map((_, i) => i)
   shuffle(indices)
 
