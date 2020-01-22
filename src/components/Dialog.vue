@@ -2,9 +2,17 @@
   <transition name="fade">
     <div v-if="open" class="dialog-container" :class="{ open: open }" @click.self="close">
       <div class="dialog" ref="dialog" tabindex="-1" @keydown.esc="close">
-        <slot />
+        <div class="content">
+          <slot />
+        </div>
         <div class="actions">
-          <button class="btn" @click="close">Close</button>
+          <template v-if="$listeners.confirm">
+            <button class="btn" @click="close">Cancel</button>
+            <button class="btn" @click="$emit('confirm'), close()">Confirm</button>
+          </template>
+          <template v-else>
+            <button class="btn" @click="close">Close</button>
+          </template>
         </div>
       </div>
     </div>
@@ -61,6 +69,8 @@ export default Vue.extend({
 }
 
 .dialog {
+  display: flex;
+  flex-direction: column;
   padding: 24px;
   background: var(--background);
   min-width: 240px;
@@ -75,6 +85,10 @@ export default Vue.extend({
 .fade-enter .dialog,
 .fade-leave-to .dialog {
   transform: scale(0.75);
+}
+
+.content {
+  flex-grow: 1;
 }
 
 .actions {

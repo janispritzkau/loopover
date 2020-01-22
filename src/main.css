@@ -62,7 +62,7 @@ h4 {
   color: var(--secondary);
 }
 
-.btn:hover {
+.btn:hover, .btn:focus {
   background: var(--contrast-2);
 }
 

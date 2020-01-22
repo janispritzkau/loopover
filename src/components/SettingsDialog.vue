@@ -17,17 +17,24 @@
       <input v-model="$state.darkText" type="checkbox" />
       <span>Dark text</span>
     </label>
-    <button
-      class="btn export"
-      @click="exportSolves"
-    >Export solves as CSV</button>
+
+    <button class="btn export" @click="exportSolves">Export solves as CSV</button>
+
+    <button class="btn" @click="clear('event')">Clear solves for current event</button>
+    <button class="btn" @click="clear('all')">Clear all data</button>
+
+    <Dialog :open.sync="confirmDialog" @confirm="clear(clearWhat, true)">
+      <h3>Delete all data{{ clearWhat == "event" ? " for the current event" : "" }}</h3>
+      <p v-if="clearWhat == 'event'">All solves from the current event will be gone.</p>
+      <p v-else>This will delete all data including solves and modifications to the settings.</p>
+    </Dialog>
   </Dialog>
 </template>
 
 <script lang="ts">
 import Vue from "vue"
 import Dialog from "./Dialog.vue"
-import { movesToString } from '../game'
+import { movesToString } from "../game"
 
 export default Vue.extend({
   components: {
@@ -36,7 +43,36 @@ export default Vue.extend({
   props: {
     open: Boolean
   },
+  data() {
+    return {
+      confirmDialog: false,
+      clearWhat: null as any
+    }
+  },
   methods: {
+    async clear(what: "all" | "event", confirm = false) {
+      if (confirm) {
+        this.confirmDialog = false
+        if (what == "event") {
+          const solvesStore = this.$state.db?.transaction("solves", "readwrite").objectStore("solves")
+          if (solvesStore) {
+            let cursor = await solvesStore.index("event").openKeyCursor(this.$state.eventName)
+            if (!cursor) return
+            do {
+              solvesStore.delete(cursor.primaryKey)
+            } while (cursor = await cursor.continue())
+          }
+        } else if (what == "all") {
+          indexedDB.deleteDatabase("loopover")
+          localStorage.removeItem("loopover")
+          location.reload()
+        }
+        return
+      }
+
+      this.confirmDialog = true
+      this.clearWhat = what
+    },
     async exportSolves() {
       let text = "event,time,moves,dnf,memo_time,moves_alg,scramble\n"
 
@@ -63,6 +99,10 @@ export default Vue.extend({
 
 <style scoped>
 .export {
-  margin: 16px 0 0;
+  margin: 16px 0;
+}
+
+.btn {
+  display: block;
 }
 </style>
