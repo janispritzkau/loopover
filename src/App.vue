@@ -62,6 +62,9 @@
     <Stats />
 
     <footer>
+      <p v-if="showShortcuts" class="shortcuts-link">
+        <button class="btn" @click="shortcutsDialog = true">List of shortcuts</button>
+      </p>
       <p>
         Created by
         <a target="_blank" href="https://twitter.com/janispritzkau">Janis Pritzkau</a>.
@@ -87,6 +90,7 @@
 
     <EventDialog :open.sync="eventDialog" />
     <SettingsDialog :open.sync="settingsDialog" />
+    <ShortcutsDialog :open.sync="shortcutsDialog" />
   </div>
 </template>
 
@@ -96,6 +100,7 @@ import { Game, Move, Board } from "./game"
 
 import SettingsDialog from "./components/SettingsDialog.vue"
 import EventDialog from "./components/EventDialog.vue"
+import ShortcutsDialog from "./components/ShortcutsDialog.vue"
 import RepeatButton from "./components/RepeatButton.vue"
 import SolveView from "./components/Solve.vue"
 import SolveList from "./components/SolveList.vue"
@@ -109,7 +114,8 @@ import { EventType } from "./state"
     RepeatButton,
     Stats,
     EventDialog,
-    SettingsDialog
+    SettingsDialog,
+    ShortcutsDialog
   }
 })
 export default class App extends Vue {
@@ -117,6 +123,7 @@ export default class App extends Vue {
 
   eventDialog = false
   settingsDialog = false
+  shortcutsDialog = false
 
   desktopMode = false
   sidebarWidth = 240
@@ -136,6 +143,10 @@ export default class App extends Vue {
 
   get mainButtonText() {
     return this.$state.inSolvingPhase ? "Done" : "Scramble"
+  }
+
+  get showShortcuts() {
+    return !("ontouchstart" in window)
   }
 
   handleMainButtonClick() {
@@ -190,15 +201,22 @@ export default class App extends Vue {
     this.$state.reset()
     game.onMove = this.$state.handleMove.bind(this.$state)
 
-    game.canvas.addEventListener("keydown", event => {
+    window.addEventListener("keydown", event => {
       if (event.ctrlKey || event.shiftKey) return
+
+      if (document.activeElement == document.body) {
+        game.handleKeyDown(event)
+        if (event.defaultPrevented) game.canvas.focus()
+      }
+
       switch (event.key) {
         case "u": this.$state.showUndoRedo && this.$state.undo(); break
         case "r": this.$state.showUndoRedo && this.$state.redo(); break
         case "Enter": this.handleMainButtonClick(); break
         default: return;
       }
-      event.preventDefault()
+
+      game.canvas.focus()
     })
 
     window.addEventListener("resize", this.updateSize.bind(this))

@@ -17,9 +17,9 @@ export class Board {
 
   move(move: Move) {
     if (move.axis == Axis.Row) {
-      this.moveRow((move.index + this.rows) % this.rows, move.n)
+      this.moveRow(move.index, move.n)
     } else {
-      this.moveColumn((move.index + this.cols) % this.cols, move.n)
+      this.moveColumn(move.index, move.n)
     }
   }
 
@@ -42,14 +42,14 @@ export class Board {
 
   moveRow(index: number, n: number) {
     const row = this.grid[index]
-    this.grid[index] = row.map((_, i) => row[(i + this.cols * 16 - n) % this.cols])
+    this.grid[index] = row.map((_, i) => row[(((i - n) % this.cols) + this.cols) % this.cols])
   }
 
   moveColumn(index: number, n: number) {
     const col = [...Array(this.rows)].map((_, i) => this.grid[i][index])
 
     for (let i = 0; i < this.rows; i++) {
-      this.grid[i][index] = col[(i + this.rows * 16 - n) % this.rows]
+      this.grid[i][index] = col[(((i - n) % this.rows) + this.rows) % this.rows]
     }
   }
 

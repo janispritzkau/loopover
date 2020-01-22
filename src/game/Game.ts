@@ -90,9 +90,9 @@ export class Game {
 
   animatedMove(axis: Axis, index: number, n: number, isPlayerMove = false) {
     if (axis == Axis.Col) {
-      index = (index + this.cols) % this.cols
+      index = ((index % this.cols) + this.cols) % this.cols
     } else {
-      index = (index + this.rows) % this.rows
+      index = ((index % this.rows) + this.rows) % this.rows
     }
 
     if (this.noRegrips) {
@@ -134,7 +134,7 @@ export class Game {
 
       const w = (this.moveAxis == Axis.Col ? this.rows : this.cols)
       for (let j = Math.floor(-moveAmount); j < w - Math.floor(moveAmount); j++) {
-        let [row, col] = [i, (j + w * 2) % w]
+        let [row, col] = [i, ((j % w) + w) % w]
         let [x, y] = [j + moveAmount, i]
 
         if (this.moveAxis == Axis.Col) {
@@ -217,6 +217,53 @@ export class Game {
     this.pointers.delete(identifier)
   }
 
+  private multiplierString = ""
+  private multiplierTimeout: any
+
+  handleKeyDown = (event: KeyboardEvent) => {
+    const move = (axis: Axis, n: number) => {
+      const pos = this.board.pos(this.activeTile!)!
+      const multiplier = parseInt(this.multiplierString)
+      this.multiplierString = ""
+
+      if (multiplier) {
+        n *= Math.min(multiplier, axis == Axis.Col ? this.rows : this.cols)
+      }
+
+      if (this.spaceDown || (this.noRegrips && !this.board.isSolved())) {
+        this.animatedMove(axis, axis == Axis.Col ? pos.col : pos.row, n, true)
+      } else {
+        if (axis == Axis.Row) {
+          this.activeTile = this.board.grid[pos.row][(((pos.col + n) % this.cols) + this.cols) % this.cols]
+        } else {
+          this.activeTile = this.board.grid[(((pos.row + n) % this.rows) + this.rows) % this.rows][pos.col]
+        }
+      }
+    }
+
+    if ("1234567890".includes(event.key)) {
+      clearTimeout(this.multiplierTimeout)
+      this.multiplierTimeout = setTimeout(() => this.multiplierString = "", 1000)
+      this.multiplierString += event.key
+    }
+
+    switch (event.key) {
+      case " ": this.spaceDown = true; break
+      case "ArrowLeft": case "a": move(Axis.Row, -1); break
+      case "ArrowRight": case "d": move(Axis.Row, 1); break
+      case "ArrowUp": case "w": move(Axis.Col, -1); break
+      case "ArrowDown": case "s": move(Axis.Col, 1); break
+      default: return true
+    }
+
+    this.highlightActive = true
+    event.preventDefault()
+  }
+
+  handleKeyUp = (event: KeyboardEvent) => {
+    if (event.key == " ") this.spaceDown = false
+  }
+
   private addEventListeners() {
     let rect: ClientRect
 
@@ -274,49 +321,8 @@ export class Game {
       }
     })
 
-    let timeout: any
-    let string = ""
-
-    const move = (axis: Axis, n: number) => {
-      const pos = this.board.pos(this.activeTile!)!
-      const mul = parseInt(string.slice(0, 2))
-      string = ""
-      if (mul) n *= mul
-
-      if (this.spaceDown || (this.noRegrips && !this.board.isSolved())) {
-        this.animatedMove(axis, axis == Axis.Col ? pos.col : pos.row, n, true)
-      } else {
-        if (axis == Axis.Row) {
-          this.activeTile = this.board.grid[pos.row][(pos.col + n + this.cols * 10) % this.cols]
-        } else {
-          this.activeTile = this.board.grid[(pos.row + n + this.rows * 10) % this.rows][pos.col]
-        }
-      }
-    }
-
-    this.canvas.addEventListener("keydown", event => {
-      if ("1234567890".includes(event.key)) {
-        clearTimeout(timeout)
-        timeout = setTimeout(() => string = "", 1000)
-        string += event.key
-      }
-
-      switch (event.key) {
-        case " ": this.spaceDown = true; break
-        case "ArrowLeft": case "a": move(Axis.Row, -1); break
-        case "ArrowRight": case "d": move(Axis.Row, 1); break
-        case "ArrowUp": case "w": move(Axis.Col, -1); break
-        case "ArrowDown": case "s": move(Axis.Col, 1); break
-        default: return
-      }
-
-      event.preventDefault()
-      this.highlightActive = true
-    })
-
-    this.canvas.addEventListener("keyup", event => {
-      if (event.key == " ") this.spaceDown = false
-    })
+    this.canvas.addEventListener("keydown", this.handleKeyDown)
+    this.canvas.addEventListener("keyup", this.handleKeyUp)
 
     this.canvas.addEventListener("blur", () => {
       this.highlightActive = false
