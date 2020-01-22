@@ -36,6 +36,11 @@
             <RepeatButton class="btn" @click="$state.undo()" :disabled="$state.undoable">Undo</RepeatButton>
             <RepeatButton class="btn" @click="$state.redo()" :disabled="$state.redoable">Redo</RepeatButton>
           </div>
+
+          <transition name="record">
+            <p v-if="newRecord" class="new-record">{{ newRecord }}</p>
+          </transition>
+
           <Solve
             class="current-solve"
             current
@@ -44,6 +49,7 @@
             :fmc="fmc"
             :dnf="$state.dnf"
           />
+
           <SolveList :solves="$state.solves" :limit="sidebarLimit" />
         </aside>
       </div>
@@ -52,6 +58,10 @@
     <section
       v-if="$state.allSolves.length - $state.solves.length > 0 || $state.solves.length > sidebarLimit"
     >
+      <transition name="record">
+        <p v-if="!desktopMode && newRecord" class="new-record">{{ newRecord }}</p>
+      </transition>
+
       <SolveList
         :solves="$state.allSolves"
         :skip="Math.min(sidebarLimit, $state.solves.length)"
@@ -149,6 +159,15 @@ export default class App extends Vue {
     return !("ontouchstart" in window)
   }
 
+  get newRecord() {
+    const record = this.$state.newRecord
+    if (!record) return
+
+    return record.n == 1
+      ? `New personal best (-${record.diff / 1000}s)`
+      : `New best average of ${record.n} (-${Math.round(record.diff) / 1000}s)`
+  }
+
   handleMainButtonClick() {
     if (this.$state.inSolvingPhase) {
       this.$state.done()
@@ -189,7 +208,7 @@ export default class App extends Vue {
 
     this.mainWidth = Math.max(Math.min(mobileWidth, 320), game.width / devicePixelRatio)
     this.sidebarLimit = this.desktopMode
-      ? ~~((game.height / devicePixelRatio - (this.$state.showUndoRedo ? 180 : 140)) / 36)
+      ? ~~((game.height / devicePixelRatio - (this.$state.showUndoRedo ? 200 : 150)) / 36)
       : 0
   }
 
@@ -310,6 +329,31 @@ aside {
 
 .current-solve {
   margin-bottom: 12px;
+}
+
+.new-record {
+  font-size: 18px;
+  font-weight: 500;
+  color: #282;
+  margin: 0 0 8px;
+  display: inline-block;
+}
+
+.record-enter-active {
+  transition: all 0.6s;
+}
+
+.record-leave-active {
+  transition: opacity 0.2s;
+}
+
+.record-enter {
+  transform: translateY(-40px) scale(1.2);
+  opacity: 0;
+}
+
+.record-leave-to {
+  opacity: 0;
 }
 
 section,

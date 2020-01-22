@@ -100,7 +100,7 @@ export class State {
   formatTime(ms?: number | null, compact = false) {
     if (ms == null) return "―"
     const s = ms / 1000
-    const min = (s / 60) | 0, sec = s % 60 | 0, millis = ms % 1000 | 0
+    const min = (s / 60) | 0, sec = s % 60 | 0, millis = Math.round(ms % 1000)
     if (compact) {
       return `${min > 0 ? `${min}:` : ""}${(s % 60).toPrecision(3)}`
     } else {
@@ -153,6 +153,7 @@ export class State {
     this.time = 0
     this.memoTime = 0
     this.inspecting = false
+    this.newRecord = null
 
     if (this.sessionSolves[this.eventName] == null) {
       this.sessionSolves[this.eventName] = []
@@ -273,6 +274,57 @@ export class State {
         solve
       })
     }
+
+    const averageNums = [1, 3, 5]
+    const lastAverages = averageNums.map(n => this.averages.get(n))
+    this.newRecord = null
+
+    await Vue.nextTick()
+
+    for (const [i, n] of averageNums.entries()) {
+      const average = this.averages.get(n)
+      const lastAverage = lastAverages[i]
+      if (!average || !lastAverage) break
+
+      if (average.best < lastAverage.best) {
+        this.newRecord = { n, diff: lastAverage.best - average.best }
+        break
+      }
+    }
+  }
+
+  newRecord: { n: number, diff: number } | null = null
+
+  averages = new Map<number, { best: number, worst: number, current: number }>()
+
+  calculateAverages() {
+    function sum(array: number[], start = 0, end = array.length) {
+      let sum = 0
+      for (let i = start; i < end; i++) {
+        sum += array[i]
+      }
+      return sum
+    }
+
+    const solves = this.allSolves.map(s => s.time)
+    this.averages = new Map()
+
+    for (const n of [1, 3, 5, 12, 50]) {
+      if (solves.length < n) continue
+
+      let best = Infinity
+      let worst = -Infinity
+      let current = sum(solves, solves.length - n) / n
+
+      const length = solves.length - n + 1
+      for (let i = 0; i < length; i++) {
+        const time = sum(solves, i, i + n) / n
+        if (time > worst) worst = time
+        if (time < best) best = time
+      }
+
+      this.averages.set(n, { best, worst, current })
+    }
   }
 
   loadFromLocalStorage() {
@@ -313,6 +365,8 @@ export class State {
 
 const state = new State()
 const vue = new Vue({ data: state })
+
+vue.$watch(() => state.allSolves, () => state.calculateAverages())
 
 vue.$watch(() => [state.cols, state.rows, state.event, state.noRegrips], () => {
   state.cols = Math.floor(Math.min(Math.max(state.cols, 1), 50))
