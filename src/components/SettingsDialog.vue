@@ -98,11 +98,12 @@ export default Vue.extend({
 </script>
 
 <style scoped>
-.export {
-  margin: 16px 0;
-}
-
 .btn {
   display: block;
+  margin-top: 4px;
+}
+
+.export {
+  margin-top: 16px;
 }
 </style>

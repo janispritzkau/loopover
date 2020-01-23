@@ -73,7 +73,7 @@
 
     <footer>
       <p v-if="showShortcuts" class="shortcuts-link">
-        <button class="btn" @click="shortcutsDialog = true">List of shortcuts</button>
+        <a @click="shortcutsDialog = true">Keyboard shortcuts</a>
       </p>
       <p>
         Created by
