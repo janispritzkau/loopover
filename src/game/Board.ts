@@ -13,11 +13,11 @@ export class Board {
   }
 
   serialize() {
-    return this.grid
+    return this.clone().grid
   }
 
   clone() {
-    return new Board(this.cols, this.rows, this.grid)
+    return new Board(this.cols, this.rows, this.grid.map(row => [...row]))
   }
 
   reset() {
