@@ -1,17 +1,28 @@
 import { Axis, Move } from "."
 
 export class Board {
-  constructor(public cols: number, public rows: number,
-    public grid: number[][] = [...Array(rows)]
-      .map((_, row) => [...Array(cols)]
-        .map((_, col) => row * cols + col))
-  ) { }
+  grid: number[][]
+
+  static deserialize(grid: number[][]) {
+    return new Board(grid[0].length, grid.length, grid)
+  }
+
+  constructor(public cols: number, public rows: number, grid?: number[][]) {
+    if (grid) this.grid = grid
+    else this.grid = [...Array(rows)].map((_, r) => [...Array(cols)].map((_, c) => r * cols + c))
+  }
+
+  serialize() {
+    return this.grid
+  }
+
+  clone() {
+    return new Board(this.cols, this.rows, this.grid)
+  }
 
   reset() {
-    for (let r = 0; r < this.rows; r++) {
-      for (let c = 0; c < this.cols; c++) {
-        this.grid[r][c] = r * this.cols + c
-      }
+    for (let i = this.cols * this.rows; i--;) {
+      this.grid[~~(i / this.cols)][i % this.cols] = i
     }
   }
 
@@ -40,28 +51,16 @@ export class Board {
     }
   }
 
-  moveRow(index: number, n: number) {
+  private moveRow(index: number, n: number) {
     const row = this.grid[index]
     this.grid[index] = row.map((_, i) => row[(((i - n) % this.cols) + this.cols) % this.cols])
   }
 
-  moveColumn(index: number, n: number) {
+  private moveColumn(index: number, n: number) {
     const col = [...Array(this.rows)].map((_, i) => this.grid[i][index])
 
     for (let i = 0; i < this.rows; i++) {
       this.grid[i][index] = col[(((i - n) % this.rows) + this.rows) % this.rows]
     }
-  }
-
-  clone() {
-    const board = new Board(this.cols, this.rows)
-    for (let r = 0; r < this.rows; r++) for (let c = 0; c < this.cols; c++) {
-      board.grid[r][c] = this.grid[r][c]
-    }
-    return board
-  }
-
-  toJSON() {
-    return this.clone().grid
   }
 }

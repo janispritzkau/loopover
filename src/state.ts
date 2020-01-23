@@ -63,7 +63,7 @@ export class State {
   sessionSolves: { [event: string]: Solve[] } = {}
 
   db?: IDBPDatabase
-  sessionId?: number
+  session = Date.now()
 
   game!: Game
 
@@ -110,9 +110,10 @@ export class State {
 
   async getSolvesByEvent(): Promise<{ [event: string]: Solve[] }> {
     if (!this.db) return {}
-    const solves: { event: string, solve: Solve }[] = await this.db?.getAll("solves")
+    const solves: any[] = await this.db?.getAll("solves")
 
-    return solves.reduce<{ [event: string]: Solve[] }>((solves, { event, solve }) => {
+    return solves.reduce<{ [event: string]: Solve[] }>((solves, value) => {
+      const { event, solve } = deserializeSolve(value);
       (solves[event] = solves[event] ?? []).push(solve)
       return solves
     }, {})
@@ -171,9 +172,7 @@ export class State {
 
     if (this.db) {
       this.allSolves = (await this.db.getAllFromIndex("solves", "event", this.eventName))
-        .map(({ solve }) => Object.freeze({
-          ...solve, scramble: new Board(solve.scramble.cols, solve.scramble.rows, solve.scramble.grid)
-        })) || []
+        .map(value => Object.freeze(deserializeSolve(value).solve)) || []
     }
   }
 
@@ -281,15 +280,7 @@ export class State {
     }
 
     if (this.db) {
-      if (!this.sessionId) {
-        this.sessionId = await this.db.put("sessions", { created: Date.now() }) as number
-      }
-
-      this.db.put("solves", {
-        event: this.eventName,
-        session: this.sessionId,
-        solve
-      })
+      this.db.put("solves", serializeSolve(solve, this.eventName, this.session))
     }
   }
 
@@ -363,6 +354,23 @@ export class State {
   }
 }
 
+function serializeSolve(solve: Solve, event: string, session: number) {
+  return {
+    session, event, ...solve,
+    scramble: solve.scramble.serialize()
+  }
+}
+
+function deserializeSolve(value: any): { session: number, event: string, solve: Solve } {
+  const { session, event, ...solve } = value
+  return {
+    session, event,
+    solve: {
+      ...solve, scramble: Board.deserialize(solve.scramble)
+    }
+  }
+}
+
 const state = new State()
 const vue = new Vue({ data: state })
 
@@ -387,13 +395,35 @@ vue.$watch(state.serialize, state => {
   localStorage.loopover = JSON.stringify(state)
 }, { deep: true })
 
-openDB("loopover", 1, {
-  upgrade(db) {
-    db.createObjectStore("sessions", { autoIncrement: true, keyPath: "id" })
+openDB("loopover", 2, {
+  async upgrade(db, oldVersion, _newVersion: number, transaction) {
+    if (oldVersion < 2) {
+      if (db.objectStoreNames.contains("solves")) {
+        transaction.objectStore("solves").name = "solvesOld"
+      }
 
-    const solvesStore = db.createObjectStore("solves", { autoIncrement: true })
-    solvesStore.createIndex("event", "event", { unique: false })
-    solvesStore.createIndex("session", "session", { unique: false })
+      const solvesStore = db.createObjectStore("solves", { keyPath: "startTime" })
+      solvesStore.createIndex("session", "session", { unique: false })
+      solvesStore.createIndex("event", "event", { unique: false })
+
+      if (db.objectStoreNames.contains("solvesOld")) {
+        const sessions = transaction.objectStore("sessions")
+
+        let cursor = await transaction.objectStore("solvesOld").openCursor()
+        while (cursor) {
+          solvesStore.put({
+            session: (await sessions.get(cursor.value.session)).created,
+            event: cursor.value.event,
+            ...cursor.value.solve,
+            scramble: cursor.value.solve.scramble.grid
+          })
+          cursor = await cursor.continue()
+        }
+
+        db.deleteObjectStore("sessions")
+        db.deleteObjectStore("solvesOld")
+      }
+    }
   }
 }).then(async db => {
   state.db = db
