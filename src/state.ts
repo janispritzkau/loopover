@@ -97,15 +97,11 @@ export class State {
     return this.undos == 0
   }
 
-  formatTime(ms?: number | null, compact = false) {
+  formatTime(ms?: number | null) {
     if (ms == null) return "―"
     const s = ms / 1000
     const min = (s / 60) | 0, sec = s % 60 | 0, millis = Math.round(ms % 1000)
-    if (compact) {
-      return `${min > 0 ? `${min}:` : ""}${(s % 60).toPrecision(3)}`
-    } else {
-      return `${min}:${sec.toString().padStart(2, "0")}.${millis.toString().padStart(3, "0")}`
-    }
+    return `${min}:${sec.toString().padStart(2, "0")}.${millis.toString().padStart(3, "0")}`
   }
 
   async getSolvesByEvent(): Promise<{ [event: string]: Solve[] }> {
@@ -273,8 +269,11 @@ export class State {
       const lastAverage = lastAverages[i]
       if (!average || !lastAverage) break
 
-      if (average.best < lastAverage.best) {
-        this.newRecord = { n, diff: lastAverage.best - average.best }
+      if (this.event == EventType.Fmc && average.fewestMoves < lastAverage.fewestMoves) {
+        this.newRecord = { n, diff: lastAverage.fewestMoves - average.fewestMoves, fmc: true }
+        break
+      } else if (this.event != EventType.Fmc && average.bestTime < lastAverage.bestTime) {
+        this.newRecord = { n, diff: lastAverage.bestTime - average.bestTime, fmc: false }
         break
       }
     }
@@ -284,37 +283,49 @@ export class State {
     }
   }
 
-  newRecord: { n: number, diff: number } | null = null
+  newRecord: { n: number, diff: number, fmc: boolean } | null = null
 
-  averages = new Map<number, { best: number, worst: number, current: number }>()
+  averages = new Map<number, {
+    bestTime: number, worstTime: number, currentTime: number
+    fewestMoves: number, mostMoves: number, currentMoves: number
+  }>()
 
   calculateAverages() {
-    function sum(array: number[], start = 0, end = array.length) {
+    function sum(array: number[][], index: number, start = 0, end = array.length) {
       let sum = 0
       for (let i = start; i < end; i++) {
-        sum += array[i]
+        sum += array[i][index]
       }
       return sum
     }
 
-    const solves = this.allSolves.map(s => s.time)
+    const solves = this.allSolves.map(s => [s.time, s.moves.length])
     this.averages = new Map()
 
     for (const n of [1, 3, 5, 12, 50]) {
       if (solves.length < n) continue
 
-      let best = Infinity
-      let worst = -Infinity
-      let current = sum(solves, solves.length - n) / n
+      let bestTime = Infinity
+      let worstTime = -Infinity
+
+      let fewestMoves = Infinity
+      let mostMoves = -Infinity
 
       const length = solves.length - n + 1
       for (let i = 0; i < length; i++) {
-        const time = sum(solves, i, i + n) / n
-        if (time > worst) worst = time
-        if (time < best) best = time
+        const time = sum(solves, 0, i, i + n) / n
+        if (time > worstTime) worstTime = time
+        if (time < bestTime) bestTime = time
+
+        const moves = sum(solves, 1, i, i + n) / n
+        if (moves > mostMoves) mostMoves = moves
+        if (moves < fewestMoves) fewestMoves = moves
       }
 
-      this.averages.set(n, { best, worst, current })
+      this.averages.set(n, {
+        worstTime, bestTime, currentTime: sum(solves, 0, solves.length - n) / n,
+        fewestMoves, mostMoves, currentMoves: sum(solves, 1, solves.length - n) / n
+      })
     }
   }
 

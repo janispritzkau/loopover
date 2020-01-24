@@ -164,8 +164,10 @@ export default class App extends Vue {
     if (!record) return
 
     return record.n == 1
-      ? `New personal best (-${record.diff / 1000}s)`
-      : `New best average of ${record.n} (-${Math.round(record.diff) / 1000}s)`
+      ? `New personal best (-${record.fmc ? record.diff + "\xa0moves" : record.diff / 1000 + "s"})`
+      : `New best average of ${record.n} (-${record.fmc
+        ? Math.round(record.diff * 10) / 10 + "\xa0moves"
+        : Math.round(record.diff) / 1000 + "s"})`
   }
 
   handleMainButtonClick() {
