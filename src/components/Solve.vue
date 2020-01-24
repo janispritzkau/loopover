@@ -4,7 +4,10 @@
     :class="{ fmc: fmc, current: current, clickable: $listeners.click }"
     @click="$emit('click', $event)"
   >
-    <div class="time">{{ $state.formatTime(time) + (dnf && ' DNF' || '') }}</div>
+    <div class="time">
+      {{ $state.formatTime(time) + (dnf && ' DNF' || '') }}
+      {{ !fmc ? "" : `/ ${time && (Math.round(Math.max(0, moves - 1) / time * 100000) / 100)} mps` }}
+    </div>
     <div class="moves">
       {{ moves }} moves
       {{ fmc ? "" : `/ ${time && (Math.round(Math.max(0, moves - 1) / time * 100000) / 100)} mps` }}

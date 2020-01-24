@@ -50,7 +50,7 @@
             :dnf="$state.dnf"
           />
 
-          <SolveList :solves="$state.solves" :limit="sidebarLimit" />
+          <SolveList :solves="$state.solves" :limit="sidebarLimit" :fmc="fmc" />
         </aside>
       </div>
     </div>
@@ -66,6 +66,7 @@
         :solves="$state.allSolves"
         :skip="Math.min(sidebarLimit, $state.solves.length)"
         :limit="Math.min(Math.max($state.solves.length - sidebarLimit, 0), 10)"
+        :fmc="fmc"
       />
     </section>
 

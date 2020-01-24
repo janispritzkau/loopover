@@ -5,7 +5,7 @@
       :key="i"
       :time="solve.time"
       :moves="solve.moves.length"
-      :fmc="solve.fmc"
+      :fmc="fmc"
       :dnf="solve.dnf"
       @click="!$state.started && $state.inspect(solve)"
     />
@@ -36,9 +36,8 @@ export default Vue.extend({
       type: Number,
       default: 0
     },
-    skip: {
-      type: Number
-    }
+    skip: Number,
+    fmc: Boolean
   },
   data() {
     return {
