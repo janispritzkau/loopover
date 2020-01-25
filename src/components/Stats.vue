@@ -50,7 +50,7 @@ export default class Stats extends Vue {
   }
 
   get averages() {
-    return [1, 3, 5, 12, 50].map(n => ({ ...this.$state.averages.get(n), n }))
+    return [1, 3, 5, 12, 50, 100].map(n => ({ ...this.$state.averages.get(n), n }))
   }
 
   format(value?: number) {
@@ -86,7 +86,7 @@ export default class Stats extends Vue {
 .btn-group {
   background: var(--contrast-3);
   border-radius: 14px;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .btn {

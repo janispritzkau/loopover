@@ -302,7 +302,7 @@ export class State {
     const solves = this.allSolves.map(s => [s.time, s.moves.length])
     this.averages = new Map()
 
-    for (const n of [1, 3, 5, 12, 50]) {
+    for (const n of [1, 3, 5, 12, 50, 100]) {
       if (solves.length < n) continue
 
       let bestTime = Infinity
