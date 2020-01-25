@@ -12,7 +12,6 @@ Vue.prototype.$state = state
 window.state = state
 
 new Vue({
-  data: state,
   render: h => h(App),
 }).$mount("#app")
 
