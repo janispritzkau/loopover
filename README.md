@@ -1,23 +1,5 @@
 # Loopover
 
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
-
 ## Project structure
 
 ### `src/state.ts`
@@ -35,3 +17,23 @@ Contains the core game code such as move mechanics, canvas rendering and the scr
 ### `src/components/`
 
 Reuseable Vue components are placed inside here.
+
+## Project setup
+```sh
+npm install
+```
+
+### Compiles and hot-reloads for development
+```sh
+npm run serve
+```
+
+### Compiles and minifies for production
+```sh
+npm run build
+# or
+npm run build:testing
+```
+
+### Customize configuration
+See [Configuration Reference](https://cli.vuejs.org/config/).
