@@ -123,7 +123,7 @@ export class Game {
 
   render() {
     const useLetters = this.useLetters && this.cols * this.rows <= 26
-    const fontSize = this.tileSize * (this.cols >= 32 ? 0.42 : this.cols > 10 ? 0.45 : 0.53)
+    const fontSize = this.tileSize * (this.cols >= 32 ? 0.42 : this.cols > 10 ? 0.47 : 0.53)
 
     this.ctx.font = `${this.darkText ? 500 : 400} ${fontSize}px Roboto`
     this.ctx.clearRect(0, 0, this.width, this.height)
@@ -156,7 +156,7 @@ export class Game {
         } else {
           const cx = (index % this.cols + 0.1) / (this.cols - 0.6)
           const cy = (((index / this.cols) | 0) + 0.2) / (this.rows - 0.6)
-          const color = [(1 - cx) * 235 + 15, cy * 210 + cx * (1 - cy) * 50 + 15, cx * 220]
+          const color = [(1 - cx) * 240 + 10, cy * 220 + cx * (1 - cy) * 45 + 5, cx * 220]
 
           this.ctx.fillStyle = `rgb(${color.map(x => x | 0).join()})`
           this.ctx.fillRect(x | 0, y | 0, this.tileSize, this.tileSize)
