@@ -78,16 +78,17 @@
       </p>
       <p>
         Created by
-        <a target="_blank" href="https://twitter.com/janispritzkau">Janis Pritzkau</a>.
+        <a target="_blank" rel="noopener" href="https://twitter.com/janispritzkau">Janis Pritzkau</a>.
         Remake of carykh's
         <a
           target="_blank"
+          rel="noopener"
           href="https://openprocessing.org/sketch/580366"
         >Loopover</a>.
       </p>
       <p>
-        <a target="_blank" href="https://discord.gg/DXASrTp">discord.gg/DXASrTp</a> |
-        <a target="_blank" href="https://github.com/janispritzkau/loopover">Source code</a>
+        <a target="_blank" rel="noopener" href="https://discord.gg/DXASrTp">discord.gg/DXASrTp</a> |
+        <a target="_blank" rel="noopener" href="https://github.com/janispritzkau/loopover">Source code</a>
       </p>
       <div class="auth">
         <p v-if="$state.user">Signed in as {{ $state.user.displayName }}</p>
