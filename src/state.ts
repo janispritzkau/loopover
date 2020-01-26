@@ -1,6 +1,7 @@
 import Vue from "vue"
 import { openDB, IDBPDatabase } from "idb"
 import { Move, Board, Game } from "./game"
+import * as auth from "./auth"
 
 export enum EventType {
   Normal = 0,
@@ -66,6 +67,12 @@ export class State {
   session = Date.now()
 
   game!: Game
+
+  auth = auth.state
+
+  get user() {
+    return auth.state.user
+  }
 
   get eventName() {
     return `${state.cols}x${state.rows}`
@@ -170,6 +177,40 @@ export class State {
       this.allSolves = (await this.db.getAllFromIndex("solves", "event", this.eventName))
         .map(value => Object.freeze(deserializeSolve(value).solve)) || []
     }
+  }
+
+  async syncSolves() {
+    if (!this.user || !this.db) return
+
+    const response = await fetch(process.env.VUE_APP_API + "/sync", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${this.user.token}`
+      },
+      body: JSON.stringify(await this.db.getAllKeys("solves"))
+    })
+
+    const { solves, missing } = await response.json()
+    const solvesStore = this.db.transaction("solves", "readwrite").objectStore("solves")
+
+    for (const solve of solves) {
+      solvesStore.add(solve)
+    }
+
+    if (missing.length > 0) {
+      await fetch(process.env.VUE_APP_API + "/sync", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${this.user.token}`
+        },
+        body: JSON.stringify(await Promise.all(missing.map((id: string) => solvesStore.get(id))))
+      })
+    }
+
+    this.allSolves = (await this.db.getAllFromIndex("solves", "event", this.eventName))
+      .map(value => Object.freeze(deserializeSolve(value).solve)) || []
   }
 
   done() {
@@ -278,8 +319,19 @@ export class State {
       }
     }
 
-    if (this.db) {
-      this.db.put("solves", serializeSolve(solve, this.eventName, this.session))
+    const serializedSolve = serializeSolve(solve, this.eventName, this.session)
+
+    if (this.db) this.db.put("solves", serializedSolve)
+
+    if (this.user) {
+      fetch(process.env.VUE_APP_API + "/sync", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${this.user.token}`
+        },
+        body: JSON.stringify([serializedSolve])
+      })
     }
   }
 
@@ -407,7 +459,7 @@ vue.$watch(state.serialize, state => {
 }, { deep: true })
 
 openDB("loopover", 2, {
-  async upgrade(db, oldVersion, _newVersion: number, transaction) {
+  async upgrade(db, oldVersion, _newVersion, transaction) {
     if (oldVersion < 2) {
       if (db.objectStoreNames.contains("solves")) {
         transaction.objectStore("solves").name = "solvesOld"
@@ -439,6 +491,9 @@ openDB("loopover", 2, {
 }).then(async db => {
   state.db = db
   state.reset()
+  state.syncSolves()
 })
+
+vue.$watch(() => state.auth.user, user => state.syncSolves())
 
 export default state

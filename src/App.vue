@@ -89,6 +89,16 @@
         <a target="_blank" href="https://discord.gg/DXASrTp">discord.gg/DXASrTp</a> |
         <a target="_blank" href="https://github.com/janispritzkau/loopover">Source code</a>
       </p>
+      <div class="auth">
+        <p v-if="$state.user">Signed in as {{ $state.user.displayName }}</p>
+        <template v-if="$state.user">
+          <a @click="signOut">Sign out</a>
+        </template>
+        <template v-else>
+          <a @click="signIn('google')">Sign in with Google</a>
+          <a @click="signIn('discord')">Sign in with Discord</a>
+        </template>
+      </div>
     </footer>
 
     <div v-if="refresh" class="update-notification">
@@ -108,6 +118,7 @@
 <script lang="ts">
 import { Component, Vue, Watch } from "vue-property-decorator"
 import { Game, Move, Board } from "./game"
+import * as auth from "./auth"
 
 import SettingsDialog from "./components/SettingsDialog.vue"
 import EventDialog from "./components/EventDialog.vue"
@@ -169,6 +180,17 @@ export default class App extends Vue {
       : `New best average of ${record.n} (-${record.fmc
         ? Math.round(record.diff * 10) / 10 + "\xa0moves"
         : Math.round(record.diff) / 1000 + "s"})`
+  }
+
+  async signIn(provider: "google" | "discord") {
+    switch (provider) {
+      case "google": auth.signInWithGoogle(); break
+      case "discord": auth.signInWithDiscord(); break
+    }
+  }
+
+  async signOut() {
+    auth.signOut()
   }
 
   handleMainButtonClick() {
@@ -386,5 +408,18 @@ footer {
   margin: 0 auto;
   text-align: center;
   padding: 16px 16px;
+}
+
+.auth {
+  margin: 24px auto 16px;
+  font-size: 14px;
+}
+
+.auth p {
+  margin: 16px 0 8px;
+}
+
+.auth a {
+  margin: 0 6px;
 }
 </style>
