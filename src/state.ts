@@ -198,19 +198,35 @@ export class State {
       solvesStore.add(solve)
     }
 
-    if (missing.length > 0) {
-      await fetch(process.env.VUE_APP_API + "/sync", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${this.user.token}`
-        },
-        body: JSON.stringify(await Promise.all(missing.map((id: string) => solvesStore.get(id))))
-      })
-    }
-
-    this.allSolves = (await this.db.getAllFromIndex("solves", "event", this.eventName))
+    this.allSolves = (await solvesStore.index("event").getAll(this.eventName))
       .map(value => Object.freeze(deserializeSolve(value).solve)) || []
+
+    if (missing.length > 0) {
+      const solves = await Promise.all(missing.map((id: any) => solvesStore.get(id)))
+      let syncChunks: any[][] = [[]]
+      let length = 0
+
+      for (const solve of solves) {
+        const solveLen = JSON.stringify(solve).length
+        if ((length += solveLen) > 128 * 1024) {
+          syncChunks.push([solve])
+          length = solveLen
+        } else {
+          syncChunks[syncChunks.length - 1].push(solve)
+        }
+      }
+
+      for (const chunk of syncChunks) {
+        await fetch(process.env.VUE_APP_API + "/sync", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${this.user.token}`
+          },
+          body: JSON.stringify(chunk)
+        })
+      }
+    }
   }
 
   done() {
@@ -490,10 +506,9 @@ openDB("loopover", 2, {
   }
 }).then(async db => {
   state.db = db
-  state.reset()
-  state.syncSolves()
+  state.reset().then(() => state.syncSolves())
 })
 
-vue.$watch(() => state.auth.user, user => state.syncSolves())
+vue.$watch(() => state.auth.user, () => state.syncSolves())
 
 export default state
