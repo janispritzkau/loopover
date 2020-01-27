@@ -134,31 +134,39 @@ export class Game {
 
       const w = (this.moveAxis == Axis.Col ? this.rows : this.cols)
       for (let j = Math.floor(-moveAmount); j < w - Math.floor(moveAmount); j++) {
-        let [row, col] = [i, ((j % w) + w) % w]
-        let [x, y] = [j + moveAmount, i]
+        let row = i
+        let col = ((j % w) + w) % w
+        let x = j + moveAmount
+        let y = i
 
         if (this.moveAxis == Axis.Col) {
-          [row, col] = [col, row];
-          [x, y] = [y, x]
+          const tempRow = row
+          row = col, col = tempRow
+          const tempX = x
+          x = y, y = tempX
         }
 
-        [x, y] = [(x / this.cols * this.width) | 0, (y / this.rows * this.height) | 0]
+        x = (x / this.cols * this.width) | 0
+        y = (y / this.rows * this.height) | 0
 
         const index = this.board.grid[row][col]
 
         if (this.blind) {
           const t = transition ? transition.time! ** 0.5 : 0
-          const flash = (t < 0.5 ? t * 2 : 2 - t * 2) * 60
+          const flash = ((t < 0.5 ? t * 2 : 2 - t * 2) * 60) | 0
           const gap = this.tileSize * 0.03
 
-          this.ctx.fillStyle = `rgb(${[100 + flash, 106 + flash, 118 + flash].join()})`
+          this.ctx.fillStyle = `rgb(${100 + flash},${106 + flash},${118 + flash})`
           this.ctx.fillRect(x + gap, y + gap, this.tileSize - gap * 2, this.tileSize - gap * 2)
         } else {
           const cx = (index % this.cols + 0.1) / (this.cols - 0.6)
           const cy = (((index / this.cols) | 0) + 0.2) / (this.rows - 0.6)
-          const color = [(1 - cx) * 240 + 10, cy * 220 + cx * (1 - cy) * 45 + 5, cx * 220]
 
-          this.ctx.fillStyle = `rgb(${color.map(x => x | 0).join()})`
+          const r = (1 - cx) * 240 + 10
+          const g = cy * 220 + cx * (1 - cy) * 45 + 5
+          const b = cx * 220
+
+          this.ctx.fillStyle = `rgb(${r|0},${g|0},${b|0})`
           this.ctx.fillRect(x | 0, y | 0, this.tileSize, this.tileSize)
           this.ctx.fillStyle = this.darkText ? "rgba(0, 0, 0, 0.9)" : "#fff"
 
