@@ -19,9 +19,9 @@ if (process.env.NODE_ENV === "production") {
   register(`${process.env.BASE_URL}service-worker.js`, {
     updated(registration) {
       (window.app as any).refresh = () => {
-        registration.waiting.postMessage({ type: "SKIP_WAITING" })
         location.reload()
       }
+      registration.waiting.postMessage({ type: "SKIP_WAITING" })
     }
   })
 }

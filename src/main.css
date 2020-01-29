@@ -230,14 +230,14 @@ th:last-child {
   font-size: 14px;
   display: flex;
   align-items: center;
-  height: 48px;
-  padding: 0 8px 0 16px;
+  min-height: 48px;
+  padding: 4px 8px 4px 16px;
   border-radius: 3px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.update-notification .btn {
-  margin-left: 16px;
+.update-notification span {
+  margin-right: 16px;
 }
 
 :root {

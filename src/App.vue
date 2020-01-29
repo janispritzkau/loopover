@@ -78,7 +78,11 @@
       </p>
       <p>
         Created by
-        <a target="_blank" rel="noopener" href="https://twitter.com/janispritzkau">Janis Pritzkau</a>.
+        <a
+          target="_blank"
+          rel="noopener"
+          href="https://twitter.com/janispritzkau"
+        >Janis Pritzkau</a>.
         Remake of carykh's
         <a
           target="_blank"
@@ -88,7 +92,11 @@
       </p>
       <p>
         <a target="_blank" rel="noopener" href="https://discord.gg/DXASrTp">discord.gg/DXASrTp</a> |
-        <a target="_blank" rel="noopener" href="https://github.com/janispritzkau/loopover">Source code</a>
+        <a
+          target="_blank"
+          rel="noopener"
+          href="https://github.com/janispritzkau/loopover"
+        >Source code</a>
       </p>
       <div class="auth">
         <p v-if="$state.user">Signed in as {{ $state.user.displayName }}</p>
@@ -102,12 +110,17 @@
       </div>
     </footer>
 
-    <div v-if="refresh" class="update-notification">
-      A new version is available. Please refresh to update.
-      <button
-        class="btn secondary"
-        @click="refresh"
-      >Refresh</button>
+    <div v-if="refresh" class="update-notification dark">
+      <span>A new version is available. Please reload to update.</span>
+      <button class="btn secondary" @click="refresh()">Reload</button>
+      <button class="btn" @click="refresh = null">
+        <svg width="20" viewBox="0 0 24 24">
+          <path
+            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+            fill="currentColor"
+          />
+        </svg>
+      </button>
     </div>
 
     <EventDialog :open.sync="eventDialog" />
@@ -260,7 +273,7 @@ export default class App extends Vue {
         case "u": this.$state.showUndoRedo && this.$state.undo(); break
         case "r": this.$state.showUndoRedo && this.$state.redo(); break
         case "Enter": this.handleMainButtonClick(); break
-        default: return;
+        default: return
       }
 
       game.canvas.focus()
