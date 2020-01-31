@@ -240,7 +240,7 @@ export class Game {
         n *= 2
       }
 
-      if (this.spaceDown || (this.noRegrips && !this.board.isSolved())) {
+      if (this.spaceDown || this.noRegrips) {
         this.animatedMove(axis, axis == Axis.Col ? pos.col : pos.row, n, true)
       } else {
         if (axis == Axis.Row) {
