@@ -4,14 +4,8 @@
     :class="{ fmc: fmc, current: current, clickable: $listeners.click }"
     @click="$emit('click', $event)"
   >
-    <div class="time">
-      {{ $state.formatTime(time) + (dnf && ' DNF' || '') }}
-      {{ !fmc ? "" : `/ ${time && (Math.round(Math.max(0, moves - 1) / time * 100000) / 100)} mps` }}
-    </div>
-    <div class="moves">
-      {{ moves }} moves
-      {{ fmc ? "" : `/ ${time && (Math.round(Math.max(0, moves - 1) / time * 100000) / 100)} mps` }}
-    </div>
+    <div class="first">{{ fmc ? movesStr : timeStr }}{{ dnf ? " DNF" : "" }}</div>
+    <div class="second">{{ fmc ? timeStr : movesStr }} / {{ mps }} mps</div>
   </div>
 </template>
 
@@ -24,6 +18,17 @@ export default Vue.extend({
     fmc: Boolean,
     dnf: Boolean,
     current: Boolean
+  },
+  computed: {
+    mps() {
+      return this.time && Math.round(Math.max(0, this.moves - 1) / this.time * 100000) / 100
+    },
+    timeStr() {
+      return this.$state.formatTime(this.time)
+    },
+    movesStr() {
+      return `${this.moves} moves`
+    }
   }
 })
 </script>
@@ -31,7 +36,6 @@ export default Vue.extend({
 <style scoped>
 .solve {
   display: flex;
-  flex-direction: row;
   white-space: nowrap;
 }
 
@@ -44,44 +48,33 @@ export default Vue.extend({
   background: var(--contrast-2);
 }
 
-.solve.fmc {
-  flex-direction: row-reverse;
-}
-
 .solve:not(.current) {
   padding: 8px 0;
 }
 
 .current {
-  flex-direction: column;
+  display: block;
 }
 
-.current.fmc {
-  flex-direction: column-reverse;
-}
-
-.solve .time,
-.solve .moves {
+.solve > * {
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-:not(.fmc) > .time,
-.fmc .moves {
+.first {
   font-weight: 500;
   flex-grow: 1;
   flex-shrink: 0;
   margin-right: 8px;
 }
 
-.current:not(.fmc) > .time,
-.current.fmc .moves {
+.current .first {
   font-size: 24px;
   line-height: 28px;
+  margin: 0;
 }
 
-:not(.fmc) > .moves,
-.fmc .time {
+.second {
   opacity: 0.8;
 }
 </style>

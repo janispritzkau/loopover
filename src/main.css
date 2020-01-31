@@ -39,7 +39,7 @@ h4 {
   user-select: none;
   cursor: pointer;
   margin: 0;
-  outline: 0;
+  outline: 0 !important;
   height: 36px;
   padding: 0 8px;
   font-size: 14px;
@@ -96,6 +96,8 @@ h4 {
   height: 36px;
   padding: 8px;
   background: var(--contrast-2);
+  background-clip: padding-box;
+  outline: 0;
   color: inherit;
   border-radius: 2px;
 }
@@ -113,10 +115,11 @@ select option {
   margin: 8px 0;
   user-select: none;
   position: relative;
+  cursor: pointer;
 }
 
 .checkbox span {
-  cursor: pointer;
+  pointer-events: none;
 }
 
 .checkbox input {
