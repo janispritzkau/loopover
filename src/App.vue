@@ -99,11 +99,15 @@
         >Source code</a>
       </p>
       <div class="auth">
-        <p v-if="$state.user">Signed in as {{ $state.user.displayName }}</p>
+        <p v-if="$state.user">
+          <img v-if="$state.user.avatarUrl" :src="$state.user.avatarUrl" />
+          Signed in as {{ $state.user.name }}
+        </p>
         <template v-if="$state.user">
           <a @click="signOut">Sign out</a>
         </template>
         <template v-else>
+          <p>Log in to synchronize your solves.</p>
           <a @click="signIn('google')">Sign in with Google</a>
           <a @click="signIn('discord')">Sign in with Discord</a>
         </template>
@@ -288,6 +292,7 @@ export default class App extends Vue {
 <style scoped>
 .app {
   min-height: 100vh;
+  overflow-x: hidden;
   color: var(--contrast);
   background: var(--background);
 }
@@ -425,15 +430,23 @@ footer {
 }
 
 .auth {
-  margin: 24px auto 16px;
+  margin: 32px auto 16px;
   font-size: 14px;
 }
 
 .auth p {
-  margin: 16px 0 8px;
+  margin: 12px 0;
 }
 
 .auth a {
   margin: 0 6px;
+}
+
+.auth img {
+  height: 32px;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: 8px;
+  user-select: none;
 }
 </style>

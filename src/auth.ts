@@ -16,7 +16,7 @@ export async function signInWithDiscord() {
     client_id: process.env.VUE_APP_DISCORD_CLIENT_ID,
     redirect_uri: redirectUri,
     response_type: "code",
-    scope: "email",
+    scope: "identify",
     state: "discord"
   })}`)
 }
@@ -26,6 +26,7 @@ export async function signInWithGoogle() {
     client_id: process.env.VUE_APP_GOOGLE_CLIENT_ID,
     redirect_uri: redirectUri,
     response_type: "code",
+    access_type: "offline",
     scope: "profile",
     state: "google"
   })}`)
@@ -45,7 +46,9 @@ addEventListener("message", event => {
   const state_ = params.get("state")
   if (!state_ || !code) return console.error("invalid auth response")
 
-  fetch(`${process.env.VUE_APP_API}/authenticate/${state_}?${new URLSearchParams({ code, redirect_uri: redirectUri })}`).then(async response => {
+  fetch(`${process.env.VUE_APP_API}/authenticate/${state_}?${new URLSearchParams({ code, redirect_uri: redirectUri })}`, {
+    method: "POST"
+  }).then(async response => {
     if (!response.ok) throw new Error(response.statusText)
     state.user = await response.json()
   }).catch(console.error)
@@ -58,4 +61,21 @@ new Vue({ data: state }).$watch(() => state.user, user => {
 try {
   const data = JSON.parse(localStorage.loopoverUser)
   state.user = data
+
+  if (state.user) {
+    fetch(`${process.env.VUE_APP_API}/me`, {
+      headers: {
+        Authorization: `Bearer ${state.user.token}`
+      }
+    }).then(async res => {
+      if (res.status == 401) {
+        state.user = null
+      } else if (res.ok) {
+        const user = await res.json()
+        Object.assign(state.user, user)
+      } else {
+        console.error(res.statusText)
+      }
+    })
+  }
 } catch { }
