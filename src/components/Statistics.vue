@@ -33,8 +33,12 @@
         <td>{{ format(showMoves ? avg.currentMoves : avg.currentTime) }}</td>
       </tr>
     </table>
-    <LineChart v-if="$state.allSolves.length > 3" ref="chart" @loaded="renderChart"
-      :styles="{ height: '320px', marginTop: '16px' }" />
+    <LineChart v-if="$state.allSolves.length > 3"
+      ref="chart"
+      :width="300"
+      :height="200"
+      @loaded="renderChart"
+      :styles="{ marginTop: '32px' }" />
   </section>
 </template>
 
@@ -114,7 +118,7 @@ export default class Statistics extends Vue {
     }, {
       tooltips: { enabled: false },
       animation: { duration: 0 },
-      maintainAspectRatio: false,
+      legend: { display: false },
       scales: {
         yAxes: [{
           display: false,
