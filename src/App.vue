@@ -70,7 +70,7 @@
       />
     </section>
 
-    <Stats />
+    <Statistics />
 
     <footer>
       <p v-if="showShortcuts" class="shortcuts-link">
@@ -144,7 +144,7 @@ import ShortcutsDialog from "./components/ShortcutsDialog.vue"
 import RepeatButton from "./components/RepeatButton.vue"
 import SolveView from "./components/Solve.vue"
 import SolveList from "./components/SolveList.vue"
-import Stats from "./components/Stats.vue"
+import Statistics from "./components/Statistics.vue"
 import { EventType } from "./state"
 
 @Component({
@@ -152,7 +152,7 @@ import { EventType } from "./state"
     Solve: SolveView,
     SolveList,
     RepeatButton,
-    Stats,
+    Statistics,
     EventDialog,
     SettingsDialog,
     ShortcutsDialog
@@ -260,7 +260,6 @@ export default class App extends Vue {
 
     const game = new Game(this.$refs.canvas as HTMLCanvasElement, this.$state.cols, this.$state.rows)
     this.$state.game = game
-    this.$state.reset()
     game.onMove = this.$state.handleMove.bind(this.$state)
 
     window.addEventListener("keydown", event => {

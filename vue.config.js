@@ -7,5 +7,10 @@ module.exports = {
     manifestOptions: {
       background_color: "#ffffff"
     }
+  },
+  configureWebpack: {
+    externals: {
+      moment: "moment"
+    }
   }
 }
