@@ -106,6 +106,7 @@ export class State {
 
   formatTime(ms?: number | null) {
     if (ms == null) return "―"
+    ms = Math.round(ms)
     const s = ms / 1000
     const min = (s / 60) | 0, sec = s % 60 | 0, millis = Math.round(ms % 1000)
     return `${min}:${sec.toString().padStart(2, "0")}.${millis.toString().padStart(3, "0")}`
