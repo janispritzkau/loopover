@@ -295,7 +295,7 @@ export class State {
     }
   }
 
-  async handleSolved() {
+  handleSolved() {
     clearInterval(this.interval)
 
     this.time = Date.now() - this.startTime
@@ -320,21 +320,22 @@ export class State {
     const lastAverages = averageNums.map(n => this.averages.get(n))
     this.newRecord = null
 
-    await Vue.nextTick()
+    const unwatch = vue.$watch(() => [this.averages], () => {
+      for (const [i, n] of averageNums.entries()) {
+        const average = this.averages.get(n)
+        const lastAverage = lastAverages[i]
+        if (!average || !lastAverage) break
 
-    for (const [i, n] of averageNums.entries()) {
-      const average = this.averages.get(n)
-      const lastAverage = lastAverages[i]
-      if (!average || !lastAverage) break
-
-      if (this.event == EventType.Fmc && average.fewestMoves < lastAverage.fewestMoves) {
-        this.newRecord = { n, diff: lastAverage.fewestMoves - average.fewestMoves, fmc: true }
-        break
-      } else if (this.event != EventType.Fmc && average.bestTime < lastAverage.bestTime) {
-        this.newRecord = { n, diff: lastAverage.bestTime - average.bestTime, fmc: false }
-        break
+        if (this.event == EventType.Fmc && average.fewestMoves < lastAverage.fewestMoves) {
+          this.newRecord = { n, diff: lastAverage.fewestMoves - average.fewestMoves, fmc: true }
+          break
+        } else if (this.event != EventType.Fmc && average.bestTime < lastAverage.bestTime) {
+          this.newRecord = { n, diff: lastAverage.bestTime - average.bestTime, fmc: false }
+          break
+        }
       }
-    }
+      unwatch()
+    })
 
     const serializedSolve = serializeSolve(solve, this.eventName, this.session)
 
@@ -359,20 +360,25 @@ export class State {
     fewestMoves: number, mostMoves: number, currentMoves: number
   }>()
 
-  calculateAverages() {
-    function sum(array: number[][], index: number, start = 0, end = array.length) {
+  async calculateAverages() {
+    const average = (array: number[]) => {
+      array.sort((a, b) => a - b)
+      const m = array.length > 2 ? Math.ceil(array.length / 20) : 0
       let sum = 0
-      for (let i = start; i < end; i++) {
-        sum += array[i][index]
+      for (let i = m; i < array.length - m; i++) {
+        sum += array[i]
       }
-      return sum
+      return sum / (array.length - m * 2)
     }
 
-    const solves = this.allSolves.map(s => [s.time, s.moves.length])
-    this.averages = new Map()
+    const times = this.allSolves.map(s => s.time)
+    const moves = this.allSolves.map(s => s.moves.length)
 
     for (const n of [1, 3, 5, 12, 50, 100]) {
-      if (solves.length < n) continue
+      if (times.length < n) {
+        this.averages.delete(n)
+        continue
+      }
 
       let bestTime = Infinity
       let worstTime = -Infinity
@@ -380,22 +386,28 @@ export class State {
       let fewestMoves = Infinity
       let mostMoves = -Infinity
 
-      const length = solves.length - n + 1
+      const length = times.length - n + 1
+
       for (let i = 0; i < length; i++) {
-        const time = sum(solves, 0, i, i + n) / n
+        if (i % 128 == 0) await new Promise(resolve => setTimeout(resolve, 1))
+
+        const time = average(times.slice(i, i + n))
         if (time > worstTime) worstTime = time
         if (time < bestTime) bestTime = time
 
-        const moves = sum(solves, 1, i, i + n) / n
-        if (moves > mostMoves) mostMoves = moves
-        if (moves < fewestMoves) fewestMoves = moves
+        const avgMoves = average(moves.slice(i, i + n))
+        if (avgMoves > mostMoves) mostMoves = avgMoves
+        if (avgMoves < fewestMoves) fewestMoves = avgMoves
       }
 
       this.averages.set(n, {
-        worstTime, bestTime, currentTime: sum(solves, 0, solves.length - n) / n,
-        fewestMoves, mostMoves, currentMoves: sum(solves, 1, solves.length - n) / n
+        worstTime, bestTime, currentTime: average(times.slice(-n)),
+        fewestMoves, mostMoves, currentMoves: average(moves.slice(-n))
       })
+
     }
+
+    this.averages = new Map(this.averages)
   }
 
   loadFromLocalStorage() {

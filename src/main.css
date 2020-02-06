@@ -257,8 +257,8 @@ th:last-child {
 }
 
 .dark {
-  --background: #34363d;
-  --background-darker: #2c2e33;
+  --background: #32343c;
+  --background-darker: #2a2c32;
   --contrast: rgba(255, 255, 255, 0.85);
   --contrast-0: rgba(255, 255, 255, 0.35);
   --contrast-1: rgba(255, 255, 255, 0.16);
