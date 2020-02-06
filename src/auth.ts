@@ -27,6 +27,7 @@ export async function signInWithGoogle() {
     redirect_uri: redirectUri,
     response_type: "code",
     access_type: "offline",
+    prompt: "consent",
     scope: "profile",
     state: "google"
   })}`)

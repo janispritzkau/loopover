@@ -33,12 +33,14 @@
         <td>{{ format(showMoves ? avg.currentMoves : avg.currentTime) }}</td>
       </tr>
     </table>
-    <LineChart v-if="$state.allSolves.length > 3"
+    <LineChart
+      v-if="showChart"
       ref="chart"
       :width="300"
       :height="200"
       @loaded="renderChart"
-      :styles="{ marginTop: '32px' }" />
+      :styles="{ marginTop: '32px' }"
+    />
   </section>
 </template>
 
@@ -61,6 +63,7 @@ export default class Statistics extends Vue {
   showMoves = this.$state.event == EventType.Fmc
 
   $refs!: { chart: Line }
+  showChart = false
 
   @Watch("$state.event")
   handleEventTypeChange() {
@@ -81,27 +84,26 @@ export default class Statistics extends Vue {
 
   @Watch("$state.allSolves")
   @Watch("showMoves")
-  renderChart() {
-    if (!this.$refs.chart || this.$state.allSolves.length == 0) return
+  async renderChart() {
+    const response = await fetch(`${process.env.VUE_APP_API}/statistics/${this.$state.eventName}/${this.showMoves ? "moves" : "time"}`)
+    const { labels, data } = await response.json()
+
+    this.showChart = labels.length > 1
+    if (!this.$refs.chart || !this.showChart) return
 
     let scores = this.$state.allSolves.map(solve => this.showMoves
       ? solve.moves.length : solve.time / 1000)
-    scores.sort((a, b) => a - b)
 
-    if (scores.length > 16) scores = scores.slice(0, -Math.max(8, Math.ceil(scores.length / 20)))
+    const start = labels[0]
+    const step = labels[1] - labels[0]
 
-    const start = Math.floor(scores[0])
-    const end = Math.ceil(scores[scores.length - 1])
-    const step = Math.round(1 + 12 / scores.length + (end - start) / 32)
+    let you = labels.map(() => 0)
 
-    const labels = [...Array(Math.ceil((end - start + step) / step))].map((_, i) => start + i * step)
-
-    const data = labels.map(() => 0)
     for (const score of scores) {
-      const x = score / step - start / step
-      const f = x - ~~x
-      data[~~x] += 1 / scores.length * (1 - f)
-      data[~~x + Math.ceil(f)] += 1 / scores.length * f
+      const pos = score / step - start / step
+      const frac = pos - ~~pos
+      you[~~pos] += 1 / scores.length * (1 - frac)
+      you[~~pos + Math.ceil(frac)] += 1 / scores.length * frac
     }
 
     this.$refs.chart.renderChart({
@@ -109,16 +111,22 @@ export default class Statistics extends Vue {
       datasets: [
         {
           label: "You",
-          data,
+          data: you,
           backgroundColor: "rgb(43, 135, 209, 0.2)",
           borderColor: "rgb(43, 135, 209, 1)",
+          fill: true
+        },
+        {
+          label: "Average user",
+          data: data,
+          backgroundColor: "rgb(43, 135, 209, 0.2)",
+          borderColor: "rgb(0, 0, 0, 0)",
           fill: true
         }
       ]
     }, {
       tooltips: { enabled: false },
       animation: { duration: 0 },
-      legend: { display: false },
       scales: {
         yAxes: [{
           display: false,
