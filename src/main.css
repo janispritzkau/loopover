@@ -74,6 +74,20 @@ h4 {
   opacity: 0.6;
 }
 
+.btn-group {
+  display: inline-flex;
+  background: var(--contrast-3);
+  border-radius: 14px;
+  margin-bottom: 8px;
+}
+
+.btn-group > .btn {
+  height: 28px;
+  padding: 0 12px;
+  font-size: 12px;
+  border-radius: inherit;
+}
+
 .card {
   background: var(--contrast-3);
   padding: 12px;

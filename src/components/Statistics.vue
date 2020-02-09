@@ -157,17 +157,4 @@ export default class Statistics extends Vue {
 .table-header h4 {
   flex-grow: 1;
 }
-
-.btn-group {
-  background: var(--contrast-3);
-  border-radius: 14px;
-  margin-bottom: 8px;
-}
-
-.btn {
-  height: 28px;
-  padding: 0 12px;
-  font-size: 12px;
-  border-radius: inherit;
-}
 </style>

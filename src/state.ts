@@ -28,6 +28,7 @@ export interface StoredState {
   forceMobile?: boolean
   useLetters?: boolean
   darkText?: boolean
+  transitionTime: number
 }
 
 export class State {
@@ -41,6 +42,7 @@ export class State {
   forceMobile = false
   useLetters = true
   darkText = false
+  transitionTime = 150
 
   /** Timer is running */
   started = false
@@ -433,7 +435,8 @@ export class State {
       version: 0,
       cols: this.cols,
       rows: this.rows,
-      event: this.event
+      event: this.event,
+      transitionTime: this.transitionTime
     }
 
     if (this.noRegrips) state.noRegrips = true
@@ -476,9 +479,10 @@ vue.$watch(() => [state.cols, state.rows, state.event, state.noRegrips], () => {
   state.reset()
 })
 
-vue.$watch(() => [state.darkText, state.useLetters], () => {
+vue.$watch(() => [state.darkText, state.useLetters, state.transitionTime], () => {
   state.game.useLetters = state.useLetters
   state.game.darkText = state.darkText
+  state.game.transitionTime = state.transitionTime
 })
 
 state.loadFromLocalStorage()

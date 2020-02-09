@@ -18,8 +18,18 @@
       <span>Dark text</span>
     </label>
 
-    <button class="btn export" @click="exportSolves">Export solves as CSV</button>
+    <label class="label">Transition speed</label>
+    <div class="btn-group">
+      <button v-for="t in [130, 150, 170]"
+        class="btn"
+        :class="{ active: $state.transitionTime == t }"
+        @click="$state.transitionTime = t"
+        :key="t">
+        {{ t }}ms
+      </button>
+    </div>
 
+    <button class="btn export" @click="exportSolves">Export solves as CSV</button>
     <button class="btn" @click="clear('event')">Clear solves for current event</button>
     <button class="btn" @click="clear('all')">Clear all data</button>
 
@@ -103,7 +113,12 @@ export default Vue.extend({
   margin-top: 4px;
 }
 
-.export {
+.btn-group .btn {
+  margin: 0;
+  text-transform: none;
+}
+
+.label {
   margin-top: 16px;
 }
 </style>
