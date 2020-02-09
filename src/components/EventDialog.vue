@@ -3,7 +3,7 @@
     <h3>Event</h3>
 
     <button
-      v-for="s in [3, 4, 5, 6, 7, 8, 9, 10, 20, -1]"
+      v-for="s in [3, 4, 5, 6, 7, 8, 9, 10, -1]"
       :key="s"
       @click="s > 0 ? $state.changeSize(s) : ($state.custom = true)"
       class="btn filled"
