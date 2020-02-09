@@ -215,10 +215,10 @@ export class Game {
     const moveX = pointer.row - pointer.startRow
     const moveY = pointer.col - pointer.startCol
 
-    if (moveX) this.animatedMove(Axis.Col, Math.min(Math.max(pointer.startCol, 0), this.rows - 1), moveX, true)
+    if (moveX) this.animatedMove(Axis.Col, Math.min(Math.max(pointer.startCol, 0), this.cols - 1), moveX, true)
     pointer.startRow = pointer.row
 
-    if (moveY) this.animatedMove(Axis.Row, Math.min(Math.max(pointer.startRow, 0), this.cols - 1), moveY, true)
+    if (moveY) this.animatedMove(Axis.Row, Math.min(Math.max(pointer.startRow, 0), this.rows - 1), moveY, true)
     pointer.startCol = pointer.col
   }
 
