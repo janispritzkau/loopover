@@ -276,10 +276,10 @@ th:last-child {
 .dark {
   --background: #30323a;
   --background-darker: #282a31;
-  --contrast: rgba(255, 255, 255, 0.85);
-  --contrast-0: rgba(255, 255, 255, 0.35);
-  --contrast-1: rgba(255, 255, 255, 0.16);
-  --contrast-2: rgba(255, 255, 255, 0.1);
-  --contrast-3: rgba(255, 255, 255, 0.05);
+  --contrast: rgba(252, 253, 255, 0.85);
+  --contrast-0: rgba(251, 252, 255, 0.35);
+  --contrast-1: rgba(248, 250, 255, 0.16);
+  --contrast-2: rgba(247, 250, 255, 0.1);
+  --contrast-3: rgba(242, 245, 255, 0.05);
   --green: #7c7;
 }

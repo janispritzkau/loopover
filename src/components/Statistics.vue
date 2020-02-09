@@ -82,6 +82,7 @@ export default class Statistics extends Vue {
     }
   }
 
+  @Watch("$state.darkMode")
   @Watch("$state.allSolves")
   @Watch("showMoves")
   async renderChart() {
@@ -106,20 +107,22 @@ export default class Statistics extends Vue {
       you[~~pos + Math.ceil(frac)] += 1 / scores.length * frac
     }
 
+    const dark = this.$state.darkMode || undefined
+
     this.$refs.chart.renderChart({
       labels,
       datasets: [
         {
           label: "You",
           data: you,
-          backgroundColor: "rgb(43, 135, 209, 0.2)",
-          borderColor: "rgb(43, 135, 209, 1)",
+          backgroundColor: "rgb(50, 140, 210, 0.22)",
+          borderColor: "rgb(50, 140, 210, 1)",
           fill: true
         },
         {
           label: "Average user",
           data: data,
-          backgroundColor: "rgb(43, 135, 209, 0.2)",
+          backgroundColor: "rgb(50, 140, 210, 0.22)",
           borderColor: "rgb(0, 0, 0, 0)",
           fill: true
         }
@@ -127,7 +130,19 @@ export default class Statistics extends Vue {
     }, {
       tooltips: { enabled: false },
       animation: { duration: 0 },
+      legend: { labels: { fontColor: dark && "rgba(255, 255, 255, 0.9)" } },
       scales: {
+        ...dark && {
+          xAxes: [{
+            ticks: {
+              fontColor: "rgba(255, 255, 255, 0.7)"
+            },
+            gridLines: {
+              color: "rgba(255, 255, 255, 0.06)",
+              zeroLineColor: "rgba(255, 255, 255, 0.1)"
+            },
+          }]
+        },
         yAxes: [{
           display: false,
           ticks: { beginAtZero: true }
