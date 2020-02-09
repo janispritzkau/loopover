@@ -9,21 +9,20 @@
   },
   "dependencies": {
     "chart.js": "^2.9.3",
-    "core-js": "^3.6.4",
-    "idb": "^5.0.0",
+    "idb": "^5.0.1",
     "normalize.css": "^8.0.1",
     "register-service-worker": "^1.6.2",
     "vue": "^2.6.11",
     "vue-chartjs": "^3.5.0",
     "vue-class-component": "^7.2.2",
-    "vue-property-decorator": "^8.3.0"
+    "vue-property-decorator": "^8.4.0"
   },
   "devDependencies": {
-    "@types/chart.js": "^2.9.11",
-    "@vue/cli-plugin-babel": "^4.1.2",
-    "@vue/cli-plugin-pwa": "^4.1.2",
-    "@vue/cli-plugin-typescript": "^4.1.2",
-    "@vue/cli-service": "^4.1.2",
+    "@types/chart.js": "^2.9.13",
+    "@vue/cli-plugin-babel": "^4.2.2",
+    "@vue/cli-plugin-pwa": "^4.2.2",
+    "@vue/cli-plugin-typescript": "^4.2.2",
+    "@vue/cli-service": "^4.2.2",
     "typescript": "^3.7.5",
     "vue-template-compiler": "^2.6.11"
   },
@@ -33,6 +32,6 @@
     ]
   },
   "browserslist": [
-    "defaults"
+    "> 3%"
   ]
 }
