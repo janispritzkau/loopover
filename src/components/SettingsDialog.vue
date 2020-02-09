@@ -19,19 +19,14 @@
     </label>
 
     <label class="label">Transition speed</label>
-    <div class="btn-group">
-      <button
-        v-for="t in [130, 150, 170]"
-        class="btn"
-        :class="{ active: $state.transitionTime == t }"
-        @click="$state.transitionTime = t"
-        :key="t"
-      >{{ t }}ms</button>
+    <div class="slider-container">
+      <Slider class="slider" :min="100" :max="200" :step="10" v-model="$state.transitionTime" />
+      <span>{{ $state.transitionTime }} ms</span>
     </div>
 
-    <a @click="exportSolves">Export solves as CSV</a>
     <a @click="clear('event')">Clear solves for current event</a>
     <a @click="clear('all')">Clear all data</a>
+    <a @click="exportSolves">Export solves as CSV</a>
 
     <Dialog :open.sync="confirmDialog" @confirm="clear(clearWhat, true)">
       <h3>Delete all data{{ clearWhat == "event" ? " for the current event" : "" }}</h3>
@@ -44,11 +39,13 @@
 <script lang="ts">
 import Vue from "vue"
 import Dialog from "./Dialog.vue"
+import Slider from "./Slider.vue"
 import { movesToString } from "../game"
 
 export default Vue.extend({
   components: {
-    Dialog
+    Dialog,
+    Slider
   },
   props: {
     open: Boolean
@@ -134,6 +131,21 @@ export default Vue.extend({
 
 .label {
   margin-top: 16px;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+}
+
+.slider {
+  flex-grow: 1;
+}
+
+.slider-container span {
+  font-size: 14px;
+  margin: 0 0 0 16px;
+  opacity: 0.6;
 }
 
 a {
