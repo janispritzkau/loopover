@@ -124,7 +124,7 @@ export class Game {
   render() {
     const n = this.cols * this.rows
     const useLetters = this.useLetters && n <= 26
-    const fontSize = this.tileSize * (n <= 1000 ? n <= 100 ? n <= 10 || useLetters ? 0.56 : 0.54 : 0.5 : 0.42)
+    const fontSize = this.tileSize * (n <= 1000 ? n <= 100 ? n <= 10 || useLetters ? 0.58 : 0.56 : 0.5 : 0.42)
 
     this.ctx.font = `${this.darkText ? 500 : 400} ${fontSize}px Roboto`
     this.ctx.clearRect(0, 0, this.width, this.height)
