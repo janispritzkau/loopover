@@ -332,6 +332,7 @@ canvas {
   border-radius: 3px;
   outline: 0;
   transition: all 0.3s;
+  touch-action: none;
 }
 
 aside {

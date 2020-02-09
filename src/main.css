@@ -129,6 +129,9 @@ select option {
   margin: 8px 0;
   user-select: none;
   position: relative;
+}
+
+.checkbox {
   cursor: pointer;
 }
 

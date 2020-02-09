@@ -76,6 +76,8 @@ export default Vue.extend({
   min-width: 240px;
   max-width: 440px;
   width: 100%;
+  max-height: 100%;
+  overflow: auto;
   border-radius: 3px;
   outline: 0;
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.2);
