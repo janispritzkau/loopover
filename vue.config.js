@@ -1,5 +1,6 @@
 module.exports = {
-  publicPath: ".",
+  publicPath: '.',
+
   pwa: {
     name: process.env.VUE_APP_NAME,
     themeColor: "#47587a",
@@ -8,9 +9,12 @@ module.exports = {
       background_color: "#ffffff"
     }
   },
+
   configureWebpack: {
     externals: {
       moment: "moment"
     }
-  }
+  },
+
+  productionSourceMap: false
 }

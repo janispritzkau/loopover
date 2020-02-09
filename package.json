@@ -32,6 +32,8 @@
     ]
   },
   "browserslist": [
-    "> 3%"
+    "chrome 72",
+    "firefox 65",
+    "safari 13"
   ]
 }
