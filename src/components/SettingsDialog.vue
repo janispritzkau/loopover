@@ -20,18 +20,18 @@
 
     <label class="label">Transition speed</label>
     <div class="btn-group">
-      <button v-for="t in [130, 150, 170]"
+      <button
+        v-for="t in [130, 150, 170]"
         class="btn"
         :class="{ active: $state.transitionTime == t }"
         @click="$state.transitionTime = t"
-        :key="t">
-        {{ t }}ms
-      </button>
+        :key="t"
+      >{{ t }}ms</button>
     </div>
 
-    <button class="btn export" @click="exportSolves">Export solves as CSV</button>
-    <button class="btn" @click="clear('event')">Clear solves for current event</button>
-    <button class="btn" @click="clear('all')">Clear all data</button>
+    <a @click="exportSolves">Export solves as CSV</a>
+    <a @click="clear('event')">Clear solves for current event</a>
+    <a @click="clear('all')">Clear all data</a>
 
     <Dialog :open.sync="confirmDialog" @confirm="clear(clearWhat, true)">
       <h3>Delete all data{{ clearWhat == "event" ? " for the current event" : "" }}</h3>
@@ -72,6 +72,20 @@ export default Vue.extend({
               solvesStore.delete(cursor.primaryKey)
             } while (cursor = await cursor.continue())
           }
+
+          if (this.$state.user) {
+            await fetch(process.env.VUE_APP_API + "/sync", {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${this.$state.user.token}`
+              },
+              body: JSON.stringify(this.$state.allSolves.map(solve => solve.startTime))
+            })
+          }
+
+          this.$state.reset()
+          this.$emit("update:open", false)
         } else if (what == "all") {
           indexedDB.deleteDatabase("loopover")
           localStorage.removeItem("loopover")
@@ -120,5 +134,10 @@ export default Vue.extend({
 
 .label {
   margin-top: 16px;
+}
+
+a {
+  display: block;
+  margin: 16px 0;
 }
 </style>
