@@ -261,8 +261,8 @@ th:last-child {
 }
 
 :root {
-  --background: #f9f7f6;
-  --background-darker: #f2f0f0;
+  --background: #faf7f5;
+  --background-darker: #f2f0ee;
   --primary: #089eaf;
   --secondary: #fc455c;
   --contrast: rgba(0, 0, 0, 0.75);
@@ -274,8 +274,8 @@ th:last-child {
 }
 
 .dark {
-  --background: #32343c;
-  --background-darker: #2a2c32;
+  --background: #30323a;
+  --background-darker: #282a31;
   --contrast: rgba(255, 255, 255, 0.85);
   --contrast-0: rgba(255, 255, 255, 0.35);
   --contrast-1: rgba(255, 255, 255, 0.16);

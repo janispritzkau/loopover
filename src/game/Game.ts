@@ -164,7 +164,7 @@ export class Game {
           const cy = (((index / this.cols) | 0) + 0.2) / (this.rows - 0.6)
 
           const r = (1 - cx) * 240 + 10
-          const g = cy * 220 + cx * (1 - cy) * 45 + 5
+          const g = cy * 220 + cx * (1 - cy) * 40 + 5
           const b = cx * 220
 
           this.ctx.fillStyle = `rgb(${r|0},${g|0},${b|0})`
