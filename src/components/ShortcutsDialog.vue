@@ -1,7 +1,5 @@
 <template>
-  <Dialog :open="open" @update:open="$emit('update:open', $event)">
-    <h3>Shortcuts</h3>
-
+  <Dialog title="Shortcuts" :open="open" @update:open="$emit('update:open', $event)">
     <ul>
       <li>
         <code>Space</code> move tile when pressing arrow key

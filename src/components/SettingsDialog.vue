@@ -1,6 +1,5 @@
 <template>
-  <Dialog :open="open" @update:open="$emit('update:open', $event)">
-    <h3>Settings</h3>
+  <Dialog title="Settings" :open="open" @update:open="$emit('update:open', $event)">
     <label class="checkbox">
       <input v-model="$state.darkMode" type="checkbox" />
       <span>Dark mode</span>
@@ -24,98 +23,113 @@
       <span>{{ $state.transitionTime }} ms</span>
     </div>
 
-    <a @click="clear('event')">Clear solves for current event</a>
-    <a @click="clear('all')">Clear all data</a>
-    <a @click="exportSolves">Export solves as CSV</a>
+    <a @click="clearData('event')">Delete solves for current event</a>
+    <a @click="clearData('all')">Clear all data</a>
+    <a @click="exportSolves('csv')">Export solves as CSV</a>
+    <a @click="exportSolves('json')">Export solves as JSON</a>
 
-    <Dialog :open.sync="confirmDialog" @confirm="clear(clearWhat, true)">
-      <h3>Delete all data{{ clearWhat == "event" ? " for the current event" : "" }}</h3>
-      <p v-if="clearWhat == 'event'">All solves from the current event will be gone.</p>
+    <Dialog
+      :title="clearType == 'all' ? 'Clear all data' : 'Delete all data for the current event'"
+      :open.sync="clearDialog"
+      @confirm="clearData(clearType, true)"
+    >
+      <p v-if="clearType == 'event'">All solves from the current event will be gone.</p>
       <p v-else>This will delete all data including solves and modifications to the settings.</p>
     </Dialog>
   </Dialog>
 </template>
 
 <script lang="ts">
-import Vue from "vue"
+import { Vue, Component, Prop } from "vue-property-decorator"
 import Dialog from "./Dialog.vue"
 import Slider from "./Slider.vue"
 import { movesToString } from "../game"
 
-export default Vue.extend({
+@Component({
   components: {
-    Dialog,
-    Slider
-  },
-  props: {
-    open: Boolean
-  },
-  data() {
-    return {
-      confirmDialog: false,
-      clearWhat: null as any
-    }
-  },
-  methods: {
-    async clear(what: "all" | "event", confirm = false) {
-      if (confirm) {
-        this.confirmDialog = false
-        if (what == "event") {
-          const solvesStore = this.$state.db?.transaction("solves", "readwrite").objectStore("solves")
-          if (solvesStore) {
-            let cursor = await solvesStore.index("event").openKeyCursor(this.$state.eventName)
-            if (!cursor) return
-            do {
-              solvesStore.delete(cursor.primaryKey)
-            } while (cursor = await cursor.continue())
-          }
-
-          if (this.$state.user) {
-            await fetch(process.env.VUE_APP_API + "/sync", {
-              method: "DELETE",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${this.$state.user.token}`
-              },
-              body: JSON.stringify(this.$state.allSolves.map(solve => solve.startTime))
-            })
-          }
-
-          this.$state.reset()
-          this.$emit("update:open", false)
-        } else if (what == "all") {
-          indexedDB.deleteDatabase("loopover")
-          localStorage.removeItem("loopover")
-          location.reload()
-        }
-        return
-      }
-
-      this.confirmDialog = true
-      this.clearWhat = what
-    },
-    async exportSolves() {
-      let text = "event,time,moves,dnf,memo_time,moves_alg,scramble\n"
-
-      text += Object.entries(await this.$state.getSolvesByEvent())
-        .map(([event, solves]) => solves.map(solve => {
-          return [
-            event, solve.time, solve.moves.length, !!solve.dnf, solve.memoTime || 0,
-            movesToString(solve.moves), solve.scramble.grid.flat().join(" ")
-          ]
-        }).join("\n")).flat().join("\n")
-
-      const url = URL.createObjectURL(new Blob([text], { type: "text/csv" }))
-      const a = document.createElement("a")
-      a.href = url
-      a.download = "solves.csv"
-      document.body.append(a)
-      a.click()
-      a.remove()
-      URL.revokeObjectURL(url)
-    }
+    Slider,
+    Dialog
   }
 })
+export default class SettingsDialog extends Vue {
+  @Prop(Boolean) open!: boolean
+
+  clearDialog = false
+  clearType: "event" | "all" | null = null
+
+  async clearData(type: "all" | "event", confirm = false) {
+    if (confirm) {
+      this.clearDialog = false
+      if (type == "event") {
+        const solvesStore = this.$state.db?.transaction("solves", "readwrite").objectStore("solves")
+        if (solvesStore) {
+          let cursor = await solvesStore.index("event").openKeyCursor(this.$state.eventName)
+          if (!cursor) return
+          do {
+            solvesStore.delete(cursor.primaryKey)
+          } while (cursor = await cursor.continue())
+        }
+
+        if (this.$state.user) {
+          await fetch(process.env.VUE_APP_API + "/sync", {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${this.$state.user.token}`
+            },
+            body: JSON.stringify(this.$state.allSolves.map(solve => solve.startTime))
+          })
+        }
+
+        this.$state.reset()
+        this.$emit("update:open", false)
+      } else {
+        indexedDB.deleteDatabase("loopover")
+        localStorage.removeItem("loopover")
+        localStorage.removeItem("loopoverUser")
+        location.reload()
+      }
+      return
+    }
+
+    this.clearDialog = true
+    this.clearType = type
+  }
+
+  async exportSolves(format: "csv" | "json") {
+    if (!this.$state.db) return
+    let data: string
+
+    if (format == "csv") {
+      data = "event,date,time,moves,memo_time,dnf\n"
+      data += Object.entries(await this.$state.getSolvesByEvent())
+        .map(([event, solves]) => solves.map(solve => {
+          return [
+            event, new Date(solve.startTime).toISOString(),
+            solve.time, solve.moves.length, solve.memoTime || 0, !!solve.dnf
+          ]
+        }).join("\n")).flat().join("\n")
+    } else {
+      const solves = await this.$state.db!.getAll("solves")
+      data = "[\n"
+        + solves.map(solve => (delete solve.session, `  ${JSON.stringify(solve)}`)).join(",\n")
+        + "\n]"
+    }
+
+    const url = URL.createObjectURL(new Blob([data], {
+      type: format == "csv" ? "text/csv" : "application/json"
+    }))
+
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `solves.${format}`
+    document.body.append(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  }
+}
+
 </script>
 
 <style scoped>

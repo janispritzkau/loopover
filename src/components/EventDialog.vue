@@ -1,7 +1,5 @@
 <template>
-  <Dialog :open="open" @update:open="$emit('update:open', $event)">
-    <h3>Event</h3>
-
+  <Dialog title="Event" :open="open" @update:open="$emit('update:open', $event)">
     <button
       v-for="s in [3, 4, 5, 6, 7, 8, 9, 10, -1]"
       :key="s"
@@ -29,7 +27,7 @@
       <option :value="2">Blind</option>
     </select>
 
-    <label class="checkbox">
+    <label class="checkbox" style="margin-bottom: 12px;">
       <input v-model="$state.noRegrips" type="checkbox" />
       <span>No regrips</span>
     </label>

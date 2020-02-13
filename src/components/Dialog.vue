@@ -2,6 +2,7 @@
   <transition name="fade">
     <div v-if="open" class="dialog-container" :class="{ open: open }" @click.self="close">
       <div class="dialog" ref="dialog" tabindex="-1" @keydown.esc="close">
+        <h3 v-if="title" class="title">{{ title }}</h3>
         <div class="content">
           <slot />
         </div>
@@ -24,7 +25,8 @@ import Vue from "vue"
 
 export default Vue.extend({
   props: {
-    open: Boolean
+    open: Boolean,
+    title: String
   },
   watch: {
     open(open) {
@@ -68,34 +70,41 @@ export default Vue.extend({
   opacity: 0;
 }
 
+.fade-enter .dialog,
+.fade-leave-to .dialog {
+  transform: scale(0.75);
+}
+
 .dialog {
   display: flex;
   flex-direction: column;
-  padding: 24px;
   background: var(--background);
   min-width: 240px;
   max-width: 440px;
   width: 100%;
   max-height: 100%;
-  overflow: auto;
   border-radius: 3px;
   outline: 0;
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.2);
   transition: transform 150ms ease-out;
 }
 
-.fade-enter .dialog,
-.fade-leave-to .dialog {
-  transform: scale(0.75);
+.title, .content, .actions {
+  padding: 0 24px;
+}
+
+.title {
+  margin: 24px 0 16px;
 }
 
 .content {
   flex-grow: 1;
+  overflow: auto;
 }
 
 .actions {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: -8px;
+  margin: 12px 0;
 }
 </style>
