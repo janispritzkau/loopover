@@ -16,5 +16,11 @@ module.exports = {
     }
   },
 
+  chainWebpack(config) {
+    if (process.env.MODE == "testing") {
+      config.plugin("copy").tap(([patterns]) => [["public.testing", ...patterns]])
+    }
+  },
+
   productionSourceMap: false
 }
