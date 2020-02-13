@@ -29,6 +29,7 @@ export interface StoredState {
   useLetters?: boolean
   darkText?: boolean
   transitionTime: number
+  hideInspectHint?: boolean
 }
 
 export class State {
@@ -43,6 +44,7 @@ export class State {
   useLetters = true
   darkText = false
   transitionTime = 150
+  hideInspectHint = false
 
   /** Timer is running */
   started = false
@@ -261,6 +263,8 @@ export class State {
     this.game.board = solve.scramble.clone()
     this.moveHistory = solve.moves
     this.undos = solve.moves.length
+
+    this.hideInspectHint = true
   }
 
   changeSize(size: number) {
@@ -444,6 +448,7 @@ export class State {
     if (!this.useLetters) state.useLetters = false
     if (this.forceMobile) state.forceMobile = true
     if (this.darkMode) state.darkMode = true
+    if (this.hideInspectHint) state.hideInspectHint = true
 
     return state
   }

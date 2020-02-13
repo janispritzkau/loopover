@@ -10,6 +10,7 @@
       @click="!$state.started && $state.inspect(solve)"
     />
     <p v-if="solves.length == 0" style="opacity: 0.8;">No solves yet</p>
+    <p v-if="showHint" class="hint"><b>HINT:</b> You can tap on a scramble to inspect it</p>
     <button
       v-if="skip != null && solves.length - skip > currentLimit"
       class="btn"
@@ -58,6 +59,9 @@ export default Vue.extend({
         Math.max(0, this.solves.length - this.currentLimit - skip),
         this.solves.length - skip
       ).reverse()
+    },
+    showHint(): boolean {
+      return !this.$state.hideInspectHint && this.solves.length > 4 && this.items.length > 0
     }
   }
 })
@@ -67,5 +71,9 @@ export default Vue.extend({
 .btn {
   display: block;
   margin: 16px auto;
+}
+
+.hint {
+  opacity: 0.8;
 }
 </style>

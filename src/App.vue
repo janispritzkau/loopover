@@ -70,6 +70,10 @@
       />
     </section>
 
+    <section v-else>
+      <p>Tap <span style="font-size: 14px; font-weight: 600;">SCRAMBLE</span> and use your fingers, mouse or arrow keys to move the tiles back to their original place.</p>
+    </section>
+
     <Statistics />
 
     <footer>
