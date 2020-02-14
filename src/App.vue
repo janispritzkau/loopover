@@ -1,5 +1,5 @@
 <template>
-  <div class="app" :class="{ dark: $state.darkMode }">
+  <div class="app">
     <div class="main-container">
       <div class="main-wrapper" :class="{ desktopMode }">
         <h1>Loopover</h1>
@@ -7,17 +7,28 @@
         <main ref="main">
           <div v-if="!desktopMode" class="top">
             <Solve
+              class="solve"
               current
               :time="$state.displayTime"
               :moves="$state.moves"
               :fmc="fmc"
               :dnf="$state.dnf"
-              style="flex-grow: 1; min-width: 0;"
             />
             <button class="btn" @click="handleMainButtonClick">{{ mainButtonText }}</button>
             <template v-if="$state.showUndoRedo">
-              <RepeatButton class="btn undo" @click="$state.undo()" :disabled="$state.undoable">Undo</RepeatButton>
-              <RepeatButton class="btn" @click="$state.redo()" :disabled="$state.redoable">Redo</RepeatButton>
+              <div style="margin-left: 8px;" />
+              <div class="fmc-top" :class="{ break: mainWidth < 360 }">
+                <RepeatButton class="btn" @click="$state.undo(true)" :disabled="!$state.undoable">
+                  Undo
+                  <br />to start
+                </RepeatButton>
+                <RepeatButton class="btn" @click="$state.redo(true)" :disabled="!$state.redoable">
+                  Redo
+                  <br />to end
+                </RepeatButton>
+              </div>
+              <RepeatButton class="btn" @click="$state.undo()" :disabled="!$state.undoable">Undo</RepeatButton>
+              <RepeatButton class="btn" @click="$state.redo()" :disabled="!$state.redoable">Redo</RepeatButton>
             </template>
           </div>
 
@@ -33,8 +44,18 @@
         <aside v-if="desktopMode" :style="{ width: sidebarWidth + 'px' }">
           <button class="btn filled" @click="handleMainButtonClick">{{ mainButtonText }}</button>
           <div v-if="$state.showUndoRedo" class="fmc-button-wrapper">
-            <RepeatButton class="btn" @click="$state.undo()" :disabled="$state.undoable">Undo</RepeatButton>
-            <RepeatButton class="btn" @click="$state.redo()" :disabled="$state.redoable">Redo</RepeatButton>
+            <RepeatButton class="btn" @click="$state.undo()" :disabled="!$state.undoable">Undo</RepeatButton>
+            <RepeatButton class="btn" @click="$state.redo()" :disabled="!$state.redoable">Redo</RepeatButton>
+            <RepeatButton
+              class="btn"
+              @click="$state.undo(true)"
+              :disabled="!$state.undoable"
+            >Undo to start</RepeatButton>
+            <RepeatButton
+              class="btn"
+              @click="$state.redo(true)"
+              :disabled="!$state.redoable"
+            >Redo to end</RepeatButton>
           </div>
 
           <transition name="record">
@@ -71,7 +92,11 @@
     </section>
 
     <section v-else>
-      <p>Tap <span style="font-size: 14px; font-weight: 600;">SCRAMBLE</span> and use your fingers, mouse or arrow keys to move the tiles back to their original place.</p>
+      <p>
+        Tap
+        <span style="font-size: 14px; font-weight: 600;">SCRAMBLE</span>
+        and use your fingers, mouse or arrow keys to move the tiles back to their original place.
+      </p>
     </section>
 
     <Statistics />
@@ -131,7 +156,11 @@
       </button>
     </div>
 
-    <Dialog title="Confirm scramble" :open.sync="confirmScrambleDialog" @confirm="$state.scramble()">
+    <Dialog
+      title="Confirm scramble"
+      :open.sync="confirmScrambleDialog"
+      @confirm="$state.scramble()"
+    >
       <p style="margin: 0;">Do would want to reset the current solve and generate a new scramble?</p>
     </Dialog>
 
@@ -184,6 +213,7 @@ export default class App extends Vue {
   desktopMode = false
   sidebarWidth = 240
   sidebarLimit = 12
+  mainWidth = 0
 
   get fmc() {
     return this.$state.event == EventType.Fmc
@@ -265,7 +295,11 @@ export default class App extends Vue {
       game.setHeight(Math.min(height, rows * 50 + 250 / Math.min(aspect, 1)))
     }
 
-    this.$refs.main.style.width = `${Math.max(Math.min(mobileWidth, 320), game.width / devicePixelRatio)}px`
+    this.mainWidth = Math.max(Math.min(mobileWidth, 320), game.width / devicePixelRatio)
+
+    if (this.$refs.main) {
+      this.$refs.main.style.width = `${this.mainWidth}px`
+    }
 
     this.sidebarLimit = this.desktopMode
       ? ~~((game.height / devicePixelRatio - (this.$state.showUndoRedo ? 200 : 150)) / 36)
@@ -274,6 +308,10 @@ export default class App extends Vue {
 
   mounted() {
     window.app = this
+
+    this.$watch(() => this.$state.darkMode, dark => {
+      document.body.classList.toggle("dark", dark)
+    }, { immediate: true })
 
     const game = new Game(this.$refs.canvas, this.$state.cols, this.$state.rows)
     this.$state.game = game
@@ -307,10 +345,7 @@ export default class App extends Vue {
 
 <style scoped>
 .app {
-  min-height: 100vh;
   overflow-x: hidden;
-  color: var(--contrast);
-  background: var(--background);
 }
 
 .main-container {
@@ -373,8 +408,8 @@ aside {
   display: flex;
 }
 
-.btn.undo {
-  margin-left: 8px;
+.btn {
+  flex-shrink: 0;
 }
 
 .btn.filled {
@@ -383,13 +418,37 @@ aside {
   margin-bottom: 16px;
 }
 
+.top .solve {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.fmc-top {
+  position: absolute;
+  right: 0;
+  bottom: 44px;
+}
+
+.fmc-top:not(.break) br {
+  display: none;
+}
+
+.fmc-top .btn {
+  height: auto;
+  min-height: 36px;
+  padding: 6px 8px;
+}
+
 .fmc-button-wrapper {
   display: flex;
-  margin-bottom: 16px;
+  flex-wrap: wrap;
+  margin-top: -8px;
 }
 
 .fmc-button-wrapper .btn {
   width: 50%;
+  padding: 0;
+  margin-bottom: 8px;
 }
 
 .current-solve {

@@ -112,11 +112,11 @@ export class State {
   }
 
   get undoable() {
-    return this.undos == this.moveHistory.length
+    return this.undos != this.moveHistory.length
   }
 
   get redoable() {
-    return this.undos == 0
+    return this.undos != 0
   }
 
   formatTime(ms?: number | null) {
@@ -251,18 +251,20 @@ export class State {
     this.handleSolved()
   }
 
-  undo() {
+  undo(all = false) {
     if (this.undos == this.moveHistory.length) return
     const move = this.moveHistory[this.moveHistory.length - this.undos - 1]
-    this.game.animatedMove(move.axis, move.index, -move.n)
+    this.game.animatedMove({ ...move, n: -move.n })
     this.undos += 1
+    if (all && this.undoable) this.undo(true)
   }
 
-  redo() {
+  redo(all = false) {
     if (this.undos == 0) return
     const move = this.moveHistory[this.moveHistory.length - this.undos]
-    this.game.animatedMove(move.axis, move.index, move.n)
+    this.game.animatedMove(move)
     this.undos -= 1
+    if (all && this.redoable) this.redo(true)
   }
 
   inspect(solve: Solve) {

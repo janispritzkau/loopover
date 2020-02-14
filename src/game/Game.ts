@@ -81,6 +81,13 @@ export class Game {
   }
 
   move(move: Move, isPlayerMove = false) {
+    if (this.noRegrips) {
+      const active = this.board.pos(this.activeTile)!
+      if (isPlayerMove && (move.axis == Axis.Col ? active.col : active.row) != move.index) {
+        return
+      }
+    }
+
     this.board.move(move)
 
     if (this.onMove) {
@@ -88,33 +95,24 @@ export class Game {
     }
   }
 
-  animatedMove(axis: Axis, index: number, n: number, isPlayerMove = false) {
-    if (axis == Axis.Col) {
-      index = ((index % this.cols) + this.cols) % this.cols
+  animatedMove(move: Move, isPlayerMove = false) {
+    if (move.axis == Axis.Col) {
+      move.index = ((move.index % this.cols) + this.cols) % this.cols
     } else {
-      index = ((index % this.rows) + this.rows) % this.rows
+      move.index = ((move.index % this.rows) + this.rows) % this.rows
     }
 
-    if (this.noRegrips) {
-      const active = this.board.pos(this.activeTile)!
-      if (isPlayerMove && (axis == Axis.Col ? active.col : active.row) != index) {
-        return
-      }
-    }
+    this.move(move, isPlayerMove)
 
-    this.move({ axis, index, n }, isPlayerMove)
-
-    if (axis != this.moveAxis) {
+    if (move.axis != this.moveAxis) {
       this.transitions.clear()
-      this.moveAxis = axis
+      this.moveAxis = move.axis
     }
 
-    this.transitions.set(index, {
-      start: -n, value: -n, startTime: Date.now(),
+    this.transitions.set(move.index, {
+      start: -move.n, value: -move.n, startTime: Date.now(),
       isAnimated: true
     })
-
-    return new Promise(resolve => setTimeout(resolve, this.transitionTime))
   }
 
   scramble() {
@@ -167,7 +165,7 @@ export class Game {
           const g = cy * 220 + cx * (1 - cy) * 40 + 5
           const b = cx * 220
 
-          this.ctx.fillStyle = `rgb(${r|0},${g|0},${b|0})`
+          this.ctx.fillStyle = `rgb(${r | 0},${g | 0},${b | 0})`
           this.ctx.fillRect(x | 0, y | 0, this.tileSize, this.tileSize)
           this.ctx.fillStyle = this.darkText ? "rgba(0, 0, 0, 0.9)" : "#fff"
 
@@ -215,10 +213,10 @@ export class Game {
     const moveX = pointer.row - pointer.startRow
     const moveY = pointer.col - pointer.startCol
 
-    if (moveX) this.animatedMove(Axis.Col, Math.min(Math.max(pointer.startCol, 0), this.cols - 1), moveX, true)
+    if (moveX) this.animatedMove({ axis: Axis.Col, index: Math.min(Math.max(pointer.startCol, 0), this.cols - 1), n: moveX }, true)
     pointer.startRow = pointer.row
 
-    if (moveY) this.animatedMove(Axis.Row, Math.min(Math.max(pointer.startRow, 0), this.rows - 1), moveY, true)
+    if (moveY) this.animatedMove({ axis: Axis.Row, index: Math.min(Math.max(pointer.startRow, 0), this.rows - 1), n: moveY }, true)
     pointer.startCol = pointer.col
   }
 
@@ -242,7 +240,7 @@ export class Game {
       }
 
       if (this.spaceDown || this.noRegrips) {
-        this.animatedMove(axis, axis == Axis.Col ? pos.col : pos.row, n, true)
+        this.animatedMove({ axis, index: axis == Axis.Col ? pos.col : pos.row, n }, true)
       } else {
         if (axis == Axis.Row) {
           this.activeTile = this.board.grid[pos.row][(((pos.col + n) % this.cols) + this.cols) % this.cols]

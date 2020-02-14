@@ -5,7 +5,8 @@
 }
 
 body {
-  height: 100vh;
+  color: var(--contrast);
+  background: var(--background);
   overflow-y: scroll;
   font-family: "Roboto", sans-serif;
   touch-action: manipulation;
