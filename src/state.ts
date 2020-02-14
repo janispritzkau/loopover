@@ -384,7 +384,7 @@ export class State {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${this.user.token}`
         },
-        body: JSON.stringify([serializedSolve])
+        body: JSON.stringify([{ ...serializedSolve, moves: solve.moves }])
       })
     }
   }
