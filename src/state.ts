@@ -288,11 +288,14 @@ export class State {
   }
 
   handleMove(move: Move, isPlayerMove: boolean) {
-    if (!isPlayerMove) return
-
     // start game on first moves
-    if (this.scrambled && !this.started) this.start()
+    if (isPlayerMove && this.scrambled && !this.started) this.start()
     if (!this.started) return
+
+    if (!isPlayerMove) {
+      this.scrambled = !this.game.board.isSolved()
+      return
+    }
 
     if (this.undos > 0) {
       this.moveHistory.splice(this.moveHistory.length - this.undos, this.undos)
@@ -303,6 +306,8 @@ export class State {
       this.moveHistory.push({ ...move, n: Math.sign(move.n), time: Date.now() - this.startTime })
     }
 
+    this.scrambled = true
+
     if (this.event == EventType.Blind) {
       if (!this.inSolvingPhase) {
         this.inSolvingPhase = true
@@ -310,7 +315,11 @@ export class State {
         this.memoTime = Date.now() - this.startTime
       }
     } else if (this.game.board.isSolved()) {
-      this.handleSolved()
+      if (this.event == EventType.Fmc) {
+        this.scrambled = false
+      } else {
+        this.handleSolved()
+      }
     }
   }
 

@@ -182,10 +182,6 @@ export default class App extends Vue {
       + (this.$state.noRegrips ? " NRG" : "")
   }
 
-  get mainButtonText() {
-    return this.$state.inSolvingPhase ? "Done" : "Scramble"
-  }
-
   get newRecord() {
     const record = this.$state.newRecord
     if (!record) return
@@ -197,8 +193,14 @@ export default class App extends Vue {
         : Math.round(record.diff) / 1000 + "s"})`
   }
 
+  get mainButtonText() {
+    return this.$state.inSolvingPhase || this.$state.started && !this.$state.scrambled
+      ? "Done"
+      : "Scramble"
+  }
+
   handleMainButtonClick() {
-    if (this.$state.inSolvingPhase) {
+    if (this.$state.inSolvingPhase || this.$state.started && !this.$state.scrambled) {
       this.$state.done()
     } else if (this.$state.started && this.fmc) {
       this.confirmScrambleDialog = true
