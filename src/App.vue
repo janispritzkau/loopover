@@ -161,7 +161,7 @@
       :open.sync="confirmScrambleDialog"
       @confirm="$state.scramble()"
     >
-      <p style="margin: 0;">Do would want to reset the current solve and generate a new scramble?</p>
+      <p style="margin: 0;">Do you want to reset the current solve and generate a new scramble?</p>
     </Dialog>
 
     <EventDialog :open.sync="eventDialog" />
