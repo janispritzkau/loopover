@@ -86,6 +86,8 @@ export default class Statistics extends Vue {
   @Watch("$state.allSolves")
   @Watch("showMoves")
   async renderChart() {
+    if (!process.env.VUE_APP_API) return
+
     const response = await fetch(`${process.env.VUE_APP_API}/statistics/${this.$state.eventName}/${this.showMoves ? "moves" : "time"}`)
     const { labels, data } = await response.json()
 
