@@ -4,7 +4,7 @@
       <div class="main-wrapper" :class="{ desktopMode }">
         <h1>Loopover</h1>
 
-        <main :style="{ width: mainWidth + 'px' }">
+        <main ref="main">
           <div v-if="!desktopMode" class="top">
             <Solve
               current
@@ -131,6 +131,10 @@
       </button>
     </div>
 
+    <Dialog title="Confirm scramble" :open.sync="confirmScrambleDialog" @confirm="$state.scramble()">
+      <p style="margin: 0;">Do would want to reset the current solve and generate a new scramble?</p>
+    </Dialog>
+
     <EventDialog :open.sync="eventDialog" />
     <SettingsDialog :open.sync="settingsDialog" />
     <ShortcutsDialog :open.sync="shortcutsDialog" />
@@ -142,6 +146,7 @@ import { Component, Vue, Watch } from "vue-property-decorator"
 import { Game, Move, Board } from "./game"
 import * as auth from "./auth"
 
+import Dialog from "./components/Dialog.vue"
 import SettingsDialog from "./components/SettingsDialog.vue"
 import EventDialog from "./components/EventDialog.vue"
 import ShortcutsDialog from "./components/ShortcutsDialog.vue"
@@ -157,14 +162,21 @@ import { EventType } from "./state"
     SolveList,
     RepeatButton,
     Statistics,
+    Dialog,
     EventDialog,
     SettingsDialog,
     ShortcutsDialog
   }
 })
 export default class App extends Vue {
+  $refs!: {
+    canvas: HTMLCanvasElement
+    main: HTMLDivElement
+  }
+
   refresh: Function | null = null
 
+  confirmScrambleDialog = false
   eventDialog = false
   settingsDialog = false
   shortcutsDialog = false
@@ -172,8 +184,6 @@ export default class App extends Vue {
   desktopMode = false
   sidebarWidth = 240
   sidebarLimit = 12
-
-  mainWidth = 320
 
   get fmc() {
     return this.$state.event == EventType.Fmc
@@ -218,6 +228,8 @@ export default class App extends Vue {
   handleMainButtonClick() {
     if (this.$state.inSolvingPhase) {
       this.$state.done()
+    } else if (this.$state.started && this.fmc) {
+      this.confirmScrambleDialog = true
     } else {
       this.$state.scramble()
     }
@@ -253,7 +265,8 @@ export default class App extends Vue {
       game.setHeight(Math.min(height, rows * 50 + 250 / Math.min(aspect, 1)))
     }
 
-    this.mainWidth = Math.max(Math.min(mobileWidth, 320), game.width / devicePixelRatio)
+    this.$refs.main.style.width = `${Math.max(Math.min(mobileWidth, 320), game.width / devicePixelRatio)}px`
+
     this.sidebarLimit = this.desktopMode
       ? ~~((game.height / devicePixelRatio - (this.$state.showUndoRedo ? 200 : 150)) / 36)
       : 0
@@ -262,7 +275,7 @@ export default class App extends Vue {
   mounted() {
     window.app = this
 
-    const game = new Game(this.$refs.canvas as HTMLCanvasElement, this.$state.cols, this.$state.rows)
+    const game = new Game(this.$refs.canvas, this.$state.cols, this.$state.rows)
     this.$state.game = game
     game.onMove = this.$state.handleMove.bind(this.$state)
 
@@ -287,7 +300,7 @@ export default class App extends Vue {
     })
 
     window.addEventListener("resize", this.updateSize.bind(this))
-    this.$nextTick(this.updateSize)
+    this.updateSize()
   }
 }
 </script>
@@ -330,12 +343,16 @@ h1 {
   margin: 0 0 4px;
 }
 
+main {
+  transition: width 0.2s;
+}
+
 canvas {
   display: block;
   margin: 0 auto;
   border-radius: 3px;
   outline: 0;
-  transition: all 0.3s;
+  transition: all 0.2s;
   touch-action: none;
 }
 

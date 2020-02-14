@@ -2,7 +2,7 @@
   <transition name="fade">
     <div v-if="open" class="dialog-container" :class="{ open: open }" @click.self="close">
       <div class="dialog" ref="dialog" tabindex="-1" @keydown.esc="close">
-        <h3 v-if="title" class="title">{{ title }}</h3>
+        <h3 class="title">{{ title }}</h3>
         <div class="content">
           <slot />
         </div>
