@@ -1,6 +1,6 @@
 import Vue from "vue"
 import { openDB, IDBPDatabase } from "idb"
-import { Move, Board, Game } from "./game"
+import { Move, Board, Game, Axis } from "./game"
 import * as auth from "./auth"
 
 export enum EventType {
@@ -14,6 +14,17 @@ export interface Solve {
   moves: Move[]
   scramble: Board
   startTime: number
+  memoTime?: number
+  dnf?: boolean
+}
+
+export interface SerializedSolve {
+  event: string
+  session: number
+  startTime: number
+  time: number
+  moves: number[][]
+  scramble: number[][]
   memoTime?: number
   dnf?: boolean
 }
@@ -200,7 +211,7 @@ export class State {
     const solvesStore = this.db.transaction("solves", "readwrite").objectStore("solves")
 
     for (const solve of solves) {
-      solvesStore.add(solve)
+      solvesStore.add({ ...solve, moves: serializeMoves(solve.moves) })
     }
 
     this.allSolves = (await solvesStore.index("event").getAll(this.eventName))
@@ -228,7 +239,7 @@ export class State {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${this.user.token}`
           },
-          body: JSON.stringify(chunk)
+          body: JSON.stringify(chunk.map(solve => ({ ...solve, moves: deserializeMoves(solve.moves)})))
         })
       }
     }
@@ -454,19 +465,38 @@ export class State {
   }
 }
 
-function serializeSolve(solve: Solve, event: string, session: number) {
+function serializeMoves(moves: Move[]) {
+  let lastTime = 0
+  return moves.map(move => {
+    const time = move.time! - lastTime
+    lastTime = move.time!
+    return [+(move.axis == Axis.Col), move.index, move.n, time]
+  })
+}
+
+function deserializeMoves(moves: number[][]) {
+  let lastTime = 0
+  return moves.map<Move>(move => ({
+    axis: move[0] ? Axis.Col : Axis.Row, index: move[1], n: move[2],
+    time: (lastTime += move[3]) - move[3]
+  }))
+}
+
+function serializeSolve(solve: Solve, event: string, session: number): SerializedSolve {
   return {
-    session, event, ...solve,
+    event, session, ...solve,
+    moves: serializeMoves(solve.moves),
     scramble: solve.scramble.serialize()
   }
 }
 
-function deserializeSolve(value: any): { session: number, event: string, solve: Solve } {
-  const { session, event, ...solve } = value
+function deserializeSolve(value: SerializedSolve): { event: string, session: number, solve: Solve } {
+  const { event, session, ...solve } = value
   return {
-    session, event,
-    solve: {
-      ...solve, scramble: Board.deserialize(solve.scramble)
+    event, session, solve: {
+      ...solve,
+      moves: deserializeMoves(solve.moves),
+      scramble: Board.deserialize(solve.scramble)
     }
   }
 }
@@ -496,33 +526,25 @@ vue.$watch(state.serialize, state => {
   localStorage.loopover = JSON.stringify(state)
 }, { deep: true })
 
-openDB("loopover", 2, {
+openDB("loopover", 4, {
   async upgrade(db, oldVersion, _newVersion, transaction) {
+    if (oldVersion == 1) {
+      db.deleteObjectStore("sessions")
+      db.deleteObjectStore("solves")
+    }
     if (oldVersion < 2) {
-      if (db.objectStoreNames.contains("solves")) {
-        transaction.objectStore("solves").name = "solvesOld"
-      }
-
-      const solvesStore = db.createObjectStore("solves", { keyPath: "startTime" })
-      solvesStore.createIndex("session", "session", { unique: false })
-      solvesStore.createIndex("event", "event", { unique: false })
-
-      if (db.objectStoreNames.contains("solvesOld")) {
-        const sessions = transaction.objectStore("sessions")
-
-        let cursor = await transaction.objectStore("solvesOld").openCursor()
-        while (cursor) {
-          solvesStore.put({
-            session: (await sessions.get(cursor.value.session)).created,
-            event: cursor.value.event,
-            ...cursor.value.solve,
-            scramble: cursor.value.solve.scramble.grid
-          })
-          cursor = await cursor.continue()
-        }
-
-        db.deleteObjectStore("sessions")
-        db.deleteObjectStore("solvesOld")
+      const solves = db.createObjectStore("solves", { keyPath: "startTime" })
+      solves.createIndex("session", "session", { unique: false })
+      solves.createIndex("event", "event", { unique: false })
+    }
+    if (oldVersion < 4) {
+      let cursor = await transaction.objectStore("solves").openCursor()
+      while (cursor) {
+        cursor.update({
+          ...cursor.value,
+          moves: serializeMoves(cursor.value.moves)
+        })
+        cursor = await cursor.continue()
       }
     }
   }
