@@ -15,6 +15,8 @@ declare global {
     app: App
     state: State
   }
+
+  function ga(...args: any[]): void
 }
 
 declare module "vue/types/vue" {

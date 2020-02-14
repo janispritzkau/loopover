@@ -148,6 +148,8 @@ export class State {
     this.interval = setInterval(() => {
       this.time = Date.now() - this.startTime
     }, 87)
+
+    if (process.env.VUE_APP_GA_ID) ga("send", "event", "game", "start", this.eventName)
   }
 
   scramble() {
@@ -159,6 +161,8 @@ export class State {
     this.scrambledBoard = this.game.board.clone()
 
     if (this.event == EventType.Blind) this.start()
+
+    if (process.env.VUE_APP_GA_ID) ga("send", "event", "game", "scramble", this.eventName)
   }
 
   async reset(onlyResetState = false) {
@@ -278,6 +282,8 @@ export class State {
     this.undos = solve.moves.length
 
     this.hideInspectHint = true
+
+    if (process.env.VUE_APP_GA_ID) ga("send", "event", "game", "inspect")
   }
 
   changeSize(size: number) {
@@ -364,6 +370,8 @@ export class State {
       }
       unwatch()
     })
+
+    if (process.env.VUE_APP_GA_ID) ga("send", "event", "game", "solved", this.eventName)
 
     const serializedSolve = serializeSolve(solve, this.eventName, this.session)
 

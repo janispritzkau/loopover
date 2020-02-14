@@ -20,6 +20,14 @@ module.exports = {
     if (process.env.MODE == "testing") {
       config.plugin("copy").tap(([patterns]) => [["public.testing", ...patterns]])
     }
+
+    config.plugin("html").tap(args => {
+      const minifyOptions = args[0].minify
+      if (minifyOptions instanceof Object) {
+        minifyOptions.minifyJS = true
+      }
+      return args
+    })
   },
 
   productionSourceMap: false

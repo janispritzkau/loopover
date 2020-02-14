@@ -116,6 +116,8 @@ export default class SettingsDialog extends Vue {
         + "\n]"
     }
 
+    if (process.env.VUE_APP_GA_ID) ga("send", "event", "settings", "export", format)
+
     const url = URL.createObjectURL(new Blob([data], {
       type: format == "csv" ? "text/csv" : "application/json"
     }))
