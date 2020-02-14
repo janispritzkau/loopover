@@ -246,7 +246,7 @@ th:last-child {
   left: 16px;
   min-width: 288px;
   max-width: calc(100vw - 32px);
-  background: #2c2e33;
+  background: var(--background-darker);
   color: #ffffff;
   font-size: 14px;
   display: flex;
