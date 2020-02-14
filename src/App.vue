@@ -101,47 +101,7 @@
 
     <Statistics />
 
-    <footer>
-      <p v-if="showShortcuts" class="shortcuts-link">
-        <a @click="shortcutsDialog = true">Keyboard shortcuts</a>
-      </p>
-      <p>
-        Created by
-        <a
-          target="_blank"
-          rel="noopener"
-          href="https://twitter.com/janispritzkau"
-        >Janis Pritzkau</a>.
-        Remake of carykh's
-        <a
-          target="_blank"
-          rel="noopener"
-          href="https://openprocessing.org/sketch/580366"
-        >Loopover</a>.
-      </p>
-      <p>
-        <a target="_blank" rel="noopener" href="https://discord.gg/DXASrTp">discord.gg/DXASrTp</a> |
-        <a
-          target="_blank"
-          rel="noopener"
-          href="https://github.com/janispritzkau/loopover"
-        >Source code</a>
-      </p>
-      <div class="auth">
-        <p v-if="$state.user">
-          <img v-if="$state.user.avatarUrl" :src="$state.user.avatarUrl" />
-          Signed in as {{ $state.user.name }}
-        </p>
-        <template v-if="$state.user">
-          <a @click="signOut">Sign out</a>
-        </template>
-        <template v-else>
-          <p>Log in to synchronize your solves.</p>
-          <a @click="signIn('google')">Sign in with Google</a>
-          <a @click="signIn('discord')">Sign in with Discord</a>
-        </template>
-      </div>
-    </footer>
+    <Footer />
 
     <div v-if="refresh" class="update-notification dark">
       <span>A new version is available. Please reload to update.</span>
@@ -166,23 +126,21 @@
 
     <EventDialog :open.sync="eventDialog" />
     <SettingsDialog :open.sync="settingsDialog" />
-    <ShortcutsDialog :open.sync="shortcutsDialog" />
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue, Watch } from "vue-property-decorator"
 import { Game, Move, Board } from "./game"
-import * as auth from "./auth"
 
 import Dialog from "./components/Dialog.vue"
 import SettingsDialog from "./components/SettingsDialog.vue"
 import EventDialog from "./components/EventDialog.vue"
-import ShortcutsDialog from "./components/ShortcutsDialog.vue"
 import RepeatButton from "./components/RepeatButton.vue"
 import SolveView from "./components/Solve.vue"
 import SolveList from "./components/SolveList.vue"
 import Statistics from "./components/Statistics.vue"
+import Footer from "./components/Footer.vue"
 import { EventType } from "./state"
 
 @Component({
@@ -191,10 +149,10 @@ import { EventType } from "./state"
     SolveList,
     RepeatButton,
     Statistics,
+    Footer,
     Dialog,
     EventDialog,
-    SettingsDialog,
-    ShortcutsDialog
+    SettingsDialog
   }
 })
 export default class App extends Vue {
@@ -208,7 +166,6 @@ export default class App extends Vue {
   confirmScrambleDialog = false
   eventDialog = false
   settingsDialog = false
-  shortcutsDialog = false
 
   desktopMode = false
   sidebarWidth = 240
@@ -229,10 +186,6 @@ export default class App extends Vue {
     return this.$state.inSolvingPhase ? "Done" : "Scramble"
   }
 
-  get showShortcuts() {
-    return !("ontouchstart" in window)
-  }
-
   get newRecord() {
     const record = this.$state.newRecord
     if (!record) return
@@ -242,17 +195,6 @@ export default class App extends Vue {
       : `New best average of ${record.n} (-${record.fmc
         ? Math.round(record.diff * 10) / 10 + "\xa0moves"
         : Math.round(record.diff) / 1000 + "s"})`
-  }
-
-  async signIn(provider: "google" | "discord") {
-    switch (provider) {
-      case "google": auth.signInWithGoogle(); break
-      case "discord": auth.signInWithDiscord(); break
-    }
-  }
-
-  async signOut() {
-    auth.signOut()
   }
 
   handleMainButtonClick() {
@@ -480,8 +422,7 @@ aside {
   opacity: 0;
 }
 
-section,
-footer {
+section {
   max-width: 480px;
   margin: 0 auto;
   padding: 0 16px;
@@ -499,34 +440,5 @@ section::after {
   display: block;
   margin-top: 31px;
   border-bottom: 1px solid var(--contrast-2);
-}
-
-footer {
-  opacity: 0.9;
-  max-width: 480px;
-  margin: 0 auto;
-  text-align: center;
-  padding: 16px 16px;
-}
-
-.auth {
-  margin: 32px auto 16px;
-  font-size: 14px;
-}
-
-.auth p {
-  margin: 12px 0;
-}
-
-.auth a {
-  margin: 0 6px;
-}
-
-.auth img {
-  height: 32px;
-  border-radius: 50%;
-  vertical-align: middle;
-  margin-right: 8px;
-  user-select: none;
 }
 </style>
