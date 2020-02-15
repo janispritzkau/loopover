@@ -16,6 +16,10 @@
       <input v-model="$state.darkText" type="checkbox" />
       <span>Dark text</span>
     </label>
+    <label class="checkbox">
+      <input v-model="$state.wrapAround" type="checkbox" />
+      <span>Wrap around</span>
+    </label>
 
     <label class="label">Transition speed</label>
     <div class="slider-container">

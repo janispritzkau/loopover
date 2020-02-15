@@ -39,6 +39,7 @@ export interface StoredState {
   forceMobile?: boolean
   useLetters?: boolean
   darkText?: boolean
+  wrapAround?: boolean
   transitionTime: number
   hideInspectHint?: boolean
 }
@@ -54,6 +55,7 @@ export class State {
   forceMobile = false
   useLetters = true
   darkText = false
+  wrapAround = true
   transitionTime = 150
   hideInspectHint = false
 
@@ -447,6 +449,13 @@ export class State {
     this.averages = new Map(this.averages)
   }
 
+  applyGameSettings() {
+    this.game.useLetters = this.useLetters
+    this.game.darkText = this.darkText
+    this.game.wrapAround = this.wrapAround
+    this.game.transitionTime = this.transitionTime
+  }
+
   loadFromLocalStorage() {
     if (!localStorage.loopover) return
 
@@ -479,6 +488,7 @@ export class State {
     if (!this.useLetters) state.useLetters = false
     if (this.forceMobile) state.forceMobile = true
     if (this.darkMode) state.darkMode = true
+    if (!this.wrapAround) state.wrapAround = false
     if (this.hideInspectHint) state.hideInspectHint = true
 
     return state
@@ -534,10 +544,8 @@ vue.$watch(() => [state.cols, state.rows, state.event, state.noRegrips], () => {
   state.reset()
 })
 
-vue.$watch(() => [state.darkText, state.useLetters, state.transitionTime], () => {
-  state.game.useLetters = state.useLetters
-  state.game.darkText = state.darkText
-  state.game.transitionTime = state.transitionTime
+vue.$watch(() => [state.darkMode, state.darkText, state.useLetters, state.wrapAround, state.transitionTime], () => {
+  state.applyGameSettings()
 })
 
 state.loadFromLocalStorage()

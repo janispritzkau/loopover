@@ -263,6 +263,7 @@ export default class App extends Vue {
 
     const game = new Game(this.$refs.canvas, this.$state.cols, this.$state.rows)
     this.$state.game = game
+    this.$state.applyGameSettings()
     game.onMove = this.$state.handleMove.bind(this.$state)
 
     window.addEventListener("keydown", event => {
