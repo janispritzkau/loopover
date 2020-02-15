@@ -78,9 +78,11 @@ export default class Footer extends Vue {
 footer {
   max-width: 480px;
   margin: 0 auto;
-  opacity: 0.9;
   padding: 16px;
   box-sizing: content-box;
+}
+
+p, .auth {
   text-align: center;
 }
 
