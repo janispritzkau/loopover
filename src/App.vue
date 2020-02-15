@@ -76,6 +76,8 @@
       </div>
     </div>
 
+    <Solutions v-if="fmc" />
+
     <section
       v-if="$state.allSolves.length - $state.solves.length > 0 || $state.solves.length > sidebarLimit"
     >
@@ -140,6 +142,7 @@ import RepeatButton from "./components/RepeatButton.vue"
 import SolveView from "./components/Solve.vue"
 import SolveList from "./components/SolveList.vue"
 import Statistics from "./components/Statistics.vue"
+import Solutions from "./components/Solutions.vue"
 import Footer from "./components/Footer.vue"
 import { EventType } from "./state"
 
@@ -149,6 +152,7 @@ import { EventType } from "./state"
     SolveList,
     RepeatButton,
     Statistics,
+    Solutions,
     Footer,
     Dialog,
     EventDialog,

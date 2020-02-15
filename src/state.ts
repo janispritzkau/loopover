@@ -184,6 +184,8 @@ export class State {
     }
     this.solves = this.sessionSolves[this.eventName] || []
 
+    vue.$emit("reset")
+
     if (onlyResetState) return
 
     this.game.setBoardSize(this.cols, this.rows)
@@ -290,7 +292,6 @@ export class State {
     this.custom = false
     this.rows = size
     this.cols = size
-    this.reset()
   }
 
   handleMove(move: Move, isPlayerMove: boolean) {
@@ -521,7 +522,7 @@ function deserializeSolve(value: SerializedSolve): { event: string, session: num
 }
 
 const state = new State()
-const vue = new Vue({ data: state })
+export const vue = new Vue({ data: state })
 
 vue.$watch(() => state.allSolves, () => state.calculateAverages())
 
