@@ -98,19 +98,20 @@ export default class Statistics extends Vue {
       ? solve.moves.length : solve.time / 1000)
 
     const start = labels[0]
+    const end = labels[labels.length - 1]
     const step = labels[1] - labels[0]
 
     let you: number[] = labels.map(() => 0)
 
     for (const score of scores) {
-      const pos = score / step - start / step
+      const pos = Math.min(labels.length - 1, score / step - start / step)
       const frac = pos - ~~pos
       you[~~pos] += 1 / scores.length * (1 - frac)
       you[~~pos + Math.ceil(frac)] += 1 / scores.length * frac
     }
 
     const max = you.reduce((a, b) => Math.max(a, b), 0)
-    you = you.map(x => x / max)
+    if (max > 0) you = you.map(x => x / max)
 
     const dark = this.$state.darkMode || undefined
 
