@@ -34,6 +34,7 @@
   "browserslist": [
     "chrome 72",
     "firefox 65",
-    "safari 13"
+    "safari 13",
+    "edge 18"
   ]
 }
