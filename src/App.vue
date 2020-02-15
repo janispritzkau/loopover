@@ -320,9 +320,10 @@ export default class App extends Vue {
 
 h1 {
   position: absolute;
-  top: -8px;
+  top: 0;
   font-weight: 900;
   font-size: 30px;
+  line-height: 1;
   margin: 0 0 4px;
 }
 
@@ -374,17 +375,21 @@ aside {
 .fmc-top {
   position: absolute;
   right: 0;
-  bottom: 44px;
+  bottom: 48px;
 }
 
 .fmc-top:not(.break) br {
   display: none;
 }
 
+.fmc-top.break {
+  bottom: 44px;
+}
+
 .fmc-top .btn {
   height: auto;
   min-height: 36px;
-  padding: 6px 8px;
+  padding: 4px 8px;
 }
 
 .fmc-button-wrapper {
