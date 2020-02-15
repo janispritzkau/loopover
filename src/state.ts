@@ -569,6 +569,7 @@ openDB("loopover", 4, {
     }
   }
 }).then(async db => {
+  if (!IDBObjectStore.prototype.getAll) return
   state.db = db
   state.reset().then(() => state.syncSolves())
 })
