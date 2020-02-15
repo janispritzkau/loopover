@@ -26,11 +26,6 @@
     "typescript": "^3.7.5",
     "vue-template-compiler": "^2.6.11"
   },
-  "babel": {
-    "presets": [
-      "@vue/cli-plugin-babel/preset"
-    ]
-  },
   "browserslist": [
     "chrome 72",
     "firefox 65",

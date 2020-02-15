@@ -30,5 +30,7 @@ module.exports = {
     })
   },
 
+  transpileDependencies: ["idb"],
+
   productionSourceMap: false
 }
