@@ -1,6 +1,6 @@
 import Vue from "vue"
 import { register } from "register-service-worker"
-import state from "./state"
+import { state } from "./state"
 
 import "normalize.css"
 import "./main.css"

@@ -190,11 +190,13 @@ export default class App extends Vue {
     const record = this.$state.newRecord
     if (!record) return
 
-    return record.n == 1
-      ? `New personal best (-${record.fmc ? record.diff + "\xa0moves" : record.diff / 1000 + "s"})`
-      : `New best average of ${record.n} (-${record.fmc
-        ? Math.round(record.diff * 10) / 10 + "\xa0moves"
-        : Math.round(record.diff) / 1000 + "s"})`
+    return record.averageOf == 1
+      ? `New personal best (-${record.fmc
+        ? record.difference + "\xa0moves"
+        : record.difference / 1000 + "s"})`
+      : `New best average of ${record.averageOf} (-${record.fmc
+        ? Math.round(record.difference * 10) / 10 + "\xa0moves"
+        : Math.round(record.difference) / 1000 + "s"})`
   }
 
   get mainButtonText() {
@@ -263,7 +265,6 @@ export default class App extends Vue {
 
     const game = new Game(this.$refs.canvas, this.$state.cols, this.$state.rows)
     this.$state.game = game
-    this.$state.applyGameSettings()
     game.onMove = this.$state.handleMove.bind(this.$state)
 
     window.addEventListener("keydown", event => {
