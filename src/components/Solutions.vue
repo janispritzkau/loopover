@@ -43,7 +43,6 @@ export default class Solutions extends Vue {
 
   reset() {
     this.solutions = []
-    console.log("reset")
   }
 
   mounted() {

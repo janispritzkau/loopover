@@ -15,7 +15,7 @@
       <strong>We're sorry but Loopover doesn't work without JavaScript enabled. Please enable it to continue.</strong>
     </noscript>
     <div id="app"></div>
-    <% if (typeof VUE_APP_GA_ID != "undefined") { %>
+    <% if (VUE_APP_GA_ID) { %>
       <script async src="https://www.google-analytics.com/analytics.js"></script>
       <script>
         window.ga = function() { ga.q.push(arguments) }
