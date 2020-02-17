@@ -85,7 +85,7 @@ export class Game {
     if (this.noRegrips) {
       const active = this.board.pos(this.activeTile)!
       if (isPlayerMove && (move.axis == Axis.Col ? active.col : active.row) != move.index) {
-        return
+        return false
       }
     }
 
@@ -94,6 +94,8 @@ export class Game {
     if (this.onMove) {
       this.onMove(move, isPlayerMove)
     }
+
+    return true
   }
 
   animatedMove(move: Move, isPlayerMove = false) {
@@ -103,7 +105,7 @@ export class Game {
       move.index = ((move.index % this.rows) + this.rows) % this.rows
     }
 
-    this.move(move, isPlayerMove)
+    if (!this.move(move, isPlayerMove)) return
 
     if (move.axis != this.moveAxis) {
       this.transitions.clear()
