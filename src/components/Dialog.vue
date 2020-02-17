@@ -1,6 +1,14 @@
 <template>
   <transition name="fade">
-    <div v-if="open" class="dialog-container" :class="{ open: open }" @click.self="close">
+    <div
+      v-if="open"
+      class="dialog-container"
+      :class="{ open }"
+      @touchstart.self="clickOutside = true"
+      @mousedown="clickOutside = $event.target == $el"
+      @touchmove="$event.preventDefault()"
+      @click="clickOutside && close($event)"
+    >
       <div class="dialog" ref="dialog" tabindex="-1" @keydown.esc="close">
         <h3 class="title">{{ title }}</h3>
         <div class="content">
@@ -28,16 +36,21 @@ export default Vue.extend({
     open: Boolean,
     title: String
   },
+  data() {
+    return {
+      clickOutside: true
+    }
+  },
   watch: {
-    open(open) {
-      if (!open) return
-      setTimeout(() => {
+    open() {
+      if (this.open) setTimeout(() => {
         (this.$refs.dialog as HTMLDivElement).focus()
       })
     }
   },
   methods: {
-    close() {
+    close(event: Event) {
+      event.stopPropagation()
       this.$emit("update:open", false)
     }
   }
@@ -68,6 +81,7 @@ export default Vue.extend({
 .fade-enter,
 .fade-leave-to {
   opacity: 0;
+  pointer-events: none;
 }
 
 .fade-enter .dialog,
@@ -89,7 +103,9 @@ export default Vue.extend({
   transition: transform 150ms ease-out;
 }
 
-.title, .content, .actions {
+.title,
+.content,
+.actions {
   padding: 0 24px;
 }
 

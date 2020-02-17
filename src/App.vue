@@ -17,7 +17,7 @@
             <button class="btn" @click="handleMainButtonClick">{{ mainButtonText }}</button>
             <template v-if="$state.showUndoRedo">
               <div style="margin-left: 8px;" />
-              <div class="fmc-top" :class="{ break: mainWidth < 360 }">
+              <div class="fmc-top" :class="{ break: mainWidth < 380 }">
                 <RepeatButton class="btn" @click="$state.undo(true)" :disabled="!$state.undoable">
                   Undo
                   <br />to start
@@ -326,7 +326,7 @@ h1 {
   font-weight: 900;
   font-size: 30px;
   line-height: 1;
-  margin: 0 0 4px;
+  margin: 0;
 }
 
 main {
@@ -382,10 +382,6 @@ aside {
 
 .fmc-top:not(.break) br {
   display: none;
-}
-
-.fmc-top.break {
-  bottom: 44px;
 }
 
 .fmc-top .btn {
