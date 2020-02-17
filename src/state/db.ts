@@ -200,6 +200,6 @@ function deserializeMoves(moves: number[][]) {
   let lastTime = 0
   return moves.map<Move>(move => ({
     axis: move[0] ? Axis.Col : Axis.Row, index: move[1], n: move[2],
-    time: (lastTime += move[3]) - move[3]
+    time: (lastTime += move[3])
   }))
 }
