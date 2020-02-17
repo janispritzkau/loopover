@@ -18,14 +18,14 @@
             <template v-if="$state.showUndoRedo">
               <div style="margin-left: 8px;" />
               <div class="fmc-top" :class="{ break: mainWidth < 380 }">
-                <RepeatButton class="btn" @click="$state.undo(true)" :disabled="!$state.undoable">
+                <button class="btn" @click="$state.undo(true)" :disabled="!$state.undoable">
                   Undo
                   <br />to start
-                </RepeatButton>
-                <RepeatButton class="btn" @click="$state.redo(true)" :disabled="!$state.redoable">
+                </button>
+                <button class="btn" @click="$state.redo(true)" :disabled="!$state.redoable">
                   Redo
                   <br />to end
-                </RepeatButton>
+                </button>
               </div>
               <RepeatButton class="btn" @click="$state.undo()" :disabled="!$state.undoable">Undo</RepeatButton>
               <RepeatButton class="btn" @click="$state.redo()" :disabled="!$state.redoable">Redo</RepeatButton>
@@ -46,16 +46,12 @@
           <div v-if="$state.showUndoRedo" class="fmc-button-wrapper">
             <RepeatButton class="btn" @click="$state.undo()" :disabled="!$state.undoable">Undo</RepeatButton>
             <RepeatButton class="btn" @click="$state.redo()" :disabled="!$state.redoable">Redo</RepeatButton>
-            <RepeatButton
+            <button
               class="btn"
               @click="$state.undo(true)"
               :disabled="!$state.undoable"
-            >Undo to start</RepeatButton>
-            <RepeatButton
-              class="btn"
-              @click="$state.redo(true)"
-              :disabled="!$state.redoable"
-            >Redo to end</RepeatButton>
+            >Undo to start</button>
+            <button class="btn" @click="$state.redo(true)" :disabled="!$state.redoable">Redo to end</button>
           </div>
 
           <transition name="record">
@@ -75,6 +71,16 @@
         </aside>
       </div>
     </div>
+
+    <section v-if="$state.inspecting" class="inspect">
+      <button class="btn" @click="$state.replay(!$state.replaying)" :disabled="!$state.redoable">
+        <svg height="24" viewBox="0 0 24 24" width="24" style="margin-right: 8px;">
+          <path v-if="!$state.replaying" d="M8 5v14l11-7z" fill="currentColor" />
+          <path v-else d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />
+        </svg>
+        {{ $state.replaying ? "Pause" : "Start" }} replay
+      </button>
+    </section>
 
     <Solutions v-if="fmc" />
 
@@ -438,16 +444,22 @@ section {
   box-sizing: content-box;
 }
 
-section::before {
+section:not(.inspect)::before {
   content: "";
   display: block;
   margin-bottom: 32px;
 }
 
-section::after {
+section:not(.inspect):after {
   content: "";
   display: block;
   margin-top: 31px;
   border-bottom: 1px solid var(--contrast-2);
+}
+
+section.inspect {
+  text-align: right;
+  margin-top: 16px;
+  margin-bottom: -16px;
 }
 </style>

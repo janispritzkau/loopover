@@ -39,6 +39,7 @@ export class State {
   moveHistory: Move[] = []
   undos = 0
   inspecting = false
+  replaying = false
 
   solves: Solve[] = []
   allSolves: Solve[] = []
@@ -65,7 +66,7 @@ export class State {
   }
 
   get displayTime() {
-    if (this.inspecting) {
+    if (this.inspecting && !this.replaying) {
       return this.undoable
         ? this.moveHistory[this.moveHistory.length - this.undos - 1].time
         : 0
@@ -206,6 +207,31 @@ export class State {
     this.hideInspectHint = true
 
     if (process.env.VUE_APP_GA_ID) ga("send", "event", "game", "inspect")
+  }
+
+  async replay(replay = true) {
+    if (process.env.VUE_APP_GA_ID) {
+      ga("send", "event", "game", "replay", replay ? "start" : "pause")
+    }
+
+    if (!replay) this.replaying = false
+    if (!this.redoable || this.replaying || !replay) return
+
+    this.replaying = true
+    this.interval = setInterval(() => this.time = Date.now() - this.startTime, 87)
+
+    this.startTime = Date.now() - this.moveHistory[this.moveHistory.length - this.undos].time!
+
+    while (this.redoable) {
+      const move = this.moveHistory[this.moveHistory.length - this.undos]
+      const diff = move.time! - Date.now() + this.startTime
+      if (diff > 0) await new Promise(resolve => setTimeout(resolve, diff))
+      if (!this.replaying) break
+      this.redo()
+    }
+
+    clearInterval(this.interval)
+    this.replaying = false
   }
 
   changeSize(size: number) {
