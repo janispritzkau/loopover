@@ -66,7 +66,9 @@ export class State {
 
   get displayTime() {
     if (this.inspecting) {
-      return this.moveHistory[this.moveHistory.length - this.undos]?.time ?? this.time
+      return this.undoable
+        ? this.moveHistory[this.moveHistory.length - this.undos - 1].time
+        : 0
     } else {
       return this.time
     }
@@ -114,9 +116,7 @@ export class State {
     this.memoTime = 0
     this.startTime = Date.now()
 
-    this.interval = setInterval(() => {
-      this.time = Date.now() - this.startTime
-    }, 87)
+    this.interval = setInterval(() => this.time = Date.now() - this.startTime, 87)
 
     if (process.env.VUE_APP_GA_ID) ga("send", "event", "game", "start", this.eventName)
   }
@@ -229,8 +229,9 @@ export class State {
       this.undos = 0
     }
 
+    const time = Date.now() - this.startTime
     for (let i = Math.abs(move.n); i--;) {
-      this.moveHistory.push({ ...move, n: Math.sign(move.n), time: Date.now() - this.startTime })
+      this.moveHistory.push({ ...move, n: Math.sign(move.n), time })
     }
 
     this.scrambled = true
@@ -253,7 +254,7 @@ export class State {
   handleSolved() {
     clearInterval(this.interval)
 
-    this.time = Date.now() - this.startTime
+    this.time = this.moveHistory[this.moveHistory.length - 1].time!
     this.started = false
     this.scrambled = false
     this.inSolvingPhase = false
