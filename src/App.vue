@@ -73,6 +73,7 @@
     </div>
 
     <section v-if="$state.inspecting" class="inspect">
+      <time>{{ formatDate($state.startTime) }}</time>
       <button class="btn" @click="$state.replay(!$state.replaying)" :disabled="!$state.redoable">
         <svg height="24" viewBox="0 0 24 24" width="24" style="margin-right: 8px;">
           <path v-if="!$state.replaying" d="M8 5v14l11-7z" fill="currentColor" />
@@ -209,6 +210,11 @@ export default class App extends Vue {
     return this.$state.inSolvingPhase || this.$state.started && !this.$state.scrambled
       ? "Done"
       : "Scramble"
+  }
+
+  formatDate(time: number) {
+    return new Date(time - new Date().getTimezoneOffset() * 60000)
+      .toISOString().slice(0, -5).replace("T", " ")
   }
 
   handleMainButtonClick() {
@@ -458,8 +464,15 @@ section:not(.inspect):after {
 }
 
 section.inspect {
-  text-align: right;
+  display: flex;
+  align-items: center;
   margin-top: 16px;
   margin-bottom: -16px;
+}
+
+.inspect time {
+  flex-grow: 1;
+  font-size: 14px;
+  opacity: 0.8;
 }
 </style>

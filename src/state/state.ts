@@ -197,6 +197,7 @@ export class State {
   inspect(solve: Solve) {
     this.reset(true)
     this.inspecting = true
+    this.startTime = solve.startTime
     this.time = solve.time
     this.dnf = !!solve.dnf
 
@@ -217,14 +218,14 @@ export class State {
     if (!replay) this.replaying = false
     if (!this.redoable || this.replaying || !replay) return
 
-    this.replaying = true
-    this.interval = setInterval(() => this.time = Date.now() - this.startTime, 87)
+    const startTime = Date.now() - this.moveHistory[this.moveHistory.length - this.undos].time!
 
-    this.startTime = Date.now() - this.moveHistory[this.moveHistory.length - this.undos].time!
+    this.replaying = true
+    this.interval = setInterval(() => this.time = Date.now() - startTime, 87)
 
     while (this.redoable) {
       const move = this.moveHistory[this.moveHistory.length - this.undos]
-      const diff = move.time! - Date.now() + this.startTime
+      const diff = move.time! - Date.now() + startTime
       if (diff > 0) await new Promise(resolve => setTimeout(resolve, diff))
       if (!this.replaying) break
       this.redo()
