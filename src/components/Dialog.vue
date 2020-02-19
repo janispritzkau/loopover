@@ -6,7 +6,6 @@
       :class="{ open }"
       @touchstart.self="clickOutside = true"
       @mousedown="clickOutside = $event.target == $el"
-      @touchmove="$event.preventDefault()"
       @click="clickOutside && close($event)"
     >
       <div class="dialog" ref="dialog" tabindex="-1" @keydown.esc="close">
