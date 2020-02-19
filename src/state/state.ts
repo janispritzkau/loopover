@@ -218,10 +218,12 @@ export class State {
     if (!replay) this.replaying = false
     if (!this.redoable || this.replaying || !replay) return
 
+    clearInterval(this.interval)
     const startTime = Date.now() - this.moveHistory[this.moveHistory.length - this.undos].time!
 
     this.replaying = true
     this.interval = setInterval(() => this.time = Date.now() - startTime, 87)
+    this.time = Date.now() - startTime
 
     while (this.redoable) {
       const move = this.moveHistory[this.moveHistory.length - this.undos]
