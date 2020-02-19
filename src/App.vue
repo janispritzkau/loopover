@@ -352,7 +352,7 @@ main {
 canvas {
   display: block;
   margin: 0 auto;
-  border-radius: 3px;
+  border-radius: 4px;
   outline: 0;
   transition: all 0.2s;
   touch-action: none;
@@ -393,7 +393,7 @@ aside {
 .fmc-top {
   position: absolute;
   right: 0;
-  bottom: 48px;
+  bottom: 50px;
 }
 
 .fmc-top:not(.break) br {
