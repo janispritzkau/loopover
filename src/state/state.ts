@@ -40,6 +40,7 @@ export class State {
   undos = 0
   inspecting = false
   replaying = false
+  replaySpeed = 1
 
   solves: Solve[] = []
   allSolves: Solve[] = []
@@ -197,6 +198,7 @@ export class State {
   inspect(solve: Solve) {
     this.reset(true)
     this.inspecting = true
+    this.replaying = false
     this.startTime = solve.startTime
     this.time = solve.time
     this.dnf = !!solve.dnf
@@ -219,20 +221,24 @@ export class State {
     if (!this.redoable || this.replaying || !replay) return
 
     clearInterval(this.interval)
-    const startTime = Date.now() - this.moveHistory[this.moveHistory.length - this.undos].time!
+
+    const speed = this.replaySpeed
+    const startTime = Date.now() - this.moveHistory[this.moveHistory.length - this.undos].time! / speed
 
     this.replaying = true
-    this.interval = setInterval(() => this.time = Date.now() - startTime, 87)
-    this.time = Date.now() - startTime
+    this.interval = setInterval(() => this.time = (Date.now() - startTime) * speed, 87)
+    this.time = (Date.now() - startTime) * speed
 
     while (this.undos != 0) {
       const move = this.moveHistory[this.moveHistory.length - this.undos]
-      const diff = move.time! - Date.now() + startTime
+      const diff = move.time! / speed - Date.now() + startTime
       if (diff > 0) await new Promise(resolve => setTimeout(resolve, diff))
       if (!this.replaying) break
+      this.game.transitionTime = this.transitionTime / speed
       this.redo()
     }
 
+    this.game.transitionTime = this.transitionTime
     clearInterval(this.interval)
     this.replaying = false
   }
