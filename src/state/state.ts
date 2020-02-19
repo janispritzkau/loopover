@@ -84,11 +84,11 @@ export class State {
   }
 
   get undoable() {
-    return this.undos != this.moveHistory.length
+    return this.undos != this.moveHistory.length && !this.replaying
   }
 
   get redoable() {
-    return this.undos != 0
+    return this.undos != 0 && !this.replaying
   }
 
   formatTime(ms?: number | null) {
@@ -225,7 +225,7 @@ export class State {
     this.interval = setInterval(() => this.time = Date.now() - startTime, 87)
     this.time = Date.now() - startTime
 
-    while (this.redoable) {
+    while (this.undos != 0) {
       const move = this.moveHistory[this.moveHistory.length - this.undos]
       const diff = move.time! - Date.now() + startTime
       if (diff > 0) await new Promise(resolve => setTimeout(resolve, diff))

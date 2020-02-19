@@ -74,7 +74,11 @@
 
     <section v-if="$state.inspecting" class="inspect">
       <time>{{ formatDate($state.startTime) }}</time>
-      <button class="btn" @click="$state.replay(!$state.replaying)" :disabled="!$state.redoable">
+      <button
+        class="btn"
+        @click="$state.replay(!$state.replaying)"
+        :disabled="!$state.redoable && !$state.replaying"
+      >
         <svg height="24" viewBox="0 0 24 24" width="24" style="margin-right: 8px;">
           <path v-if="!$state.replaying" d="M8 5v14l11-7z" fill="currentColor" />
           <path v-else d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />

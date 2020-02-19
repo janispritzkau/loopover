@@ -75,6 +75,7 @@ h4 {
 
 .btn:disabled {
   opacity: 0.6;
+  cursor: default;
 }
 
 .btn-group {
