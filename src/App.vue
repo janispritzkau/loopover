@@ -272,6 +272,8 @@ export default class App extends Vue {
 
     this.$watch(() => this.$state.darkMode, dark => {
       document.body.classList.toggle("dark", dark)
+      const meta = document.head.querySelector<HTMLMetaElement>("meta[name=theme-color]")!
+      meta.content = getComputedStyle(document.body).getPropertyValue(`--background${dark ? "-darker" : ""}`)
     }, { immediate: true })
 
     const game = new Game(this.$refs.canvas, this.$state.cols, this.$state.rows)

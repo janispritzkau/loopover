@@ -3,7 +3,7 @@ module.exports = {
 
   pwa: {
     name: process.env.VUE_APP_NAME,
-    themeColor: "#47587a",
+    themeColor: "#ffffff",
     appleMobileWebAppCapable: true,
     manifestOptions: {
       background_color: "#ffffff"
