@@ -1,7 +1,7 @@
 <template>
   <footer>
     <p v-if="showShortcuts" class="shortcuts-link">
-      <a @click="shortcutsDialog = true">Keyboard shortcuts</a>
+      <a @click="shortcutsDialog = true">Show keyboard shortcuts</a>
     </p>
     <p>
       Created by
@@ -10,6 +10,8 @@
         rel="noopener"
         href="https://twitter.com/janispritzkau"
       >Janis Pritzkau</a>.
+    </p>
+    <p>
       Remake of carykh's
       <a
         target="_blank"
@@ -18,12 +20,8 @@
       >Loopover</a>.
     </p>
     <p>
-      <a target="_blank" rel="noopener" href="https://discord.gg/DXASrTp">discord.gg/DXASrTp</a> |
-      <a
-        target="_blank"
-        rel="noopener"
-        href="https://github.com/janispritzkau/loopover"
-      >Source code</a>
+      <a target="_blank" rel="noopener" href="https://discord.gg/DXASrTp">Discord</a> |
+      <a target="_blank" rel="noopener" href="https://github.com/janispritzkau/loopover">GitHub</a>
     </p>
     <div class="auth">
       <p v-if="$state.user">
@@ -77,22 +75,19 @@ export default class Footer extends Vue {
 <style scoped>
 footer {
   max-width: 480px;
-  margin: 0 auto;
-  padding: 16px;
+  margin: 32px auto;
+  padding: 0 16px;
   box-sizing: content-box;
 }
 
-p, .auth {
+p,
+.auth {
   text-align: center;
 }
 
 .auth {
-  margin: 32px auto 16px;
+  margin: 28px auto 16px;
   font-size: 14px;
-}
-
-.auth p {
-  margin: 12px 0;
 }
 
 .auth a {
@@ -103,7 +98,7 @@ p, .auth {
   height: 32px;
   border-radius: 50%;
   vertical-align: middle;
-  margin-right: 8px;
+  margin: -8px 8px -6px 0;
   user-select: none;
 }
 </style>
