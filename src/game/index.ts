@@ -2,8 +2,8 @@ export * from "./Board"
 export * from "./Game"
 
 export enum Axis {
-  Row = "row",
-  Col = "col"
+  Row,
+  Col
 }
 
 export interface Move {

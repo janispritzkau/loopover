@@ -100,10 +100,11 @@ export async function saveSolve(state: State, solve: Solve) {
     fetch(process.env.VUE_APP_API + "/sync", {
       method: "PUT",
       headers: {
+        "api-version": "1",
         "Content-Type": "application/json",
         "Authorization": `Bearer ${state.user.token}`
       },
-      body: JSON.stringify([{ ...serializedSolve, moves: solve.moves }])
+      body: JSON.stringify([serializedSolve])
     })
   }
 }
@@ -117,25 +118,25 @@ export async function syncSolves(state: State) {
   const response = await fetch(process.env.VUE_APP_API + "/sync", {
     method: "POST",
     headers: {
+      "api-version": "1",
       "Content-Type": "application/json",
       "Authorization": `Bearer ${token}`
     },
     body: JSON.stringify(await db.getAllKeys("solves"))
   })
+  if (!response.ok) return
 
   const { solves, missing } = await response.json()
   const solvesStore = db.transaction("solves", "readwrite").objectStore("solves")
 
-  for (const solve of solves) {
-    solvesStore.add({ ...solve, moves: serializeMoves(solve.moves) })
-  }
+  for (const solve of solves) solvesStore.add(solve)
 
   state.allSolves = (await solvesStore.index("event").getAll(state.eventName))
     .map(value => Object.freeze(deserializeSolve(value).solve)) || []
 
   if (missing.length > 0) {
-    const solves = await Promise.all(missing.map((id: any) => solvesStore.get(id)))
-    let syncChunks: any[][] = [[]]
+    const solves = await Promise.all((missing as any[]).map(id => solvesStore.get(id))) as SerializedSolve[]
+    let syncChunks: SerializedSolve[][] = [[]]
     let length = 0
 
     for (const solve of solves) {
@@ -149,14 +150,16 @@ export async function syncSolves(state: State) {
     }
 
     for (const chunk of syncChunks) {
-      await fetch(process.env.VUE_APP_API + "/sync", {
+      const response = await fetch(process.env.VUE_APP_API + "/sync", {
         method: "PUT",
         headers: {
+          "api-version": "1",
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify(chunk.map(solve => ({ ...solve, moves: deserializeMoves(solve.moves) })))
+        body: JSON.stringify(chunk)
       })
+      if (!response.ok) return
     }
   }
 }
