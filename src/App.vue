@@ -143,7 +143,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator"
+import { Component, Vue } from "vue-property-decorator"
 import { Game, Move, Board } from "./game"
 
 import Dialog from "./components/Dialog.vue"
@@ -200,7 +200,6 @@ export default class App extends Vue {
   get newRecord() {
     const record = this.$state.newRecord
     if (!record) return
-
     return record.averageOf == 1
       ? `New personal best (-${record.fmc
         ? record.difference + "\xa0moves"
@@ -231,10 +230,6 @@ export default class App extends Vue {
     }
   }
 
-  @Watch("$state.cols")
-  @Watch("$state.rows")
-  @Watch("$state.showUndoRedo")
-  @Watch("$state.forceMobile")
   updateSize() {
     const { game } = this.$state
     const { cols, rows } = this.$state.game
@@ -303,8 +298,11 @@ export default class App extends Vue {
       game.canvas.focus()
     })
 
+    this.$watch(() => [
+      this.$state.cols, this.$state.rows, this.$state.showUndoRedo, this.$state.forceMobile
+    ], this.updateSize, { immediate: true })
+
     window.addEventListener("resize", this.updateSize.bind(this))
-    this.updateSize()
   }
 }
 </script>
