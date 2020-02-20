@@ -48,8 +48,8 @@ export default Vue.extend({
     }
   },
   methods: {
-    close(event: Event) {
-      event.stopPropagation()
+    close(event?: Event) {
+      if (event) event.stopPropagation()
       this.$emit("update:open", false)
     }
   }
