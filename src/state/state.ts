@@ -111,12 +111,12 @@ export class State {
     }, {})
   }
 
-  start() {
+  start(time = performance.now()) {
     this.started = true
 
     this.time = 0
     this.memoTime = 0
-    this.startTime = performance.now()
+    this.startTime = time
 
     this.interval = setInterval(() => this.time = performance.now() - this.startTime, 87)
 
@@ -250,8 +250,10 @@ export class State {
   }
 
   handleMove(move: Move, isPlayerMove: boolean) {
+    const time = performance.now()
+
     // start game on first moves
-    if (isPlayerMove && this.scrambled && !this.started) this.start()
+    if (isPlayerMove && this.scrambled && !this.started) this.start(time)
     if (!this.started) return
 
     if (!isPlayerMove) {
@@ -259,7 +261,7 @@ export class State {
       return
     }
 
-    move.time = Math.floor(performance.now() - this.startTime)
+    move.time = Math.floor(time - this.startTime)
 
     if (this.undos > 0) {
       this.moveHistory.splice(this.moveHistory.length - this.undos, this.undos)
