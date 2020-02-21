@@ -22,7 +22,7 @@ export class Board {
 
   reset() {
     for (let i = this.cols * this.rows; i--;) {
-      this.grid[~~(i / this.cols)][i % this.cols] = i
+      this.grid[Math.floor(i / this.cols)][i % this.cols] = i
     }
   }
 
@@ -34,33 +34,32 @@ export class Board {
     }
   }
 
-  isSolved(): boolean {
-    for (let [r, row] of this.grid.entries()) {
-      for (let [c, tile] of row.entries()) {
-        if (tile != r * row.length + c) return false
-      }
+  isSolved() {
+    for (let i = this.cols * this.rows; i--;) {
+      if (this.grid[Math.floor(i / this.cols)][i % this.cols] != i) return false
     }
     return true
   }
 
   pos(index: number) {
-    for (let [r, row] of this.grid.entries()) {
-      for (let [c, i] of row.entries()) {
-        if (i == index) return { col: c, row: r }
+    for (let row = this.rows; row--;) {
+      for (let col = this.cols; col--;) {
+        if (this.grid[row][col] == index) return { row, col }
       }
     }
+    throw new Error("Index not found in board")
   }
 
   private moveRow(index: number, n: number) {
     const row = this.grid[index]
-    this.grid[index] = row.map((_, i) => row[(((i - n) % this.cols) + this.cols) % this.cols])
+    this.grid[index] = row.map((_, i) => row[((i - n) % this.cols + this.cols) % this.cols])
   }
 
   private moveColumn(index: number, n: number) {
     const col = [...Array(this.rows)].map((_, i) => this.grid[i][index])
 
     for (let i = 0; i < this.rows; i++) {
-      this.grid[i][index] = col[(((i - n) % this.rows) + this.rows) % this.rows]
+      this.grid[i][index] = col[((i - n) % this.rows + this.rows) % this.rows]
     }
   }
 }

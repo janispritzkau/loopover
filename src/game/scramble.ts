@@ -1,5 +1,4 @@
-import { Board } from "./Board"
-import { Axis } from "."
+import { Board, Axis } from "."
 
 export function scrambleBoard(board: Board, noRegripsTile?: number) {
   for (let tries = 0; tries < 20; tries++) {
@@ -9,7 +8,7 @@ export function scrambleBoard(board: Board, noRegripsTile?: number) {
         const n = 1 + Math.floor(Math.random() * (axis == Axis.Col ? board.rows - 1 : board.cols - 1))
 
         if (noRegripsTile != null) {
-          const { row, col } = board.pos(noRegripsTile)!
+          const { row, col } = board.pos(noRegripsTile)
           board.move({ axis, index: axis == Axis.Col ? col : row, n })
         } else {
           board.move({ axis, index: ~~(Math.random() * (axis == Axis.Col ? board.cols : board.rows)), n })

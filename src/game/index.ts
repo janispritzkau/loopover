@@ -1,5 +1,5 @@
-export * from "./Board"
-export * from "./Game"
+export * from "./board"
+export * from "./game"
 
 export enum Axis {
   Row,
