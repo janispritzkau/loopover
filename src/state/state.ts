@@ -284,27 +284,30 @@ export class State {
       if (this.event == EventType.Fmc) {
         this.scrambled = false
       } else {
-        this.handleSolved()
+        this.handleSolved(true)
       }
     }
   }
 
-  handleSolved() {
+  handleSolved(useLastMoveTime = false) {
     clearInterval(this.interval)
 
-    this.time = this.moveHistory[this.moveHistory.length - 1].time!
+    this.time = useLastMoveTime
+      ? this.moveHistory[this.moveHistory.length - 1].time!
+      : performance.now() - this.startTime
+
     this.started = false
     this.scrambled = false
     this.inSolvingPhase = false
 
     const solve: Solve = {
       startTime: Math.floor(Date.now() - this.time),
-      time: this.time,
+      time: Math.floor(this.time),
       moves: [...this.moveHistory],
       scramble: this.scrambledBoard!
     }
 
-    if (this.memoTime > 0) solve.memoTime = this.memoTime
+    if (this.memoTime > 0) solve.memoTime = Math.floor(this.memoTime)
     if (this.dnf) solve.dnf = true
 
     this.solves.push(Object.freeze(solve))
