@@ -5,6 +5,7 @@ function average(array: number[]) {
   const m = array.length > 2 ? Math.ceil(array.length / 20) : 0
   let sum = 0
   for (let i = m; i < array.length - m; i++) {
+    if (array[i] == -1) return -1
     sum += array[i]
   }
   return sum / (array.length - m * 2)
@@ -20,8 +21,8 @@ export interface AvgScores {
 }
 
 export async function calculateAverages(state: State) {
-  const times = state.allSolves.map(s => s.time)
-  const moves = state.allSolves.map(s => s.moves.length)
+  const times = state.allSolves.map(s => s.dnf ? -1 : s.time)
+  const moves = state.allSolves.map(s => s.dnf ? -1 : s.moves.length)
 
   const averages = new Map<number, AvgScores>()
 
@@ -29,10 +30,10 @@ export async function calculateAverages(state: State) {
     if (times.length < n) continue
 
     let bestTime = Infinity
-    let worstTime = -Infinity
+    let worstTime = -1
 
     let fewestMoves = Infinity
-    let mostMoves = -Infinity
+    let mostMoves = -1
 
     const length = times.length - n + 1
 
@@ -42,12 +43,15 @@ export async function calculateAverages(state: State) {
 
       const time = average(times.slice(i, i + n))
       if (time > worstTime) worstTime = time
-      if (time < bestTime) bestTime = time
+      if (time > 0 && time < bestTime) bestTime = time
 
       const avgMoves = average(moves.slice(i, i + n))
       if (avgMoves > mostMoves) mostMoves = avgMoves
-      if (avgMoves < fewestMoves) fewestMoves = avgMoves
+      if (avgMoves > 0 && avgMoves < fewestMoves) fewestMoves = avgMoves
     }
+
+    if (bestTime == Infinity) bestTime = -1
+    if (fewestMoves == Infinity) fewestMoves = -1
 
     averages.set(n, {
       worstTime, bestTime, currentTime: average(times.slice(-n)),

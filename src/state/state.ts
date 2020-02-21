@@ -324,10 +324,10 @@ export class State {
         const lastAverage = lastAverages[i]
         if (!average || !lastAverage) break
 
-        if (this.event == EventType.Fmc && average.fewestMoves < lastAverage.fewestMoves) {
+        if (this.event == EventType.Fmc && average.fewestMoves > -1 && average.fewestMoves < lastAverage.fewestMoves) {
           this.newRecord = { averageOf, difference: lastAverage.fewestMoves - average.fewestMoves, fmc: true }
           break
-        } else if (this.event != EventType.Fmc && average.bestTime < lastAverage.bestTime) {
+        } else if (this.event != EventType.Fmc && average.bestTime > -1 && average.bestTime < lastAverage.bestTime) {
           this.newRecord = { averageOf, difference: lastAverage.bestTime - average.bestTime, fmc: false }
           break
         }

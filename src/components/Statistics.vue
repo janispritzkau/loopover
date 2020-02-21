@@ -75,6 +75,7 @@ export default class Statistics extends Vue {
   }
 
   format(value?: number) {
+    if (value == -1) return "DNF"
     if (this.showMoves) {
       return value ? Math.round(value * 10) / 10 : "―"
     } else {
@@ -94,8 +95,9 @@ export default class Statistics extends Vue {
     this.showChart = labels.length > 1
     if (!this.$refs.chart || !this.showChart) return
 
-    let scores = this.$state.allSolves.map(solve => this.showMoves
-      ? solve.moves.length : solve.time / 1000)
+    let scores = this.$state.allSolves
+      .filter(s => !s.dnf)
+      .map(solve => this.showMoves ? solve.moves.length : solve.time / 1000)
 
     const start = labels[0]
     const end = labels[labels.length - 1]
