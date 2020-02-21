@@ -6,6 +6,7 @@ interface Transition {
   start: number
   startTime: number
   time: number
+  duration: number
 }
 
 interface Pointer {
@@ -99,10 +100,12 @@ export class Game {
   }
 
   animatedMove(move: Move, isPlayerMove = false) {
-    if (move.axis == Axis.Col) {
-      move.index = (move.index % this.cols + this.cols) % this.cols
-    } else {
-      move.index = (move.index % this.rows + this.rows) % this.rows
+    if (isPlayerMove) {
+      if (move.axis == Axis.Col) {
+        move.index = (move.index % this.cols + this.cols) % this.cols
+      } else {
+        move.index = (move.index % this.rows + this.rows) % this.rows
+      }
     }
 
     if (!this.move(move, isPlayerMove)) return
@@ -114,7 +117,8 @@ export class Game {
 
     this.transitions.set(move.index, {
       start: -move.n, value: -move.n,
-      startTime: performance.now(), time: 0
+      startTime: performance.now(), time: 0,
+      duration: this.transitionTime
     })
   }
 
@@ -186,8 +190,8 @@ export class Game {
   }
 
   private frame = (time: number) => {
-    for (let [index, transition] of this.transitions.entries()) {
-      transition.time = (time - transition.startTime) / this.transitionTime
+    for (const [index, transition] of this.transitions.entries()) {
+      transition.time = (time - transition.startTime) / transition.duration
       transition.value = transition.start - transition.start * transition.time * (2 - transition.time)
       if (transition.time >= 1) this.transitions.delete(index)
     }

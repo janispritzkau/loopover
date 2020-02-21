@@ -116,9 +116,9 @@ export class State {
 
     this.time = 0
     this.memoTime = 0
-    this.startTime = Date.now()
+    this.startTime = performance.now()
 
-    this.interval = setInterval(() => this.time = Date.now() - this.startTime, 87)
+    this.interval = setInterval(() => this.time = performance.now() - this.startTime, 87)
 
     if (process.env.VUE_APP_GA_ID) ga("send", "event", "game", "start", this.eventName)
   }
@@ -223,15 +223,15 @@ export class State {
     clearInterval(this.interval)
 
     const speed = this.replaySpeed
-    const startTime = Date.now() - this.moveHistory[this.moveHistory.length - this.undos].time! / speed
+    const startTime = performance.now() - this.moveHistory[this.moveHistory.length - this.undos].time! / speed
 
     this.replaying = true
-    this.interval = setInterval(() => this.time = (Date.now() - startTime) * speed, 87)
-    this.time = (Date.now() - startTime) * speed
+    this.interval = setInterval(() => this.time = (performance.now() - startTime) * speed, 87)
+    this.time = (performance.now() - startTime) * speed
 
     while (this.undos != 0) {
       const move = this.moveHistory[this.moveHistory.length - this.undos]
-      const diff = move.time! / speed - Date.now() + startTime
+      const diff = move.time! / speed - performance.now() + startTime
       if (diff > 0) await new Promise(resolve => setTimeout(resolve, diff))
       if (!this.replaying) break
       this.game.transitionTime = this.transitionTime / speed
@@ -259,14 +259,15 @@ export class State {
       return
     }
 
+    move.time = performance.now() - this.startTime
+
     if (this.undos > 0) {
       this.moveHistory.splice(this.moveHistory.length - this.undos, this.undos)
       this.undos = 0
     }
 
-    const time = Date.now() - this.startTime
     for (let i = Math.abs(move.n); i--;) {
-      this.moveHistory.push({ ...move, n: Math.sign(move.n), time })
+      this.moveHistory.push(Object.freeze({ ...move, n: Math.sign(move.n) }))
     }
 
     this.scrambled = true
@@ -275,7 +276,7 @@ export class State {
       if (!this.inSolvingPhase) {
         this.inSolvingPhase = true
         this.game.blind = true
-        this.memoTime = Date.now() - this.startTime
+        this.memoTime = performance.now() - this.startTime
       }
     } else if (this.game.board.isSolved()) {
       if (this.event == EventType.Fmc) {
@@ -295,7 +296,7 @@ export class State {
     this.inSolvingPhase = false
 
     const solve: Solve = {
-      startTime: this.startTime,
+      startTime: Math.floor(Date.now() - this.time),
       time: this.time,
       moves: [...this.moveHistory],
       scramble: this.scrambledBoard!
