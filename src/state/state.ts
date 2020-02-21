@@ -259,7 +259,7 @@ export class State {
       return
     }
 
-    move.time = performance.now() - this.startTime
+    move.time = Math.floor(performance.now() - this.startTime)
 
     if (this.undos > 0) {
       this.moveHistory.splice(this.moveHistory.length - this.undos, this.undos)

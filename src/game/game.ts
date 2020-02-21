@@ -189,7 +189,9 @@ export class Game {
     }
   }
 
-  private frame = (time: number) => {
+  private frame = () => {
+    const time = performance.now()
+
     for (const [index, transition] of this.transitions.entries()) {
       transition.time = (time - transition.startTime) / transition.duration
       transition.value = transition.start - transition.start * transition.time * (2 - transition.time)
