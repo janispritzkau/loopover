@@ -16,12 +16,29 @@ new Vue({
 }).$mount("#app")
 
 if (process.env.NODE_ENV === "production") {
+  let userHasInteracted = false
+
+  addEventListener("click", () => {
+    userHasInteracted = true
+  })
+
+  addEventListener("touchstart", event => {
+    if (event.target == state.game.canvas) {
+      userHasInteracted = true
+    }
+  }, { passive: true })
+
   register(`${process.env.BASE_URL}service-worker.js`, {
-    updated(registration) {
-      (window.app as any).refresh = () => {
+    registered(registration: ServiceWorkerRegistration) {
+      registration.update()
+    },
+    updated(registration: ServiceWorkerRegistration) {
+      registration.waiting!.postMessage({ type: "SKIP_WAITING" })
+      if (userHasInteracted) {
+        (window.app as any).refresh = () => location.reload()
+      } else {
         location.reload()
       }
-      registration.waiting.postMessage({ type: "SKIP_WAITING" })
     }
   })
 }
