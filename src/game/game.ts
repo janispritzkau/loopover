@@ -18,9 +18,9 @@ interface Pointer {
 
 export class Game {
   board!: Board
-  width = 0
-  height = 0
-  tileSize = 0
+  width!: number
+  height!: number
+  tileSize!: number
 
   private ctx: CanvasRenderingContext2D
 
@@ -55,7 +55,7 @@ export class Game {
     if (!rows) rows = cols
     this.board = new Board(cols, rows)
     this.rows = rows, this.cols = cols
-    this.setWidth(this.width / devicePixelRatio)
+    if (this.width != null) this.setWidth(this.width / devicePixelRatio)
   }
 
   setWidth(width: number) {

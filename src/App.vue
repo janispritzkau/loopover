@@ -300,9 +300,14 @@ export default class App extends Vue {
       game.canvas.focus()
     })
 
+    this.$refs.canvas.style.transition = "null"
+
     this.$watch(() => [
       this.$state.cols, this.$state.rows, this.$state.showUndoRedo, this.$state.forceMobile
     ], this.updateSize, { immediate: true })
+
+    document.body.clientWidth
+    this.$refs.canvas.style.transition = ""
 
     window.addEventListener("resize", this.updateSize.bind(this))
   }
