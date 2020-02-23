@@ -2,9 +2,9 @@
 
 ## Project structure
 
-### `src/state.ts`
+### `src/state/`
 
-This file contains most of the higher-level game logic like the timer, various events and a lot of other things.
+Contains most of the higher-level game logic, such as the timer, various events, and many other things.
 
 ### `src/App.vue`
 
