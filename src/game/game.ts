@@ -286,7 +286,9 @@ export class Game {
     let rect: ClientRect
 
     this.canvas.addEventListener("mousedown", event => {
+      if (event.button != 0) return
       event.preventDefault()
+
       rect = this.canvas.getBoundingClientRect()
       this.canvas.focus()
 
