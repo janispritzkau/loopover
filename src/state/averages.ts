@@ -1,7 +1,7 @@
 import { State } from "./state"
 
-function average(array: number[]) {
-  array.sort((a, b) => a - b)
+function average(array: Uint32Array) {
+  array.sort()
   const m = array.length > 2 ? Math.ceil(array.length / 20) : 0
   let sum = 0
   for (let i = m; i < array.length - m; i++) {
@@ -20,9 +20,9 @@ export interface AvgScores {
   currentMoves: number
 }
 
-export async function calculateAverages(state: State) {
-  const times = state.allSolves.map(s => s.dnf ? -1 : s.time)
-  const moves = state.allSolves.map(s => s.dnf ? -1 : s.moves.length)
+export function calculateAverages(state: State) {
+  const times = new Uint32Array(state.allSolves.map(s => s.dnf ? -1 : s.time))
+  const moves = new Uint32Array(state.allSolves.map(s => s.dnf ? -1 : s.moves.length))
 
   const averages = new Map<number, AvgScores>()
 
@@ -35,12 +35,7 @@ export async function calculateAverages(state: State) {
     let fewestMoves = Infinity
     let mostMoves = -1
 
-    const length = times.length - n + 1
-
-    for (let i = 0; i < length; i++) {
-      // avoid blocking main thread
-      if (i % 128 == 0) await new Promise(resolve => setTimeout(resolve, 1))
-
+    for (let i = 0; i < times.length - n + 1; i++) {
       const time = average(times.slice(i, i + n))
       if (time > worstTime) worstTime = time
       if (time > 0 && time < bestTime) bestTime = time

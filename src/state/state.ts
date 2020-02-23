@@ -316,7 +316,7 @@ export class State {
 
     this.newRecord = null
 
-    this.updateAverages().then(() => {
+    setTimeout(() => this.updateAverages().then(() => {
       for (const [i, averageOf] of averageOfNumbers.entries()) {
         const average = this.averages.get(averageOf)
         const lastAverage = lastAverages[i]
@@ -330,7 +330,7 @@ export class State {
           break
         }
       }
-    })
+    }), 50)
 
     if (process.env.VUE_APP_GA_ID) track("event", "game", "solved", this.eventName)
 
