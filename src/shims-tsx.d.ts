@@ -16,7 +16,7 @@ declare global {
     state: State
   }
 
-  function ga(...args: any[]): void
+  function track(type: string, category?: string, action?: string, label?: string): void
 }
 
 declare module "vue/types/vue" {
