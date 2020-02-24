@@ -118,6 +118,7 @@ export class State {
     this.memoTime = 0
     this.startTime = time
 
+    clearInterval(this.interval)
     this.interval = setInterval(() => this.time = performance.now() - this.startTime, 87)
 
     if (process.env.VUE_APP_GA_ID) track("event", "game", "start", this.eventName)
@@ -218,12 +219,12 @@ export class State {
     if (!replay) this.replaying = false
     if (!this.redoable || this.replaying || !replay) return
 
-    clearInterval(this.interval)
-
     const speed = this.replaySpeed
     const startTime = performance.now() - this.moveHistory[this.moveHistory.length - this.undos].time! / speed
 
     this.replaying = true
+
+    clearInterval(this.interval)
     this.interval = setInterval(() => this.time = (performance.now() - startTime) * speed, 87)
     this.time = (performance.now() - startTime) * speed
 
@@ -250,16 +251,11 @@ export class State {
   handleMove(move: Move, isPlayerMove: boolean) {
     const time = performance.now()
 
-    // start game on first moves
-    if (isPlayerMove && this.scrambled && !this.started) this.start(time)
+    if (!this.started && this.scrambled && isPlayerMove) this.start(time)
     if (!this.started) return
 
-    if (!isPlayerMove) {
-      this.scrambled = !this.game.board.isSolved()
-      return
-    }
-
-    move.time = Math.floor(time - this.startTime)
+    this.scrambled = !this.game.board.isSolved()
+    if (!isPlayerMove) return
 
     if (this.undos > 0) {
       this.moveHistory.splice(this.moveHistory.length - this.undos, this.undos)
@@ -267,10 +263,8 @@ export class State {
     }
 
     for (let i = Math.abs(move.n); i--;) {
-      this.moveHistory.push(Object.freeze({ ...move, n: Math.sign(move.n) }))
+      this.moveHistory.push(Object.freeze({ ...move, n: Math.sign(move.n), time: Math.floor(time - this.startTime) }))
     }
-
-    this.scrambled = true
 
     if (this.event == EventType.Blind) {
       if (!this.inSolvingPhase) {
@@ -278,12 +272,8 @@ export class State {
         this.game.blind = true
         this.memoTime = performance.now() - this.startTime
       }
-    } else if (this.game.board.isSolved()) {
-      if (this.event == EventType.Fmc) {
-        this.scrambled = false
-      } else {
-        this.handleSolved(true)
-      }
+    } else if (this.event != EventType.Fmc && !this.scrambled) {
+      this.handleSolved(true)
     }
   }
 

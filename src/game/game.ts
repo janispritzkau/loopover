@@ -100,14 +100,6 @@ export class Game {
   }
 
   animatedMove(move: Move, isPlayerMove = false) {
-    if (isPlayerMove) {
-      if (move.axis == Axis.Col) {
-        move.index = (move.index % this.cols + this.cols) % this.cols
-      } else {
-        move.index = (move.index % this.rows + this.rows) % this.rows
-      }
-    }
-
     if (!this.move(move, isPlayerMove)) return
 
     if (move.axis != this.moveAxis) {
@@ -226,10 +218,14 @@ export class Game {
     const moveX = row - pointer.row
     const moveY = col - pointer.col
 
-    if (moveX) this.animatedMove({ axis: Axis.Col, index: (pointer.col % this.cols + this.cols) % this.cols, n: moveX }, true)
+    for (let i = Math.abs(moveX); i--;) {
+      this.animatedMove({ axis: Axis.Col, index: (pointer.col % this.cols + this.cols) % this.cols, n: Math.sign(moveX) }, true)
+    }
     pointer.row = row
 
-    if (moveY) this.animatedMove({ axis: Axis.Row, index: (pointer.row % this.rows + this.rows) % this.rows, n: moveY }, true)
+    for (let i = Math.abs(moveY); i--;) {
+      this.animatedMove({ axis: Axis.Row, index: (pointer.row % this.rows + this.rows) % this.rows, n: Math.sign(moveY) }, true)
+    }
     pointer.col = col
   }
 
