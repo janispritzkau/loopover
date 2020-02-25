@@ -44,7 +44,9 @@ export class Game {
 
   constructor(public canvas: HTMLCanvasElement, public cols: number, public rows: number) {
     this.canvas.tabIndex = 0
-    this.ctx = canvas.getContext("2d")!
+    this.ctx = canvas.getContext("2d", {
+      desynchronized: true
+    })!
     this.addEventListeners()
     this.setBoardSize(cols, rows)
 
@@ -194,21 +196,28 @@ export class Game {
     requestAnimationFrame(this.frame)
   }
 
-  private onTouchStart = (identifier: number, pointer: Pointer) => {
+  private onTouchStart = (identifier: number, x: number, y: number) => {
     if (this.locked) return
 
+    const pointer: Pointer = {
+      x, y,
+      col: Math.floor(x * devicePixelRatio / this.width * this.cols),
+      row: Math.floor(y * devicePixelRatio / this.height * this.rows)
+    }
+
     this.pointers.set(identifier, pointer)
-    pointer.col = Math.floor(pointer.x * devicePixelRatio / this.width * this.cols)
-    pointer.row = Math.floor(pointer.y * devicePixelRatio / this.height * this.rows)
 
     if (!this.noRegrips || this.board.isSolved()) {
       this.activeTile = this.board.grid[pointer.row][pointer.col]
     }
   }
 
-  private onTouchMove = (pointer: Pointer) => {
-    let col = Math.floor(pointer.x * devicePixelRatio / this.width * this.cols)
-    let row = Math.floor(pointer.y * devicePixelRatio / this.height * this.rows)
+  private onTouchMove = (identifier: number, x: number, y: number) => {
+    const pointer = this.pointers.get(identifier)
+    if (!pointer) return
+
+    let col = Math.floor(x * devicePixelRatio / this.width * this.cols)
+    let row = Math.floor(y * devicePixelRatio / this.height * this.rows)
 
     if (!this.wrapAround) {
       col = Math.min(Math.max(col, 0), this.cols - 1)
@@ -227,6 +236,11 @@ export class Game {
       this.animatedMove({ axis: Axis.Row, index: (pointer.row % this.rows + this.rows) % this.rows, n: Math.sign(moveY) }, true)
     }
     pointer.col = col
+
+    pointer.x = x
+    pointer.y = y
+
+    this.highlightActive = false
   }
 
   private multiplierString = ""
@@ -288,19 +302,13 @@ export class Game {
       rect = this.canvas.getBoundingClientRect()
       this.canvas.focus()
 
-      this.onTouchStart(-1, {
-        x: event.clientX - rect.left, y: event.clientY - rect.top,
-        col: 0, row: 0
-      })
+      this.onTouchStart(-1, event.clientX - rect.left, event.clientY - rect.top)
     })
 
     addEventListener("mousemove", event => {
-      const pointer = this.pointers.get(-1)
-      if (!pointer) return
-
-      pointer.x = event.clientX - rect.left, pointer.y = event.clientY - rect.top
-      this.onTouchMove(pointer)
-      this.highlightActive = false
+      if (this.pointers.has(-1)) {
+        this.onTouchMove(-1, event.clientX - rect.left, event.clientY - rect.top)
+      }
     })
 
     addEventListener("mouseup", () => {
@@ -312,23 +320,17 @@ export class Game {
       rect = this.canvas.getBoundingClientRect()
 
       for (let touch of event.changedTouches) {
-        this.onTouchStart(touch.identifier, {
-          x: touch.clientX - rect.left, y: touch.clientY - rect.top,
-          col: 0, row: 0
-        })
+        this.onTouchStart(touch.identifier, touch.clientX - rect.left, touch.clientY - rect.top)
       }
     }, { passive: false })
 
-    addEventListener("touchmove", event => {
+    this.canvas.addEventListener("touchmove", event => {
       for (let touch of event.changedTouches) {
-        const pointer = this.pointers.get(touch.identifier)
-        if (!pointer) continue
-        pointer.x = touch.clientX - rect.left, pointer.y = touch.clientY - rect.top
-        this.onTouchMove(pointer)
+        this.onTouchMove(touch.identifier, touch.clientX - rect.left, touch.clientY - rect.top)
       }
-    })
+    }, { passive: false })
 
-    addEventListener("touchend", event => {
+    this.canvas.addEventListener("touchend", event => {
       for (let touch of event.changedTouches) {
         this.pointers.delete(touch.identifier)
       }
