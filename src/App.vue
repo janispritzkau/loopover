@@ -6,14 +6,7 @@
 
         <main ref="main">
           <div v-if="!desktopMode" class="top">
-            <Solve
-              class="solve"
-              current
-              :time="$state.displayTime"
-              :moves="$state.moves"
-              :fmc="fmc"
-              :dnf="$state.dnf"
-            />
+          <Solve class="solve" />
             <button class="btn" @click="handleMainButtonClick">{{ mainButtonText }}</button>
             <template v-if="$state.showUndoRedo">
               <div style="margin-left: 8px;" />
@@ -58,14 +51,7 @@
             <p v-if="newRecord" class="new-record">{{ newRecord }}</p>
           </transition>
 
-          <Solve
-            class="current-solve"
-            current
-            :time="$state.displayTime"
-            :moves="$state.moves"
-            :fmc="fmc"
-            :dnf="$state.dnf"
-          />
+          <Solve class="current-solve" />
 
           <SolveList :solves="$state.solves" :limit="sidebarLimit" :fmc="fmc" />
         </aside>
@@ -155,11 +141,10 @@ import SolveList from "./components/SolveList.vue"
 import Statistics from "./components/Statistics.vue"
 import Solutions from "./components/Solutions.vue"
 import Footer from "./components/Footer.vue"
-import { EventType } from "./state"
+import { state, EventType } from "./state"
 
 @Component({
   components: {
-    Solve: SolveView,
     SolveList,
     RepeatButton,
     Statistics,
@@ -167,7 +152,18 @@ import { EventType } from "./state"
     Footer,
     Dialog,
     EventDialog,
-    SettingsDialog
+    SettingsDialog,
+    Solve: Vue.extend({
+      render: h => h(SolveView, {
+        props: {
+          current: true,
+          time: state.displayTime,
+          moves: state.moves,
+          fmc: state.event == EventType.Fmc,
+          dnf: state.dnf
+        }
+      })
+    })
   }
 })
 export default class App extends Vue {
