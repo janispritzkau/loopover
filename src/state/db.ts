@@ -34,7 +34,6 @@ export interface Settings {
   forceMobile?: boolean
   useLetters?: boolean
   darkText?: boolean
-  wrapAround?: boolean
   transitionTime: number
   hideInspectHint?: boolean
 }
@@ -66,7 +65,6 @@ export function saveSettings(state: State) {
   if (!state.useLetters) settings.useLetters = false
   if (state.forceMobile) settings.forceMobile = true
   if (state.darkMode) settings.darkMode = true
-  if (!state.wrapAround) settings.wrapAround = false
   if (state.hideInspectHint) settings.hideInspectHint = true
 
   return settings

@@ -48,12 +48,11 @@ function handleEventChange() {
 function handleGameSettingsChange() {
   state.game.darkText = state.darkText
   state.game.useLetters = state.useLetters
-  state.game.wrapAround = state.wrapAround
   state.game.transitionTime = state.transitionTime
 }
 
 vue.$watch(() => [state.cols, state.rows, state.event, state.noRegrips], handleEventChange)
-vue.$watch(() => [state.darkText, state.useLetters, state.wrapAround, state.transitionTime], handleGameSettingsChange)
+vue.$watch(() => [state.darkText, state.useLetters, state.transitionTime], handleGameSettingsChange)
 
 vue.$nextTick(() => {
   handleEventChange()

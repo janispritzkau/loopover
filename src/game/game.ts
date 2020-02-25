@@ -30,7 +30,6 @@ export class Game {
   blind = false
   locked = false
   useLetters = true
-  wrapAround = false
 
   transitionTime = 150
   pointers: Map<number, Pointer> = new Map()
@@ -219,21 +218,16 @@ export class Game {
     let col = Math.floor(x * devicePixelRatio / this.width * this.cols)
     let row = Math.floor(y * devicePixelRatio / this.height * this.rows)
 
-    if (!this.wrapAround) {
-      col = Math.min(Math.max(col, 0), this.cols - 1)
-      row = Math.min(Math.max(row, 0), this.rows - 1)
-    }
-
     const moveX = row - pointer.row
     const moveY = col - pointer.col
 
     for (let i = Math.abs(moveX); i--;) {
-      this.animatedMove({ axis: Axis.Col, index: (pointer.col % this.cols + this.cols) % this.cols, n: Math.sign(moveX) }, true)
+      this.animatedMove({ axis: Axis.Col, index: Math.min(Math.max(pointer.col, 0), this.cols - 1), n: Math.sign(moveX) }, true)
     }
     pointer.row = row
 
     for (let i = Math.abs(moveY); i--;) {
-      this.animatedMove({ axis: Axis.Row, index: (pointer.row % this.rows + this.rows) % this.rows, n: Math.sign(moveY) }, true)
+      this.animatedMove({ axis: Axis.Row, index: Math.min(Math.max(pointer.row, 0), this.rows - 1), n: Math.sign(moveY) }, true)
     }
     pointer.col = col
 

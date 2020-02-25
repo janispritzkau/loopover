@@ -21,7 +21,6 @@ export class State {
   forceMobile = false
   useLetters = true
   darkText = false
-  wrapAround = true
   transitionTime = 150
   hideInspectHint = false
 
