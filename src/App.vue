@@ -87,6 +87,7 @@
         :skip="Math.min(sidebarLimit, $state.solves.length)"
         :limit="Math.min(Math.max($state.solves.length - sidebarLimit, 0), 10)"
         :fmc="fmc"
+        inspectHint
       />
     </section>
 
