@@ -1,6 +1,6 @@
 import { State } from "./state"
 
-function average(array: Uint32Array) {
+function average(array: Int32Array) {
   array.sort()
   const m = array.length > 2 ? Math.ceil(array.length / 20) : 0
   let sum = 0
@@ -21,8 +21,8 @@ export interface AvgScores {
 }
 
 export function calculateAverages(state: State) {
-  const times = new Uint32Array(state.allSolves.map(s => s.dnf ? -1 : s.time))
-  const moves = new Uint32Array(state.allSolves.map(s => s.dnf ? -1 : s.moves.length))
+  const times = new Int32Array(state.allSolves.map(s => s.dnf ? -1 : s.time))
+  const moves = new Int32Array(state.allSolves.map(s => s.dnf ? -1 : s.moves.length))
 
   const averages = new Map<number, AvgScores>()
 
