@@ -118,7 +118,7 @@ export class State {
     this.startTime = time
 
     clearInterval(this.interval)
-    this.interval = setInterval(() => this.time = performance.now() - this.startTime, 87)
+    this.interval = setInterval(() => this.time = performance.now() - this.startTime, 67)
 
     if (process.env.VUE_APP_GA_ID) track("event", "game", "start", this.eventName)
   }
