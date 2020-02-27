@@ -19,7 +19,7 @@
     </noscript>
     <div id="app"></div>
     <% if (VUE_APP_GA_ID) { %>
-      <script>((e,t,o)=>{let i=t.hostname.split("."),n=(e.cookie.match(/(^|; ?)_ga=GA1\.\d\.(\d+\.\d+)(;|$)/)||[])[2]||~~(2e9*Math.random())+"."+~~(Date.now()/1e3);for(let t,o=i.length;o--&&(t="_ga=GA1."+(i.length-o)+"."+n,e.cookie=t+";max-age=63115200;domain="+i.slice(o).join("."),-1==e.cookie.split(/; ?/).indexOf(t)););window.track=((a,i,c,l,d)=>{let r={v:1,tid:"<%= VUE_APP_GA_ID %>",aip:1,cid:n,t:a,dr:e.referrer,dt:e.title,dl:t.href,ul:o.language.toLowerCase(),sr:screen.width+"x"+screen.width,vp:innerWidth+"x"+innerHeight};i&&(r.ec=i),c&&(r.ea=c),l&&(r.el=l),d&&(r.ev=d),o.sendBeacon("https://www.google-analytics.com/collect",new URLSearchParams(r))}),track("pageview")})(document,location,navigator)</script>
+      <script>((e,t,o)=>{let i=t.hostname.split("."),n=(e.cookie.match(/(^|; ?)_ga=GA1\.\d\.(\d+\.\d+)(;|$)/)||[])[2]||~~(2e9*Math.random())+"."+~~(Date.now()/1e3);for(let t,o=i.length;o--&&(t="_ga=GA1."+(i.length-o)+"."+n,e.cookie=t+";max-age=63115200;domain="+i.slice(o).join("."),-1==e.cookie.split(/; ?/).indexOf(t)););track=((a,i,c,l,d)=>{let r={v:1,tid:"<%= VUE_APP_GA_ID %>",aip:1,cid:n,t:a,dr:e.referrer,dt:e.title,dl:t.href,ul:o.language.toLowerCase(),sr:screen.width+"x"+screen.height,vp:innerWidth+"x"+innerHeight};i&&(r.ec=i),c&&(r.ea=c),l&&(r.el=l),d&&(r.ev=d),o.sendBeacon("https://www.google-analytics.com/collect",new URLSearchParams(r))}),track("pageview")})(document,location,navigator)</script>
     <% } %>
   </body>
 </html>
