@@ -1,6 +1,5 @@
 import Vue, { VNode } from "vue"
 import { State } from "./state"
-import App from "./App.vue"
 
 declare global {
   namespace JSX {
@@ -12,7 +11,6 @@ declare global {
   }
 
   interface Window {
-    app: App
     state: State
   }
 

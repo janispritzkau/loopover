@@ -35,7 +35,7 @@ if (process.env.NODE_ENV === "production") {
     updated(registration: ServiceWorkerRegistration) {
       registration.waiting!.postMessage({ type: "SKIP_WAITING" })
       if (userHasInteracted) {
-        (window.app as any).refresh = () => location.reload()
+        state.reloadPage = () => location.reload()
       } else {
         location.reload()
       }

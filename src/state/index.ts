@@ -37,26 +37,15 @@ vue.$watch(() => saveSettings(state), settings => {
   localStorage.loopover = JSON.stringify(settings)
 }, { deep: true })
 
-function handleEventChange() {
+vue.$watch(() => [state.cols, state.rows, state.event, state.noRegrips], () => {
   state.cols = Math.floor(Math.min(Math.max(state.cols, 1), 50))
   state.rows = Math.floor(Math.min(Math.max(state.rows, 1), 50))
-
-  state.game.setBoardSize(state.cols, state.rows)
-  state.reset()
-}
-
-function handleGameSettingsChange() {
-  state.game.darkText = state.darkText
-  state.game.useLetters = state.useLetters
-  state.game.transitionTime = state.transitionTime
-}
-
-vue.$watch(() => [state.cols, state.rows, state.event, state.noRegrips], handleEventChange)
-vue.$watch(() => [state.darkText, state.useLetters, state.transitionTime], handleGameSettingsChange)
-
-vue.$nextTick(() => {
-  handleEventChange()
-  handleGameSettingsChange()
 })
+
+vue.$watch(() => state.darkMode, dark => {
+  const meta = document.head.querySelector<HTMLMetaElement>("meta[name=theme-color]")!
+  meta.content = getComputedStyle(document.body).getPropertyValue(`--background${dark ? "-darker" : ""}`)
+  document.body.classList.toggle("dark", dark)
+}, { immediate: true })
 
 export * from "./state"

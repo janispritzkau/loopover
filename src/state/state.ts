@@ -50,10 +50,10 @@ export class State {
 
   db?: LoopoverDB
   session = Date.now()
-
   game!: Game
 
   auth = auth.state
+  reloadPage: Function | null = null
 
   get user() {
     return auth.state.user
