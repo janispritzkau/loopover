@@ -14,6 +14,8 @@ interface Pointer {
   y: number
   col: number
   row: number
+  moveX: number
+  moveY: number
 }
 
 export class Game {
@@ -197,7 +199,7 @@ export class Game {
     if (this.locked) return
 
     const pointer: Pointer = {
-      x, y,
+      x, y, moveX: 0, moveY: 0,
       col: Math.floor(x * devicePixelRatio / this.width * this.cols),
       row: Math.floor(y * devicePixelRatio / this.height * this.rows)
     }
@@ -216,18 +218,32 @@ export class Game {
     let col = Math.floor(x * devicePixelRatio / this.width * this.cols)
     let row = Math.floor(y * devicePixelRatio / this.height * this.rows)
 
-    const moveX = row - pointer.row
-    const moveY = col - pointer.col
+    pointer.moveX += col - pointer.col
+    pointer.moveY += row - pointer.row
 
-    for (let i = Math.abs(moveX); i--;) {
-      this.animatedMove({ axis: Axis.Col, index: Math.min(Math.max(pointer.col, 0), this.cols - 1), n: Math.sign(moveX) }, true)
-    }
-    pointer.row = row
+    const rowIndex = (pointer.row % this.rows + this.rows) % this.rows
+    const pointersX = [...this.pointers.values()].filter(p => p.row == rowIndex)
+    const moveX = Math.trunc(pointersX.reduce((a, b) => a + b.moveX, 0) / pointersX.length)
 
-    for (let i = Math.abs(moveY); i--;) {
-      this.animatedMove({ axis: Axis.Row, index: Math.min(Math.max(pointer.row, 0), this.rows - 1), n: Math.sign(moveY) }, true)
+    if (moveX) {
+      for (let i = Math.abs(moveX); i--;) {
+        this.animatedMove({ axis: Axis.Row, index: rowIndex, n: Math.sign(moveX) }, true)
+      }
+      pointersX.forEach(p => (p.moveX = 0))
     }
     pointer.col = col
+
+    const colIndex = (pointer.col % this.cols + this.cols) % this.cols
+    const pointersY = [...this.pointers.values()].filter(p => p.col == colIndex)
+    const moveY = Math.trunc(pointersY.reduce((a, b) => a + b.moveY, 0) / pointersY.length)
+
+    if (moveY) {
+      for (let i = Math.abs(moveY); i--;) {
+        this.animatedMove({ axis: Axis.Col, index: colIndex, n: Math.sign(moveY) }, true)
+      }
+      pointersY.forEach(p => (p.moveY = 0))
+    }
+    pointer.row = row
 
     pointer.x = x
     pointer.y = y
