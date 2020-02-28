@@ -43,9 +43,7 @@ export class Game {
 
   constructor(public canvas: HTMLCanvasElement, public cols: number, public rows: number) {
     this.canvas.tabIndex = 0
-    this.ctx = canvas.getContext("2d", {
-      desynchronized: true
-    })!
+    this.ctx = canvas.getContext("2d")!
     this.addEventListeners()
     this.setBoardSize(cols, rows)
 

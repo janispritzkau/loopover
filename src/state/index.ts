@@ -42,10 +42,12 @@ vue.$watch(() => [state.cols, state.rows, state.event, state.noRegrips], () => {
   state.rows = Math.floor(Math.min(Math.max(state.rows, 1), 50))
 })
 
-vue.$watch(() => state.darkMode, dark => {
-  const meta = document.head.querySelector<HTMLMetaElement>("meta[name=theme-color]")!
-  meta.content = getComputedStyle(document.body).getPropertyValue(`--background${dark ? "-darker" : ""}`)
-  document.body.classList.toggle("dark", dark)
-}, { immediate: true })
+Vue.nextTick(() => {
+  vue.$watch(() => state.darkMode, dark => {
+    document.body.classList.toggle("dark", dark)
+    const meta = document.head.querySelector<HTMLMetaElement>("meta[name=theme-color]")!
+    meta.content = getComputedStyle(document.body).getPropertyValue(`--background${dark ? "-darker" : ""}`)
+  }, { immediate: true })
+})
 
 export * from "./state"
