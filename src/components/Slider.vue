@@ -60,7 +60,7 @@ export default class Slider extends Vue {
 
     this.active = true
     this.$el.focus()
-    const clientX = event.type == "touchmove" ? (event as TouchEvent).touches[0].clientX : (event as MouseEvent).clientX
+    const clientX = event.type == "touchstart" ? (event as TouchEvent).touches[0].clientX : (event as MouseEvent).clientX
     this.setValue((clientX - this.$el.offsetLeft) / this.$el.offsetWidth * (this.max - this.min) + this.min)
 
     addEventListener("mousemove", this.handleTouchMove)
