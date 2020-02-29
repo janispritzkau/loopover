@@ -38,11 +38,11 @@ export function calculateAverages(state: State) {
     for (let i = 0; i < times.length - n + 1; i++) {
       const time = average(times.slice(i, i + n))
       if (time > worstTime) worstTime = time
-      if (time > 0 && time < bestTime) bestTime = time
+      if (time != -1 && time < bestTime) bestTime = time
 
       const avgMoves = average(moves.slice(i, i + n))
       if (avgMoves > mostMoves) mostMoves = avgMoves
-      if (avgMoves > 0 && avgMoves < fewestMoves) fewestMoves = avgMoves
+      if (avgMoves != -1 && avgMoves < fewestMoves) fewestMoves = avgMoves
     }
 
     if (bestTime == Infinity) bestTime = -1
