@@ -20,6 +20,7 @@ export class State {
   darkMode = false
   forceMobile = false
   useLetters = true
+  animations = true
   darkText = false
   transitionTime = 150
   hideInspectHint = false

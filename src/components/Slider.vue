@@ -12,13 +12,14 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop } from "vue-property-decorator"
+import { Vue, Component, Prop, Watch } from "vue-property-decorator"
 
 @Component<Slider>({
   watch: {
     value_() {
       this.$emit("input", this.value_)
     },
+
     value() {
       this.setValue(this.value)
     }
@@ -33,6 +34,7 @@ export default class Slider extends Vue {
   @Prop({ type: Number, default: 0 }) min!: number
   @Prop({ type: Number, default: 1 }) max!: number
   @Prop({ type: Number, default: 0.1 }) step!: number
+  @Prop({ type: Boolean, default: true}) enabled!: boolean
 
   private value_ = this.value
 

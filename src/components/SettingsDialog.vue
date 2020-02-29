@@ -16,11 +16,15 @@
       <input v-model="$state.darkText" type="checkbox" />
       <span>Dark text</span>
     </label>
+    <label class="checkbox">
+      <input v-model="$state.animations" type="checkbox" />
+      <span>Animations</span>
+    </label>
 
-    <label class="label">Transition speed</label>
+    <label class="label" v-if="$state.animations">Transition speed</label>
     <div class="slider-container">
-      <Slider class="slider" :min="100" :max="200" :step="10" v-model="$state.transitionTime" />
-      <span>{{ $state.transitionTime }} ms</span>
+      <Slider class="slider" :min="100" :max="200" :step="10" :enabled="$state.animations" v-model="$state.transitionTime" v-show="$state.animations"/>
+      <span v-if="$state.animations">{{ $state.transitionTime }} ms</span>
     </div>
 
     <a @click="clearData('event')">Delete solves for current event</a>
