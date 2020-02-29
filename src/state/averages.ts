@@ -2,7 +2,7 @@ import { State } from "./state"
 
 function average(array: Int32Array) {
   array.sort()
-  const m = array.length > 2 ? Math.ceil(array.length / 20) : 0
+  const m = array.length > 3 ? Math.ceil(array.length / 20) : 0
   let sum = 0
   for (let i = m; i < array.length - m; i++) {
     if (array[i] == -1) return -1
