@@ -16,12 +16,18 @@
       <input v-model="$state.darkText" type="checkbox" />
       <span>Dark text</span>
     </label>
+    <label class="checkbox">
+      <input v-model="$state.animations" type="checkbox" />
+      <span>Enable animations</span>
+    </label>
 
-    <label class="label">Transition speed</label>
-    <div class="slider-container">
-      <Slider class="slider" :min="100" :max="200" :step="10" v-model="$state.transitionTime" />
+    <label class="label" v-if="$state.animations">Transition speed</label>
+    <div class="slider-container" v-show="$state.animations">
+      <Slider class="slider" :min="100" :max="200" :step="10" v-model="$state.transitionTime"/>
       <span>{{ $state.transitionTime }} ms</span>
     </div>
+
+    <div class="spacer" />
 
     <a @click="clearData('event')">Delete solves for current event</a>
     <a @click="clearData('all')">Clear all data</a>
@@ -162,6 +168,11 @@ export default class SettingsDialog extends Vue {
   font-size: 14px;
   margin: 0 0 0 16px;
   opacity: 0.6;
+}
+
+.spacer {
+  margin-bottom: 15px;
+  height: 1px;
 }
 
 a {

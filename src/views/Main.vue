@@ -258,10 +258,10 @@ export default class App extends Vue {
       state.reset()
     }, { immediate: true })
 
-    this.$watch(() => [state.darkText, state.useLetters, state.transitionTime], () => {
+    this.$watch(() => [state.darkText, state.useLetters, state.transitionTime, state.animations], () => {
       state.game.darkText = state.darkText
       state.game.useLetters = state.useLetters
-      state.game.transitionTime = state.transitionTime
+      state.game.transitionTime = state.animations ? state.transitionTime : 0
     }, { immediate: true })
 
     this.$refs.canvas.addEventListener("keydown", event => {
