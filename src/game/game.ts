@@ -40,6 +40,7 @@ export class Game {
   private moveAxis: Axis = Axis.Row
   private spaceDown = false
   private highlightActive = false
+  private repaint = true
 
   onMove?: (move: Move, isPlayerMove: boolean) => void
 
@@ -81,6 +82,18 @@ export class Game {
 
     this.ctx.textBaseline = "middle"
     this.ctx.textAlign = "center"
+
+    this.repaint = true
+  }
+
+  setBlind(blind: boolean) {
+    this.blind = blind
+    this.repaint = true
+  }
+
+  setBoard(board: Board) {
+    this.board = board
+    this.repaint = true
   }
 
   move(move: Move, isPlayerMove = false) {
@@ -92,6 +105,7 @@ export class Game {
     }
 
     this.board.move(move)
+    this.repaint = true
 
     if (this.onMove) {
       this.onMove(move, isPlayerMove)
@@ -117,6 +131,7 @@ export class Game {
 
   scramble() {
     scrambleBoard(this.board, this.noRegrips ? this.activeTile : undefined)
+    this.repaint = true
   }
 
   private render(time: number) {
@@ -185,13 +200,19 @@ export class Game {
   private frame = () => {
     const time = performance.now()
 
+    if (this.transitions.size != 0) this.repaint = true
+
     for (const [index, transition] of this.transitions.entries()) {
       transition.time = (time - transition.startTime) / transition.duration
       transition.value = transition.start - transition.start * transition.time * (2 - transition.time)
       if (transition.time >= 1) this.transitions.delete(index)
     }
 
-    this.render(time)
+    if (this.repaint || this.noRegrips) {
+      this.render(time)
+      this.repaint = false
+    }
+
     requestAnimationFrame(this.frame)
   }
 

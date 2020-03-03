@@ -65,7 +65,7 @@ export default class Solutions extends Vue {
 
     this.$state.undos = solution.undos
     this.$state.moveHistory = [...solution.moves]
-    this.$state.game.board = this.$state.scrambledBoard.clone()
+    this.$state.game.setBoard(this.$state.scrambledBoard.clone())
 
     for (const move of solution.moves.slice(0, -solution.undos || undefined)) {
       this.$state.game.move(move)

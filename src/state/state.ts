@@ -161,7 +161,7 @@ export class State {
     if (onlyResetState) return
 
     this.game.setBoardSize(this.cols, this.rows)
-    this.game.blind = false
+    this.game.setBlind(false)
 
     if (this.game.noRegrips = this.noRegrips) {
       this.game.activeTile = this.game.board.grid[Math.floor((this.rows - 1) / 2)][Math.floor((this.cols - 1) / 2)]
@@ -175,7 +175,7 @@ export class State {
   }
 
   done() {
-    this.game.blind = false
+    this.game.setBlind(false)
     this.dnf = !this.game.board.isSolved()
     this.handleSolved()
   }
@@ -204,7 +204,7 @@ export class State {
     this.time = solve.time
     this.dnf = !!solve.dnf
 
-    this.game.board = solve.scramble.clone()
+    this.game.setBoard(solve.scramble.clone())
     this.moveHistory = solve.moves
     this.undos = solve.moves.length
 
@@ -269,7 +269,7 @@ export class State {
     if (this.event == EventType.Blind) {
       if (!this.inSolvingPhase) {
         this.inSolvingPhase = true
-        this.game.blind = true
+        this.game.setBlind(true)
         this.memoTime = performance.now() - this.startTime
       }
     } else if (this.event != EventType.Fmc && !this.scrambled) {
