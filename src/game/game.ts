@@ -208,7 +208,7 @@ export class Game {
       if (transition.time >= 1) this.transitions.delete(index)
     }
 
-    if (this.repaint || this.noRegrips) {
+    if (this.repaint || this.noRegrips || this.highlightActive) {
       this.render(time)
       this.repaint = false
     }
@@ -270,6 +270,7 @@ export class Game {
     pointer.y = y
 
     this.highlightActive = false
+    this.repaint = true
   }
 
   private multiplierString = ""
@@ -370,6 +371,7 @@ export class Game {
 
     this.canvas.addEventListener("blur", () => {
       this.highlightActive = false
+      this.repaint = true
     })
   }
 }
