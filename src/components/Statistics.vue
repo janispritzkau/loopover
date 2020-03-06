@@ -1,69 +1,80 @@
 <template>
-  <section>
-    <h3>Statistics</h3>
-    <div class="cards">
-      <div class="card">
-        <h5>Session solves</h5>
-        {{ $state.solves.length }}
+  <div>
+    <section class="container">
+      <h3>Statistics</h3>
+      <div class="cards">
+        <div class="card">
+          <h5>Session solves</h5>
+          {{ $state.solves.length }}
+        </div>
+        <div class="card">
+          <h5>Total solves</h5>
+          {{ $state.allSolves.length }}
+        </div>
       </div>
-      <div class="card">
-        <h5>Total solves</h5>
-        {{ $state.allSolves.length }}
-      </div>
-    </div>
 
-    <div class="table-header">
-      <h4>Averages</h4>
-      <div class="btn-group">
-        <button class="btn" :class="{ active: !showMoves }" @click="showMoves = false">Time</button>
-        <button class="btn" :class="{ active: showMoves }" @click="showMoves = true">Moves</button>
+      <div class="table-header">
+        <h4>Averages</h4>
+        <div class="btn-group">
+          <button class="btn" :class="{ active: !showMoves }" @click="showMoves = false">Time</button>
+          <button class="btn" :class="{ active: showMoves }" @click="showMoves = true">Moves</button>
+        </div>
       </div>
-    </div>
-    <table>
-      <tr>
-        <th style="width: 16%;">∑</th>
-        <th style="width: 28%;">Worst</th>
-        <th style="width: 28%;">Best</th>
-        <th>Current</th>
-      </tr>
-      <tr v-for="avg in averages" :key="avg.n">
-        <td>{{ avg.n }}</td>
-        <td>{{ format(showMoves ? avg.mostMoves : avg.worstTime) }}</td>
-        <td>{{ format(showMoves ? avg.fewestMoves : avg.bestTime) }}</td>
-        <td>{{ format(showMoves ? avg.currentMoves : avg.currentTime) }}</td>
-      </tr>
-    </table>
-    <LineChart
-      v-if="showChart"
-      ref="chart"
-      :width="300"
-      :height="200"
-      @loaded="renderChart"
-      :styles="{ marginTop: '32px' }"
-    />
-  </section>
+      <table>
+        <tr>
+          <th style="width: 16%;">∑</th>
+          <th style="width: 28%;">Worst</th>
+          <th style="width: 28%;">Best</th>
+          <th>Current</th>
+        </tr>
+        <tr v-for="avg in averages" :key="avg.n">
+          <td>{{ avg.n }}</td>
+          <td>{{ format(showMoves ? avg.mostMoves : avg.worstTime) }}</td>
+          <td>{{ format(showMoves ? avg.fewestMoves : avg.bestTime) }}</td>
+          <td>{{ format(showMoves ? avg.currentMoves : avg.currentTime) }}</td>
+        </tr>
+      </table>
+    </section>
+    <section class="container large">
+      <LineChart
+        ref="timeChart"
+        :width="500"
+        :height="300"
+        :styles="{ marginTop: '32px' }"
+      />
+    </section>
+  </div>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator"
 import { EventType } from '../state'
 import { Line } from "vue-chartjs"
+import { Chart } from "chart.js"
+import { average } from '../state/averages'
+
+const gridLines = (dark?: boolean) => ({
+  ...dark && {
+    color: "rgba(255, 255, 255, 0.08)",
+    zeroLineColor: "rgba(255, 255, 255, 0.14)"
+  }
+})
+
+const fontColor = (dark?: boolean) => ({
+  ...dark && {
+    fontColor: "rgba(255, 255, 255, 0.8)"
+  }
+})
 
 @Component({
   components: {
-    LineChart: async () => Vue.extend({
-      extends: (await import("vue-chartjs")).Line,
-      mounted() {
-        this.$emit("loaded")
-      }
-    })
+    LineChart: Line
   }
 })
 export default class Statistics extends Vue {
   showMoves = this.$state.event == EventType.Fmc
 
-  $refs!: { chart: Line }
-  showChart = false
+  $refs!: { timeChart: Line, averageChart: Line }
 
   @Watch("$state.event")
   handleEventTypeChange() {
@@ -86,74 +97,58 @@ export default class Statistics extends Vue {
   @Watch("$state.darkMode")
   @Watch("$state.allSolves")
   @Watch("showMoves")
-  async renderChart() {
-    if (!process.env.VUE_APP_API) return
-
-    const response = await fetch(`${process.env.VUE_APP_API}/statistics/${this.$state.eventName}/${this.showMoves ? "moves" : "time"}`)
-    const { labels, data } = await response.json()
-
-    this.showChart = labels.length > 1
-    if (!this.$refs.chart || !this.showChart) return
-
-    let scores = this.$state.allSolves
-      .filter(s => !s.dnf)
-      .map(solve => this.showMoves ? solve.moves.length : solve.time / 1000)
-
-    const start = labels[0]
-    const end = labels[labels.length - 1]
-    const step = labels[1] - labels[0]
-
-    let you: number[] = labels.map(() => 0)
-
-    for (const score of scores) {
-      const pos = Math.min(labels.length - 1, score / step - start / step)
-      const frac = pos - ~~pos
-      you[~~pos] += 1 / scores.length * (1 - frac)
-      you[~~pos + Math.ceil(frac)] += 1 / scores.length * frac
-    }
-
-    const max = you.reduce((a, b) => Math.max(a, b), 0)
-    if (max > 0) you = you.map(x => x / max)
+  renderTimeChart() {
+    if (!this.$refs.timeChart) return
 
     const dark = this.$state.darkMode || undefined
 
-    this.$refs.chart.renderChart({
-      labels,
-      datasets: [
-        {
-          label: "You",
-          data: you,
-          backgroundColor: "rgb(50, 140, 210, 0.22)",
-          borderColor: "rgb(50, 140, 210, 1)",
-          fill: true
-        },
-        {
-          label: "Average user",
-          data: data,
-          backgroundColor: "rgb(50, 140, 210, 0.22)",
-          borderColor: "rgb(0, 0, 0, 0)",
-          fill: true
+    const scores = this.$state.allSolves.slice(-200).map((solve, i) => ({ x: i, y: this.showMoves ? solve.moves.length : solve.time }))
+
+    const averages = scores.length > 1 ? scores.map((score, i) => {
+      return [1, 5, 12].map(n => {
+        const y = i < n - 1 ? -1 : average(new Int32Array(scores.slice(i - n + 1, i + 1).map(x => x.y)))
+        return {
+          x: score.x,
+          y: y == -1 ? undefined : y,
+          n
         }
-      ]
+      })
+    }) : []
+
+    this.$refs.timeChart.renderChart({
+      datasets: [2, 1, 0].map(i => ({
+        label: i == 0 ? "Single" : `Ao${averages[0][i].n}`,
+        data: averages.map(x => x[i]),
+        borderColor: ["rgba(115, 120, 125, 0.4)", "rgb(215, 75, 75)", "rgb(80, 180, 80)"][i],
+        pointRadius: 0,
+        pointHoverRadius: 0,
+        lineTension: 0.25,
+        borderWidth: [1.2, 1.8, 2][i],
+        fill: false,
+      }))
     }, {
       tooltips: { enabled: false },
-      animation: { duration: 0 },
-      legend: { labels: { fontColor: dark && "rgba(255, 255, 255, 0.9)" } },
+      animation: { duration: 500 },
+      legend: { labels: fontColor(dark) },
       scales: {
-        ...dark && {
-          xAxes: [{
-            ticks: {
-              fontColor: "rgba(255, 255, 255, 0.7)"
-            },
-            gridLines: {
-              color: "rgba(255, 255, 255, 0.06)",
-              zeroLineColor: "rgba(255, 255, 255, 0.1)"
-            },
-          }]
-        },
+        xAxes: [{
+          type: "linear",
+          ticks: {
+            callback: value => value == scores.length - 1 ? "" : value,
+            min: scores[0]?.x,
+            max: scores[scores.length - 1]?.x,
+            ...fontColor(dark)
+          },
+          gridLines: gridLines(dark)
+        }],
         yAxes: [{
-          display: false,
-          ticks: { beginAtZero: true }
+          bounds: "data",
+          ticks: {
+            maxTicksLimit: 8,
+            callback: value => this.showMoves ? value : Math.round(value / 100) / 10,
+            ...fontColor(dark)
+          },
+          gridLines: gridLines(dark)
         }]
       }
     })

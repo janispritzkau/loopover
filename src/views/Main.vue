@@ -58,7 +58,7 @@
       </div>
     </div>
 
-    <section v-if="$state.inspecting" class="inspect">
+    <div v-if="$state.inspecting" class="container inspect">
       <time>{{ formatDate($state.startTime) }}</time>
       <button
         class="btn"
@@ -71,12 +71,13 @@
         </svg>
         {{ $state.replaying ? "Pause" : "Start" }} replay
       </button>
-    </section>
+    </div>
 
     <Solutions v-if="fmc" />
 
     <section
       v-if="$state.allSolves.length - $state.solves.length > 0 || $state.solves.length > sidebarLimit"
+      class="container"
     >
       <transition name="record">
         <p v-if="!desktopMode && newRecord" class="new-record">{{ newRecord }}</p>
@@ -91,7 +92,7 @@
       />
     </section>
 
-    <section v-else>
+    <section v-else class="container">
       <p>
         Tap
         <span style="font-size: 14px; font-weight: 600;">SCRAMBLE</span>
@@ -132,7 +133,7 @@ import { state, EventType } from "../state"
   components: {
     SolveList,
     RepeatButton,
-    Statistics,
+    Statistics: () => import("../components/Statistics.vue"),
     Solutions,
     Dialog,
     EventDialog,
@@ -432,31 +433,11 @@ aside {
   opacity: 0;
 }
 
-section {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 0 16px;
-  box-sizing: content-box;
-}
-
-section:not(.inspect)::before {
-  content: "";
-  display: block;
-  margin-bottom: 32px;
-}
-
-section:not(.inspect):after {
-  content: "";
-  display: block;
-  margin-top: 31px;
-  border-bottom: 1px solid var(--contrast-2);
-}
-
-section.inspect {
+.inspect {
   display: flex;
   align-items: center;
   margin-top: 16px;
-  margin-bottom: -16px;
+  margin-bottom: 32px;
 }
 
 .inspect time {

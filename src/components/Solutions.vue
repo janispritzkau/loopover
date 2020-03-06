@@ -1,5 +1,5 @@
 <template>
-  <section>
+  <section class="container">
     <div class="btn-container">
       <button
         class="btn"

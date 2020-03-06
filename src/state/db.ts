@@ -20,6 +20,7 @@ export type LoopoverDB = IDBPDatabase<{
     indexes: {
       event: string
       session: number
+      eventStartTime: [string, number]
     }
   }
 }>
@@ -162,7 +163,7 @@ export async function syncSolves(state: State) {
   }
 }
 
-export const openDatabase = () => openDB<any>("loopover", 4, {
+export const openDatabase = () => openDB<any>("loopover", 6, {
   async upgrade(db, oldVersion, _newVersion, transaction) {
     if (oldVersion == 1) {
       db.deleteObjectStore("sessions")
@@ -184,6 +185,10 @@ export const openDatabase = () => openDB<any>("loopover", 4, {
         })
         cursor = await cursor.continue()
       }
+    }
+
+    if (oldVersion < 6) {
+      transaction.objectStore("solves").createIndex("eventStartTime", ["event", "startTime"])
     }
   }
 })

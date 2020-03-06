@@ -168,8 +168,11 @@ export class State {
     }
 
     if (this.db) {
-      this.allSolves = (await this.db.getAllFromIndex("solves", "event", this.eventName))
-        .map(value => Object.freeze(deserializeSolve(value).solve)) || []
+      await new Promise(resolve => setTimeout(resolve, 300))
+      console.time("load")
+      this.allSolves = (await this.db!.getAllFromIndex("solves", "event", this.eventName))
+        .map(solve => Object.freeze(deserializeSolve(solve!).solve))
+      console.timeEnd("load")
       this.updateAverages()
     }
   }

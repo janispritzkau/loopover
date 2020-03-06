@@ -33,6 +33,28 @@ h4 {
   margin: 16px 0 12px;
 }
 
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 16px;
+  box-sizing: content-box;
+}
+
+.container.large {
+  max-width: 640px;
+}
+
+section.container {
+  margin-top: 32px;
+}
+
+section.container::after {
+  content: "";
+  display: block;
+  margin-top: 31px;
+  border-bottom: 1px solid var(--contrast-2);
+}
+
 .btn {
   border: none;
   background: none;
