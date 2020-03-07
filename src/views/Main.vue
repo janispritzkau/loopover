@@ -124,7 +124,6 @@ import EventDialog from "../components/EventDialog.vue"
 import RepeatButton from "../components/RepeatButton.vue"
 import SolveView from "../components/Solve.vue"
 import SolveList from "../components/SolveList.vue"
-import Statistics from "../components/Statistics.vue"
 import Solutions from "../components/Solutions.vue"
 import { state, EventType } from "../state"
 
@@ -132,7 +131,7 @@ import { state, EventType } from "../state"
   components: {
     SolveList,
     RepeatButton,
-    Statistics,
+    Statistics: async () => (await import("../components/Statistics.vue")).default,
     Solutions,
     Dialog,
     EventDialog,

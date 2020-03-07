@@ -1,6 +1,6 @@
 import { State } from "./state"
 
-function average(array: Int32Array) {
+export function average(array: Int32Array) {
   array.sort()
   const m = array.length > 3 ? Math.ceil(array.length / 20) : 0
   let sum = 0
