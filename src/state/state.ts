@@ -328,6 +328,7 @@ export class State {
   }
 
   async updateAverages() {
+    await new Promise(resolve => setTimeout(resolve, 50))
     this.averages = await calculateAverages(this)
   }
 

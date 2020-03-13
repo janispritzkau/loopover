@@ -144,7 +144,9 @@ export default class Statistics extends Vue {
       this.showMoves = showMoves
     }, { immediate: true })
 
-    this.$watch(() => [this.$state.darkMode, this.$state.allSolves, this.showMoves], this.renderTimeChart, { immediate: true })
+    this.$watch(() => [this.$state.darkMode, this.$state.allSolves, this.showMoves], () => {
+      setTimeout(this.renderTimeChart, 300)
+    }, { immediate: true })
   }
 }
 </script>

@@ -20,7 +20,7 @@ export interface AvgScores {
   currentMoves: number
 }
 
-export function calculateAverages(state: State) {
+export async function calculateAverages(state: State) {
   const times = new Int32Array(state.allSolves.map(s => s.dnf ? -1 : s.time))
   const moves = new Int32Array(state.allSolves.map(s => s.dnf ? -1 : s.moves.length))
 
