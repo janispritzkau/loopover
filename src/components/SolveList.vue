@@ -10,7 +10,7 @@
       @click="!$state.started && $state.inspect(solve)"
     />
     <p v-if="solves.length == 0" style="opacity: 0.8;">No solves yet</p>
-    <p v-if="showHint" class="hint">You can tap on a scramble to inspect it</p>
+    <p v-if="showHint" class="hint">You can tap on a solve to inspect it</p>
     <button
       v-if="skip != null && solves.length - skip > currentLimit"
       class="btn"

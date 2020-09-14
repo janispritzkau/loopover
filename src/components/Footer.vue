@@ -8,7 +8,7 @@
       <a
         target="_blank"
         rel="noopener"
-        href="https://twitter.com/janispritzkau"
+        href="https://github.com/janispritzkau"
       >Janis Pritzkau</a>.
     </p>
     <p>
