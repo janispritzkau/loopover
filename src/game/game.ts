@@ -91,6 +91,16 @@ export class Game {
     this.repaint = true
   }
 
+  setDarkText(darkText: boolean) {
+    this.darkText = darkText
+    this.repaint = true
+  }
+
+  setUseLetters(useLetters: boolean) {
+    this.useLetters = useLetters
+    this.repaint = true
+  }
+
   setBoard(board: Board) {
     this.board = board
     this.repaint = true
