@@ -303,7 +303,7 @@ export default class App extends Vue {
   align-items: center;
   justify-content: flex-end;
   background: var(--background-darker);
-  box-shadow: 0 -2px 0 var(--contrast-3) inset;
+  border-bottom: 1px solid var(--contrast-2);
 }
 
 .main-wrapper {

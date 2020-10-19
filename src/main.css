@@ -266,25 +266,25 @@ th:last-child {
 }
 
 :root {
-  --background: #faf7f5;
+  --background: #faf8f6;
   --background-darker: #f2f0ee;
-  --primary: #089eaf;
-  --secondary: #fc455c;
+  --primary: #209aba;
+  --secondary: #fc4058;
   --contrast: rgba(0, 0, 0, 0.75);
   --contrast-0: rgba(0, 0, 0, 0.4);
   --contrast-1: rgba(0, 0, 0, 0.16);
   --contrast-2: rgba(0, 0, 0, 0.1);
   --contrast-3: rgba(0, 0, 0, 0.07);
-  --green: #282;
+  --green: #228822;
 }
 
 .dark {
-  --background: #30323a;
-  --background-darker: #282a31;
-  --contrast: rgba(252, 253, 255, 0.85);
+  --background: #303239;
+  --background-darker: #262930;
+  --contrast: rgba(252, 253, 255, 0.9);
   --contrast-0: rgba(251, 252, 255, 0.35);
   --contrast-1: rgba(248, 250, 255, 0.16);
   --contrast-2: rgba(247, 250, 255, 0.1);
-  --contrast-3: rgba(242, 245, 255, 0.05);
-  --green: #7c7;
+  --contrast-3: rgba(242, 245, 255, 0.06);
+  --green: #66cc66;
 }

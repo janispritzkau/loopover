@@ -149,7 +149,7 @@ export class Game {
     const useLetters = this.useLetters && n <= 26
     const fontSize = this.tileSize * (n <= 1000 ? n <= 100 ? n <= 10 || useLetters ? 0.58 : 0.56 : 0.5 : 0.42)
 
-    this.ctx.font = `${this.darkText ? 500 : 400} ${fontSize}px Roboto`
+    this.ctx.font = `400 ${fontSize}px Roboto`
     this.ctx.clearRect(0, 0, this.width, this.height)
 
     for (let i = 0; i < (this.moveAxis == Axis.Col ? this.cols : this.rows); i++) {
@@ -183,11 +183,11 @@ export class Game {
           this.ctx.fillStyle = `rgb(${100 + flash},${106 + flash},${118 + flash})`
           this.ctx.fillRect(x + gap, y + gap, this.tileSize - gap * 2, this.tileSize - gap * 2)
         } else {
-          const cx = (index % this.cols + 0.1) / (this.cols - 0.6)
+          const cx = (index % this.cols + 0.1) / (this.cols - 0.7)
           const cy = (Math.floor(index / this.cols) + 0.2) / (this.rows - 0.6)
 
-          const r = (1 - cx) * 240 + 10
-          const g = cy * 220 + cx * (1 - cy) * 40 + 5
+          const r = (1 - cx) * 252
+          const g = cy * 228 + cx * (1 - cy) * 40
           const b = cx * 220
 
           this.ctx.fillStyle = `rgb(${Math.floor(r)},${Math.floor(g)},${Math.floor(b)})`
