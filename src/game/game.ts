@@ -27,6 +27,7 @@ export class Game {
   private ctx: CanvasRenderingContext2D
 
   darkText = false
+  boldText = false
   noRegrips = false
   activeTile = 0
   blind = false
@@ -96,6 +97,11 @@ export class Game {
     this.repaint = true
   }
 
+  setBoldText(boldText: boolean) {
+    this.boldText = boldText
+    this.repaint = true
+  }
+
   setUseLetters(useLetters: boolean) {
     this.useLetters = useLetters
     this.repaint = true
@@ -147,9 +153,9 @@ export class Game {
   private render(time: number) {
     const n = this.cols * this.rows
     const useLetters = this.useLetters && n <= 26
-    const fontSize = this.tileSize * (n <= 1000 ? n <= 100 ? n <= 10 || useLetters ? 0.58 : 0.56 : 0.5 : 0.42)
+    const fontSize = this.tileSize * (n <= 1000 ? n <= 100 ? n <= 10 || useLetters ? 0.6 : 0.58 : 0.5 : 0.4)
 
-    this.ctx.font = `400 ${fontSize}px Roboto`
+    this.ctx.font = `${this.boldText ? 500 : 400} ${fontSize}px Roboto`
     this.ctx.clearRect(0, 0, this.width, this.height)
 
     for (let i = 0; i < (this.moveAxis == Axis.Col ? this.cols : this.rows); i++) {

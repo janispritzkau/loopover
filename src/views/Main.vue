@@ -257,8 +257,9 @@ export default class App extends Vue {
       state.reset()
     }, { immediate: true })
 
-    this.$watch(() => [state.darkText, state.useLetters, state.transitionTime, state.animations], () => {
+    this.$watch(() => [state.darkText, state.boldText, state.useLetters, state.transitionTime, state.animations], () => {
       state.game.setDarkText(state.darkText)
+      state.game.setBoldText(state.boldText)
       state.game.setUseLetters(state.useLetters)
       state.game.transitionTime = state.animations ? state.transitionTime : 0
     }, { immediate: true })

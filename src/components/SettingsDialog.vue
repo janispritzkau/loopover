@@ -17,6 +17,10 @@
       <span>Dark text</span>
     </label>
     <label class="checkbox">
+      <input v-model="$state.boldText" type="checkbox" />
+      <span>Use bold font</span>
+    </label>
+    <label class="checkbox">
       <input v-model="$state.animations" type="checkbox" />
       <span>Enable animations</span>
     </label>

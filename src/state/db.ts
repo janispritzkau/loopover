@@ -34,6 +34,7 @@ export interface Settings {
   forceMobile?: boolean
   useLetters?: boolean
   darkText?: boolean
+  boldText?: boolean
   transitionTime: number
   hideInspectHint?: boolean
 }
@@ -62,6 +63,7 @@ export function saveSettings(state: State) {
 
   if (state.noRegrips) settings.noRegrips = true
   if (state.darkText) settings.darkText = true
+  if (state.boldText) settings.boldText = true
   if (!state.useLetters) settings.useLetters = false
   if (state.forceMobile) settings.forceMobile = true
   if (state.darkMode) settings.darkMode = true
