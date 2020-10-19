@@ -233,11 +233,11 @@ export class State {
       const diff = move.time! / speed - performance.now() + startTime
       if (diff > 0) await new Promise(resolve => setTimeout(resolve, diff))
       if (!this.replaying) break
-      this.game.transitionTime = this.transitionTime / speed
+      if (this.animations) this.game.transitionTime = this.transitionTime / speed
       this.redo()
     }
 
-    this.game.transitionTime = this.transitionTime
+    if (this.animations) this.game.transitionTime = this.transitionTime
     clearInterval(this.interval)
     this.replaying = false
   }
