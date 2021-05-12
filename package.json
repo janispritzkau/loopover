@@ -8,7 +8,7 @@
     "build:testing": "vue-cli-service build --mode testing"
   },
   "dependencies": {
-    "chart.js": "^2.9.3",
+    "chart.js": "^2.9.4",
     "idb": "^5.0.1",
     "normalize.css": "^8.0.1",
     "register-service-worker": "^1.6.2",
