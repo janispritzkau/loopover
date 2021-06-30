@@ -323,10 +323,10 @@ export class Game {
 
     switch (event.key) {
       case " ": this.spaceDown = true; break
-      case "ArrowLeft": case "a": move(Axis.Row, -1); break
-      case "ArrowRight": case "d": move(Axis.Row, 1); break
-      case "ArrowUp": case "w": move(Axis.Col, -1); break
-      case "ArrowDown": case "s": move(Axis.Col, 1); break
+      case "ArrowLeft" : case "a": case "h": move(Axis.Row, -1); break
+      case "ArrowRight": case "d": case "l": move(Axis.Row, 1); break
+      case "ArrowUp"   : case "w": case "k": move(Axis.Col, -1); break
+      case "ArrowDown" : case "s": case "j": move(Axis.Col, 1); break
       default: return true
     }
 
