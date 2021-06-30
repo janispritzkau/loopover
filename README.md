@@ -33,8 +33,6 @@ npm run serve
 ### Compiles and minifies for production
 ```sh
 npm run build
-# or
-npm run build:testing
 ```
 
 ### Customize configuration

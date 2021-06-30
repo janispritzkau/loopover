@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "build:testing": "vue-cli-service build --mode testing"
+    "build": "vue-cli-service build"
   },
   "dependencies": {
     "chart.js": "^2.9.4",
