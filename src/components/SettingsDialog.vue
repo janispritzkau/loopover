@@ -122,7 +122,7 @@ export default class SettingsDialog extends Vue {
     } else {
       const solves = await this.$state.db!.getAll("solves")
       data = "[\n"
-        + solves.map(solve => (delete solve.session, `  ${JSON.stringify(solve)}`)).join(",\n")
+        + solves.map(solve => `  ${JSON.stringify({ ...solve, session: undefined })}`).join(",\n")
         + "\n]"
     }
 
