@@ -8,16 +8,16 @@
         <code>Ctrl or<br>Shift</code> move twice when pressing arrow key
       </li>
       <li>
-        <code>↑ or w</code> move up
+        <code>↑, w, k</code> move up
       </li>
       <li>
-        <code>← or a</code> move left
+        <code>←, a, h</code> move left
       </li>
       <li>
-        <code>↓ or s</code> move down
+        <code>↓, s, j</code> move down
       </li>
       <li>
-        <code>→ or d</code> move right
+        <code>→, d, l</code> move right
       </li>
       <li>
         <code>u</code> undo
