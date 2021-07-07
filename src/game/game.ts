@@ -133,7 +133,7 @@ export class Game {
   }
 
   animatedMove(move: Move, isPlayerMove = false) {
-    if (!this.move(move, isPlayerMove)) return
+    if (!this.move(move, isPlayerMove) || this.transitionTime == 0) return
 
     if (move.axis != this.moveAxis) {
       this.transitions.clear()
