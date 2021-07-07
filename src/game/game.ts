@@ -18,6 +18,8 @@ interface Pointer {
   moveY: number
 }
 
+export type LetterSystem = "numbers" | "letters" | "letters-xy";
+
 export class Game {
   board!: Board
   width!: number
@@ -32,7 +34,7 @@ export class Game {
   activeTile = 0
   blind = false
   locked = false
-  useLetters = true
+  letterSystem: LetterSystem = "numbers"
 
   transitionTime = 150
   pointers: Map<number, Pointer> = new Map()
@@ -102,8 +104,8 @@ export class Game {
     this.repaint = true
   }
 
-  setUseLetters(useLetters: boolean) {
-    this.useLetters = useLetters
+  setLetterSystem(letterSystem: LetterSystem) {
+    this.letterSystem = letterSystem
     this.repaint = true
   }
 
@@ -152,10 +154,14 @@ export class Game {
 
   private render(time: number) {
     const n = this.cols * this.rows
-    const useLetters = this.useLetters && n <= 26
-    const fontSize = this.tileSize * (n <= 1000 ? n <= 100 ? n <= 10 || useLetters ? 0.6 : 0.58 : 0.5 : 0.4)
+    const charCount = this.letterSystem == "letters-xy"
+      ? 2
+      : this.letterSystem == "letters" && n <= 26
+        ? 1.7
+        : n <= 1000 ? n <= 100 ? n <= 10 ? 1.7 : 1.9 : 2.5 : 4
+    const fontSize = this.tileSize * (0.26 + 0.58 / charCount)
 
-    this.ctx.font = `${this.boldText ? 500 : 400} ${fontSize}px Lexend`
+    this.ctx.font = `${this.boldText ? 500 : 400} ${fontSize}px Lexend, Roboto, sans-serif`
     this.ctx.clearRect(0, 0, this.width, this.height)
 
     for (let i = 0; i < (this.moveAxis == Axis.Col ? this.cols : this.rows); i++) {
@@ -200,7 +206,18 @@ export class Game {
           this.ctx.fillRect(Math.floor(x), Math.floor(y), this.tileSize, this.tileSize)
           this.ctx.fillStyle = this.darkText ? "rgba(0, 0, 0, 0.9)" : "#fff"
 
-          const text = useLetters ? String.fromCharCode(index + 65) : (index + 1).toString()
+          let text = ""
+          if (this.letterSystem == "letters" && n <= 26) {
+            text = String.fromCharCode(index + 65)
+          } else if (this.letterSystem == "letters-xy") {
+            const x = Math.floor(index / this.rows)
+            const y = index % this.cols
+            text = String.fromCharCode(x + (x < 26 ? 65 : 71))
+              + String.fromCharCode(y + (y < 26 ? 65 : 71))
+          } else {
+            text = (index + 1).toString()
+          }
+
           this.ctx.fillText(text, x + Math.floor(this.tileSize / 2), y + Math.floor(this.tileSize / 2 + fontSize * 0.05))
         }
 
@@ -323,10 +340,10 @@ export class Game {
 
     switch (event.key) {
       case " ": this.spaceDown = true; break
-      case "ArrowLeft" : case "a": case "h": move(Axis.Row, -1); break
+      case "ArrowLeft": case "a": case "h": move(Axis.Row, -1); break
       case "ArrowRight": case "d": case "l": move(Axis.Row, 1); break
-      case "ArrowUp"   : case "w": case "k": move(Axis.Col, -1); break
-      case "ArrowDown" : case "s": case "j": move(Axis.Col, 1); break
+      case "ArrowUp": case "w": case "k": move(Axis.Col, -1); break
+      case "ArrowDown": case "s": case "j": move(Axis.Col, 1); break
       default: return true
     }
 

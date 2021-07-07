@@ -1,7 +1,7 @@
 import { LoopoverDB, deserializeSolve, syncSolves, saveSolve, SerializedSolve } from "./db"
 import { calculateAverages, AvgScores } from "./averages"
 import { vue, EventType, Solve } from "."
-import { Move, Board, Game } from "../game"
+import { Move, Board, Game, LetterSystem } from "../game"
 import * as auth from "../auth"
 
 export interface Record {
@@ -19,7 +19,7 @@ export class State {
 
   darkMode = false
   forceMobile = false
-  useLetters = true
+  letterSystem: LetterSystem = "letters"
   darkText = false
   boldText = false
   animations = true

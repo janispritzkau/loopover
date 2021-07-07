@@ -9,10 +9,6 @@
       <span>Force mobile mode</span>
     </label>
     <label class="checkbox">
-      <input v-model="$state.useLetters" type="checkbox" />
-      <span>Use letters</span>
-    </label>
-    <label class="checkbox">
       <input v-model="$state.darkText" type="checkbox" />
       <span>Dark text</span>
     </label>
@@ -24,6 +20,13 @@
       <input v-model="$state.animations" type="checkbox" />
       <span>Enable animations</span>
     </label>
+
+    <label class="label">Letter System</label>
+    <select v-model="$state.letterSystem" class="input" style="margin-bottom: 16px;">
+      <option value="numbers">Numbers</option>
+      <option value="letters">Letters</option>
+      <option value="letters-xy">XY Letters</option>
+    </select>
 
     <label class="label" v-if="$state.animations">Transition speed</label>
     <div class="slider-container" v-show="$state.animations">
