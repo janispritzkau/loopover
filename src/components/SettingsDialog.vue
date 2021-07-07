@@ -21,18 +21,18 @@
       <span>Enable animations</span>
     </label>
 
+    <label class="label" v-if="$state.animations">Transition speed</label>
+    <div class="slider-container" v-show="$state.animations">
+      <Slider class="slider" :min="100" :max="200" :step="10" v-model="$state.transitionTime"/>
+      <span>{{ $state.transitionTime }} ms</span>
+    </div>
+
     <label class="label">Letter System</label>
     <select v-model="$state.letterSystem" class="input" style="margin-bottom: 16px;">
       <option value="numbers">Numbers</option>
       <option value="letters">Letters</option>
       <option value="letters-xy">XY Letters</option>
     </select>
-
-    <label class="label" v-if="$state.animations">Transition speed</label>
-    <div class="slider-container" v-show="$state.animations">
-      <Slider class="slider" :min="100" :max="200" :step="10" v-model="$state.transitionTime"/>
-      <span>{{ $state.transitionTime }} ms</span>
-    </div>
 
     <div class="spacer" />
 
