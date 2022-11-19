@@ -18,10 +18,10 @@
   },
   "devDependencies": {
     "@types/chart.js": "^2.9.32",
-    "@vue/cli-plugin-babel": "^4.5.13",
-    "@vue/cli-plugin-pwa": "^4.5.13",
-    "@vue/cli-plugin-typescript": "^4.5.13",
-    "@vue/cli-service": "^4.5.13",
+    "@vue/cli-plugin-babel": "^5.0.8",
+    "@vue/cli-plugin-pwa": "^5.0.8",
+    "@vue/cli-plugin-typescript": "^5.0.8",
+    "@vue/cli-service": "^5.0.8",
     "typescript": "^4.3.4",
     "vue-template-compiler": "^2.6.14"
   },
