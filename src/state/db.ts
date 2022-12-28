@@ -36,6 +36,7 @@ export interface Settings {
   darkText?: boolean
   boldText?: boolean
   transitionTime: number
+  animations?: boolean
   hideInspectHint?: boolean
 }
 
@@ -59,7 +60,8 @@ export function saveSettings(state: State) {
     rows: state.rows,
     event: state.event,
     letterSystem: state.letterSystem,
-    transitionTime: state.transitionTime
+    transitionTime: state.transitionTime,
+    animations: state.animations
   }
 
   if (state.noRegrips) settings.noRegrips = true
