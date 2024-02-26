@@ -18,7 +18,7 @@ interface Pointer {
   moveY: number
 }
 
-export type LetterSystem = "numbers" | "letters" | "letters-xy";
+export type LetterSystem = "numbers" | "letters" | "letters-xy" | "hybrid";
 
 export class Game {
   board!: Board
@@ -154,7 +154,7 @@ export class Game {
 
   private render(time: number) {
     const n = this.cols * this.rows
-    const charCount = this.letterSystem == "letters-xy"
+    const charCount = this.letterSystem == "letters-xy" || this.letterSystem == "hybrid"
       ? 2
       : this.letterSystem == "letters" && n <= 26
         ? 1.7
@@ -209,11 +209,13 @@ export class Game {
           let text = ""
           if (this.letterSystem == "letters" && n <= 26) {
             text = String.fromCharCode(index + 65)
-          } else if (this.letterSystem == "letters-xy") {
-            const x = Math.floor(index / this.rows)
-            const y = index % this.cols
+          } else if (this.letterSystem == "letters-xy" || this.letterSystem == "hybrid") {
+            const x = index % this.cols
+            const y = Math.floor(index / this.rows)
             text = String.fromCharCode(x + (x < 26 ? 65 : 71))
-              + String.fromCharCode(y + (y < 26 ? 65 : 71))
+              + (this.letterSystem == "hybrid"
+                  ? (y + 1).toString()
+                  : String.fromCharCode(y + (y < 26 ? 65 : 71)))
           } else {
             text = (index + 1).toString()
           }
