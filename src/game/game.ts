@@ -154,11 +154,13 @@ export class Game {
 
   private render(time: number) {
     const n = this.cols * this.rows
-    const charCount = this.letterSystem == "letters-xy" || this.letterSystem == "hybrid"
-      ? 2
-      : this.letterSystem == "letters" && n <= 26
-        ? 1.7
-        : n <= 1000 ? n <= 100 ? n <= 10 ? 1.7 : 1.9 : 2.5 : 4
+    const charCount = this.letterSystem == "hybrid"
+      ? (this.rows < 10 ? 2.7 : 2.9)
+      : this.letterSystem == "letters-xy"
+        ? 2
+        : this.letterSystem == "letters" && n <= 26
+          ? 1.7
+          : n < 1000 ? n < 100 ? n < 10 ? 1.7 : 1.9 : 2.5 : 4
     const fontSize = this.tileSize * (0.26 + 0.58 / charCount)
 
     this.ctx.font = `${this.boldText ? 500 : 400} ${fontSize}px Lexend, Roboto, sans-serif`
