@@ -15,7 +15,7 @@ new Vue({
   render: h => h(App),
 }).$mount("#app")
 
-if (process.env.NODE_ENV === "production") {
+if (import.meta.env.NODE_ENV === "production") {
   let userHasInteracted = false
 
   addEventListener("click", () => {
@@ -28,12 +28,12 @@ if (process.env.NODE_ENV === "production") {
     }
   }, { passive: true })
 
-  register(`${process.env.BASE_URL}service-worker.js`, {
+  register(`${import.meta.env.BASE_URL}service-worker.js`, {
     registered(registration: ServiceWorkerRegistration) {
       registration.update()
     },
     updated(registration: ServiceWorkerRegistration) {
-      registration.waiting!.postMessage({ type: "SKIP_WAITING" })
+    registration.waiting!.postMessage({ type: "SKIP_WAITING" })
       if (userHasInteracted) {
         state.reloadPage = () => location.reload()
       } else {

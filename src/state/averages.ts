@@ -1,4 +1,4 @@
-import { State } from "./state"
+import type { State } from "./state"
 
 export function average(array: Int32Array) {
   array.sort()

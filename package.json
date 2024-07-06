@@ -1,34 +1,33 @@
 {
   "name": "loopover",
   "version": "0.1.0",
-  "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build"
+    "dev": "vite",
+    "build": "run-p type-check build-only",
+    "preview": "vite preview --port 4173",
+    "build-only": "vite build",
+    "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
     "chart.js": "^2.9.4",
     "idb": "^6.1.2",
     "normalize.css": "^8.0.1",
     "register-service-worker": "^1.7.2",
-    "vue": "^2.6.14",
+    "vue": "^2.7.7",
     "vue-chartjs": "^3.5.1",
     "vue-class-component": "^7.2.6",
     "vue-property-decorator": "^9.1.2"
   },
   "devDependencies": {
+    "@tsconfig/node20": "^20.1.4",
     "@types/chart.js": "^2.9.32",
-    "@vue/cli-plugin-babel": "^4.5.13",
-    "@vue/cli-plugin-pwa": "^4.5.13",
-    "@vue/cli-plugin-typescript": "^4.5.13",
-    "@vue/cli-service": "^4.5.13",
-    "typescript": "^4.3.4",
-    "vue-template-compiler": "^2.6.14"
-  },
-  "browserslist": [
-    "chrome 72",
-    "firefox 65",
-    "safari 13",
-    "edge 18"
-  ]
+    "@types/node": "^16.11.45",
+    "@vitejs/plugin-vue2": "^1.1.2",
+    "@vue/tsconfig": "^0.5.1",
+    "npm-run-all": "^4.1.5",
+    "typescript": "~4.7.4",
+    "vite": "^3.0.2",
+    "vite-plugin-pwa": "^0.20.0",
+    "vue-tsc": "^0.38.8"
+  }
 }

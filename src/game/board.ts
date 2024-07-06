@@ -1,4 +1,4 @@
-import { Axis, Move } from "."
+import { Axis, type Move } from "."
 
 export class Board {
   grid: number[][]

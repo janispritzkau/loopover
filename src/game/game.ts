@@ -1,4 +1,4 @@
-import { Axis, Board, Move } from "."
+import { Axis, Board, type Move } from "."
 import { scrambleBoard } from "./scramble"
 
 interface Transition {

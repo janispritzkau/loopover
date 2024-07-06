@@ -25,7 +25,7 @@
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator"
-import { Move } from '../game'
+import type { Move } from '../game'
 import { vue } from "../state"
 
 interface Solution {

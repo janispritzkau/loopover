@@ -22,7 +22,7 @@
 <script lang="ts">
 import Vue from "vue"
 import Solve from "./Solve.vue"
-import { Solve as SolveI } from '../state'
+import type { Solve as SolveI } from '../state'
 
 export default Vue.extend({
   components: {

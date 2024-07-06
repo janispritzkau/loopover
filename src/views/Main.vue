@@ -116,7 +116,7 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator"
-import { Game, Move, Board } from "../game"
+import { Game, type Move, type Board } from "../game"
 
 import Dialog from "../components/Dialog.vue"
 import SettingsDialog from "../components/SettingsDialog.vue"

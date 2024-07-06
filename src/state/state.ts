@@ -1,7 +1,7 @@
-import { LoopoverDB, deserializeSolve, syncSolves, saveSolve, SerializedSolve } from "./db"
-import { calculateAverages, AvgScores } from "./averages"
-import { vue, EventType, Solve } from "."
-import { Move, Board, Game, LetterSystem } from "../game"
+import { type LoopoverDB, deserializeSolve, syncSolves, saveSolve, type SerializedSolve } from "./db"
+import { calculateAverages, type AvgScores } from "./averages"
+import { vue, EventType, type Solve } from "."
+import type { Move, Board, Game, LetterSystem } from "../game"
 import * as auth from "../auth"
 
 export interface Record {
@@ -122,7 +122,7 @@ export class State {
     clearInterval(this.interval)
     this.interval = setInterval(() => this.time = performance.now() - this.startTime, 67)
 
-    if (process.env.VUE_APP_GA_ID) track("event", "game", "start", this.eventName)
+    if (import.meta.env.VITE_GA_ID) track("event", "game", "start", this.eventName)
   }
 
   scramble() {
@@ -135,7 +135,7 @@ export class State {
 
     if (this.event == EventType.Blind) this.start()
 
-    if (process.env.VUE_APP_GA_ID) track("event", "game", "scramble", this.eventName)
+    if (import.meta.env.VITE_GA_ID) track("event", "game", "scramble", this.eventName)
   }
 
   async reset(onlyResetState = false) {
@@ -211,11 +211,11 @@ export class State {
 
     this.hideInspectHint = true
 
-    if (process.env.VUE_APP_GA_ID) track("event", "game", "inspect")
+    if (import.meta.env.VITE_GA_ID) track("event", "game", "inspect")
   }
 
   async replay(replay = true) {
-    if (process.env.VUE_APP_GA_ID) track("event", "game", "replay", replay ? "start" : "pause")
+    if (import.meta.env.VITE_GA_ID) track("event", "game", "replay", replay ? "start" : "pause")
 
     if (!replay) this.replaying = false
     if (!this.redoable || this.replaying || !replay) return
@@ -323,7 +323,7 @@ export class State {
       }
     }), 50)
 
-    if (process.env.VUE_APP_GA_ID) track("event", "game", "solved", this.eventName)
+    if (import.meta.env.VITE_GA_ID) track("event", "game", "solved", this.eventName)
 
     saveSolve(this, solve)
   }

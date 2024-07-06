@@ -7,20 +7,19 @@
     <meta name="description" content="Loopover is a single-player sliding tile puzzle game originally created by carykh. Mobile optimized and with offline web app support.">
     <meta property="og:title" content="Loopover">
     <meta property="og:description" content="Loopover is a single-player sliding tile puzzle game.">
-    <meta property="og:image" content="<%= BASE_URL %>/img/icons/icon.png">
+    <meta property="og:image" content="/img/icons/icon.png">
     <link rel="canonical" href="https://loopover.xyz">
-    <link rel="shortcut icon" href="<%= BASE_URL %>favicon.ico">
+    <link rel="shortcut icon" href="favicon.ico">
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700,900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Lexend:400,500&display=swap" rel="stylesheet">
-    <title><%= VUE_APP_TITLE %></title>
+    <meta name="theme-color" content="#ffffff">
+    <title>Loopover</title>
   </head>
   <body>
     <noscript>
       <strong>We're sorry but Loopover doesn't work without JavaScript enabled. Please enable it to continue.</strong>
     </noscript>
     <div id="app"></div>
-    <% if (VUE_APP_GA_ID) { %>
-      <script>((e,t,o)=>{let i=t.hostname.split("."),n=(e.cookie.match(/(^|; ?)_ga=GA1\.\d\.(\d+\.\d+)(;|$)/)||[])[2]||~~(2e9*Math.random())+"."+~~(Date.now()/1e3);for(let t,o=i.length;o--&&(t="_ga=GA1."+(i.length-o)+"."+n,e.cookie=t+";max-age=63115200;domain="+i.slice(o).join("."),-1==e.cookie.split(/; ?/).indexOf(t)););track=((a,i,c,l,d)=>{let r={v:1,tid:"<%= VUE_APP_GA_ID %>",aip:1,cid:n,t:a,dr:e.referrer,dt:e.title,dl:t.href,ul:o.language.toLowerCase(),sr:screen.width+"x"+screen.height,vp:innerWidth+"x"+innerHeight};i&&(r.ec=i),c&&(r.ea=c),l&&(r.el=l),d&&(r.ev=d),o.sendBeacon("https://www.google-analytics.com/collect",new URLSearchParams(r))}),track("pageview")})(document,location,navigator)</script>
-    <% } %>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

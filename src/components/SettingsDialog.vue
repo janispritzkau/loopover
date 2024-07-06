@@ -85,7 +85,7 @@ export default class SettingsDialog extends Vue {
         }
 
         if (this.$state.user) {
-          await fetch(process.env.VUE_APP_API + "/sync", {
+          await fetch(import.meta.env.VITE_API + "/sync", {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
@@ -130,7 +130,7 @@ export default class SettingsDialog extends Vue {
         + "\n]"
     }
 
-    if (process.env.VUE_APP_GA_ID) track("event", "settings", "export", format)
+    if (import.meta.env.VITE_GA_ID) track("event", "settings", "export", format)
 
     const url = URL.createObjectURL(new Blob([data], {
       type: format == "csv" ? "text/csv" : "application/json"

@@ -1,7 +1,7 @@
 import Vue from "vue"
 import { State } from "./state"
 import { openDatabase, loadSettings, saveSettings } from "./db"
-import { Board, Move } from "../game"
+import type { Board, Move } from "../game"
 
 export enum EventType {
   Normal = 0,
