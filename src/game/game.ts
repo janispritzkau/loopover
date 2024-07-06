@@ -18,7 +18,7 @@ interface Pointer {
   moveY: number
 }
 
-export type LetterSystem = "numbers" | "letters" | "letters-xy";
+export type LetterSystem = "numbers" | "letters" | "letters-xy" | "hybrid";
 
 export class Game {
   board!: Board
@@ -154,11 +154,13 @@ export class Game {
 
   private render(time: number) {
     const n = this.cols * this.rows
-    const charCount = this.letterSystem == "letters-xy"
-      ? 2
-      : this.letterSystem == "letters" && n <= 26
-        ? 1.7
-        : n <= 1000 ? n <= 100 ? n <= 10 ? 1.7 : 1.9 : 2.5 : 4
+    const charCount = this.letterSystem == "hybrid"
+      ? (this.rows < 10 ? 2.7 : 2.9)
+      : this.letterSystem == "letters-xy"
+        ? 2
+        : this.letterSystem == "letters" && n <= 26
+          ? 1.7
+          : n < 1000 ? n < 100 ? n < 10 ? 1.7 : 1.9 : 2.5 : 4
     const fontSize = this.tileSize * (0.26 + 0.58 / charCount)
 
     this.ctx.font = `${this.boldText ? 500 : 400} ${fontSize}px Lexend, Roboto, sans-serif`
@@ -209,11 +211,13 @@ export class Game {
           let text = ""
           if (this.letterSystem == "letters" && n <= 26) {
             text = String.fromCharCode(index + 65)
-          } else if (this.letterSystem == "letters-xy") {
-            const x = Math.floor(index / this.rows)
-            const y = index % this.cols
+          } else if (this.letterSystem == "letters-xy" || this.letterSystem == "hybrid") {
+            const x = index % this.cols
+            const y = Math.floor(index / this.rows)
             text = String.fromCharCode(x + (x < 26 ? 65 : 71))
-              + String.fromCharCode(y + (y < 26 ? 65 : 71))
+              + (this.letterSystem == "hybrid"
+                  ? (y + 1).toString()
+                  : String.fromCharCode(y + (y < 26 ? 65 : 71)))
           } else {
             text = (index + 1).toString()
           }

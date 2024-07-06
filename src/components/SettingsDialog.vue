@@ -32,6 +32,7 @@
       <option value="numbers">Numbers</option>
       <option value="letters">Letters</option>
       <option value="letters-xy">XY Letters</option>
+      <option value="hybrid">Hybrid</option>
     </select>
 
     <div class="spacer" />
