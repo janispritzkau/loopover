@@ -8,22 +8,22 @@
   },
   "dependencies": {
     "chart.js": "^2.9.4",
-    "idb": "^6.1.2",
+    "idb": "^6.1.5",
     "normalize.css": "^8.0.1",
     "register-service-worker": "^1.7.2",
-    "vue": "^2.6.14",
+    "vue": "^2.7.16",
     "vue-chartjs": "^3.5.1",
     "vue-class-component": "^7.2.6",
     "vue-property-decorator": "^9.1.2"
   },
   "devDependencies": {
     "@types/chart.js": "^2.9.32",
-    "@vue/cli-plugin-babel": "^4.5.13",
-    "@vue/cli-plugin-pwa": "^4.5.13",
-    "@vue/cli-plugin-typescript": "^4.5.13",
-    "@vue/cli-service": "^4.5.13",
-    "typescript": "^4.3.4",
-    "vue-template-compiler": "^2.6.14"
+    "@vue/cli-plugin-babel": "^4.5.19",
+    "@vue/cli-plugin-pwa": "^4.5.19",
+    "@vue/cli-plugin-typescript": "^4.5.19",
+    "@vue/cli-service": "^4.5.19",
+    "typescript": "^4.9.5",
+    "vue-template-compiler": "^2.7.16"
   },
   "browserslist": [
     "chrome 72",

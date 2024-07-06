@@ -73,7 +73,7 @@ try {
         state.user = null
       } else if (res.ok) {
         const user = await res.json()
-        Object.assign(state.user, user)
+        Object.assign(state.user!, user)
       } else {
         console.error(res.statusText)
       }
