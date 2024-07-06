@@ -26,9 +26,6 @@
     "vue-template-compiler": "^2.7.16"
   },
   "browserslist": [
-    "chrome 72",
-    "firefox 65",
-    "safari 13",
-    "edge 18"
+    "defaults"
   ]
 }
