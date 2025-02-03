@@ -213,7 +213,7 @@ export class Game {
             text = String.fromCharCode(index + 65)
           } else if (this.letterSystem == "letters-xy" || this.letterSystem == "hybrid") {
             const x = index % this.cols
-            const y = Math.floor(index / this.rows)
+            const y = Math.floor(index / this.cols)
             text = String.fromCharCode(x + (x < 26 ? 65 : 71))
               + (this.letterSystem == "hybrid"
                   ? (y + 1).toString()
