@@ -25,5 +25,8 @@
     "vite": "^7.3.7",
     "vite-plugin-pwa": "^2.0.0"
   },
-  "type": "module"
+  "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  }
 }

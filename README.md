@@ -22,7 +22,7 @@ The overall layout and design of the game is defined here.
 
 ## Project setup
 
-Requires Node.js 20.19+ or 22.12+.
+Requires Node.js 20.19+ or 22.12+ (`.nvmrc` pins the version used in CI).
 
 ```sh
 npm install
