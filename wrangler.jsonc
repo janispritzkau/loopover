@@ -1,0 +1,10 @@
+{
+  "name": "loopover",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist"
+  }
+
+  // To serve the site on its own domain, add the zone to this Cloudflare account and uncomment:
+  // "routes": [{ "pattern": "loopover.xyz", "custom_domain": true }]
+}
