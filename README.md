@@ -55,3 +55,22 @@ Put local overrides into `.env.local`.
 | `VITE_API` | Base URL of the sync/authentication API |
 | `VITE_GOOGLE_CLIENT_ID` | Google OAuth client ID |
 | `VITE_DISCORD_CLIENT_ID` | Discord OAuth client ID |
+
+## Deployment
+
+The site is hosted on Cloudflare (Workers static assets, see `wrangler.jsonc`) and deployed by
+`.github/workflows/ci.yml`: pushes to `main` run `wrangler deploy`, PRs from this repository run
+`wrangler versions upload` to get a preview URL.
+
+Required setup in the GitHub repository:
+
+- Secrets `CLOUDFLARE_API_TOKEN` (permission "Workers Scripts: Edit") and `CLOUDFLARE_ACCOUNT_ID`.
+- Variables `VITE_API`, `VITE_GOOGLE_CLIENT_ID` and `VITE_DISCORD_CLIENT_ID` (build-time config).
+- Environments `production` and `preview` (the workflow references both; GitHub creates them on first use).
+
+To serve the site on `loopover.xyz`, add the domain to Cloudflare and enable the `routes` entry in `wrangler.jsonc`.
+
+To try the Cloudflare runtime locally: `npm run build && npx wrangler dev`.
+
+Note: Cloudflare redirects `/oauth-callback.html` to `/oauth-callback` (query string preserved), which
+still works for the OAuth popup flow. The redirect URIs registered with Google/Discord stay unchanged.
