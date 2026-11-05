@@ -13,8 +13,6 @@ declare global {
   interface Window {
     state: State
   }
-
-  function track(type: string, category?: string, action?: string, label?: string): void
 }
 
 declare module "vue/types/vue" {

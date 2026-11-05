@@ -3,16 +3,13 @@
     "target": "es2020",
     "module": "esnext",
     "strict": true,
-    "jsx": "preserve",
-    "importHelpers": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "sourceMap": true,
     "baseUrl": ".",
     "types": [
-      "webpack-env"
+      "vite/client"
     ],
     "paths": {
       "@/*": [
@@ -22,16 +19,15 @@
     "lib": [
       "esnext",
       "dom",
-      "dom.iterable",
-      "scripthost"
-    ]
+      "dom.iterable"
+    ],
+    "noEmit": true,
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*.ts",
-    "src/**/*.tsx",
     "src/**/*.vue",
-    "tests/**/*.ts",
-    "tests/**/*.tsx"
+    "vite.config.ts"
   ],
   "exclude": [
     "node_modules"

@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      dependencies:
+        patterns: ["*"]
+    ignore:
+      # Vue 2 is end-of-life but this project intentionally stays on it for now.
+      - dependency-name: vue
+        update-types: ["version-update:semver-major"]
+      # vue-chartjs 4+/chart.js 3+ need code changes.
+      - dependency-name: chart.js
+        update-types: ["version-update:semver-major"]
+      - dependency-name: vue-chartjs
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

@@ -99,7 +99,7 @@ export async function saveSolve(state: State, solve: Solve) {
   if (state.db) state.db.put("solves", serializedSolve)
 
   if (state.user) {
-    fetch(process.env.VUE_APP_API + "/sync", {
+    fetch(import.meta.env.VITE_API + "/sync", {
       method: "PUT",
       headers: {
         "api-version": "1",
@@ -117,7 +117,7 @@ export async function syncSolves(state: State) {
 
   if (!db || !token) return
 
-  const response = await fetch(process.env.VUE_APP_API + "/sync", {
+  const response = await fetch(import.meta.env.VITE_API + "/sync", {
     method: "POST",
     headers: {
       "api-version": "1",
@@ -152,7 +152,7 @@ export async function syncSolves(state: State) {
     }
 
     for (const chunk of syncChunks) {
-      const response = await fetch(process.env.VUE_APP_API + "/sync", {
+      const response = await fetch(import.meta.env.VITE_API + "/sync", {
         method: "PUT",
         headers: {
           "api-version": "1",
