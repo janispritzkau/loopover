@@ -21,19 +21,37 @@ Reuseable Vue components are placed inside here.
 The overall layout and design of the game is defined here.
 
 ## Project setup
+
+Requires Node.js 20.19+ or 22.12+.
+
 ```sh
 npm install
 ```
 
 ### Compiles and hot-reloads for development
 ```sh
-npm run serve
+npm run dev
 ```
 
 ### Compiles and minifies for production
 ```sh
 npm run build
+npm run preview # serve the production build locally
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+### Type check
+```sh
+npm run typecheck
+```
+
+### Configuration
+
+Build-time settings are read from `.env` files (see [Vite env variables](https://vite.dev/guide/env-and-mode)).
+Put local overrides into `.env.local`.
+
+| Variable | Description |
+| --- | --- |
+| `VITE_TITLE` | Page title |
+| `VITE_API` | Base URL of the sync/authentication API |
+| `VITE_GOOGLE_CLIENT_ID` | Google OAuth client ID |
+| `VITE_DISCORD_CLIENT_ID` | Discord OAuth client ID |

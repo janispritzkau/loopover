@@ -1,5 +1,5 @@
 import Vue from "vue"
-import { register } from "register-service-worker"
+import { registerSW } from "virtual:pwa-register"
 import { state } from "./state"
 
 import "normalize.css"
@@ -15,7 +15,7 @@ new Vue({
   render: h => h(App),
 }).$mount("#app")
 
-if (process.env.NODE_ENV === "production") {
+if (import.meta.env.PROD) {
   let userHasInteracted = false
 
   addEventListener("click", () => {
@@ -28,16 +28,16 @@ if (process.env.NODE_ENV === "production") {
     }
   }, { passive: true })
 
-  register(`${process.env.BASE_URL}service-worker.js`, {
-    registered(registration: ServiceWorkerRegistration) {
-      registration.update()
+  const updateSW = registerSW({
+    onRegisteredSW(_url, registration) {
+      registration?.update()
     },
-    updated(registration: ServiceWorkerRegistration) {
-      registration.waiting!.postMessage({ type: "SKIP_WAITING" })
+    onNeedRefresh() {
+      // Activates the waiting service worker and reloads the page.
       if (userHasInteracted) {
-        state.reloadPage = () => location.reload()
+        state.reloadPage = () => updateSW(true)
       } else {
-        location.reload()
+        updateSW(true)
       }
     }
   })

@@ -7,17 +7,27 @@
     <meta name="description" content="Loopover is a single-player sliding tile puzzle game originally created by carykh. Mobile optimized and with offline web app support.">
     <meta property="og:title" content="Loopover">
     <meta property="og:description" content="Loopover is a single-player sliding tile puzzle game.">
-    <meta property="og:image" content="<%= BASE_URL %>/img/icons/icon.png">
+    <meta property="og:image" content="/img/icons/icon.png">
     <link rel="canonical" href="https://loopover.xyz">
-    <link rel="shortcut icon" href="<%= BASE_URL %>favicon.ico">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Loopover">
+    <meta name="msapplication-TileImage" content="/img/icons/msapplication-icon-144x144.png">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/icons/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="/img/icons/apple-touch-icon-152x152.png">
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700,900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Lexend:400,500&display=swap" rel="stylesheet">
-    <title><%= VUE_APP_TITLE %></title>
+    <title>%VITE_TITLE%</title>
   </head>
   <body>
     <noscript>
       <strong>We're sorry but Loopover doesn't work without JavaScript enabled. Please enable it to continue.</strong>
     </noscript>
     <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

@@ -122,7 +122,6 @@ export class State {
     clearInterval(this.interval)
     this.interval = setInterval(() => this.time = performance.now() - this.startTime, 67)
 
-    if (process.env.VUE_APP_GA_ID) track("event", "game", "start", this.eventName)
   }
 
   scramble() {
@@ -135,7 +134,6 @@ export class State {
 
     if (this.event == EventType.Blind) this.start()
 
-    if (process.env.VUE_APP_GA_ID) track("event", "game", "scramble", this.eventName)
   }
 
   async reset(onlyResetState = false) {
@@ -211,11 +209,9 @@ export class State {
 
     this.hideInspectHint = true
 
-    if (process.env.VUE_APP_GA_ID) track("event", "game", "inspect")
   }
 
   async replay(replay = true) {
-    if (process.env.VUE_APP_GA_ID) track("event", "game", "replay", replay ? "start" : "pause")
 
     if (!replay) this.replaying = false
     if (!this.redoable || this.replaying || !replay) return
@@ -323,7 +319,6 @@ export class State {
       }
     }), 50)
 
-    if (process.env.VUE_APP_GA_ID) track("event", "game", "solved", this.eventName)
 
     saveSolve(this, solve)
   }
